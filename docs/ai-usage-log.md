@@ -73,3 +73,11 @@
 - 隐私检查：提交前将再次扫描暂存内容；`.env`、`.env.local`、依赖目录和构建产物已由 `.gitignore` 排除。
 - 交付结果：前端、后端、共享契约、迁移、测试、宠物资源和文档已在提交 `aa9a5ce` 推送到远程 `main`。提交包含 118 个文件和 16,011 行新增；暂存扫描未发现未披露的凭据形态内容。
 - 远程限制：空仓库写权限测试产生的 `codex-access-test` 仍是 GitHub 默认分支，因此无法通过 Git 删除；需由仓库管理员先把默认分支切换为 `main`，随后再删除测试分支。
+
+## 2026-07-13：Cloudflare 前端干净构建修复复核
+
+- 任务摘要：复核前端终端为 Cloudflare 干净环境修复的打包问题，判断是否需要修改 Pages 构建输入参数，并推送代码。
+- 人工修改：`apps/web/package.json` 的 `build` 脚本增加 `pnpm --filter @soft-habit/contracts build`，确保前端 TypeScript/Vite 构建前生成共享契约产物。
+- AI 贡献：审阅修改及 monorepo 依赖关系；移走本地 `packages/contracts/dist` 后模拟干净环境；确认原 Pages 外部命令无需变更，仍从仓库根目录执行 `pnpm --filter web build`，输出目录仍为 `apps/web/dist`。
+- 验证：干净模拟构建成功并转换 204 个模块；前端 lint、typecheck、测试 5/5 和目标文件格式检查通过。
+- 隐私检查：修改仅涉及公开的 package 脚本和本记录，没有环境变量值或凭据。

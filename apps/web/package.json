@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "pnpm --filter @soft-habit/contracts build && tsc -b && vite build",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
