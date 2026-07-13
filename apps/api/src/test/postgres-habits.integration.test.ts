@@ -2,6 +2,7 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { loadConfig, type AppConfig } from '../config/env.js';
 import { createDatabase, type Database } from '../db/client.js';
+import { migrationsFolder } from '../db/migration-path.js';
 import {
   anonymousSessions,
   habitCheckins,
@@ -33,7 +34,7 @@ describe.skipIf(!canRun)('PostgreSQL habit/check-in transactions', () => {
     const database = createDatabase({ DATABASE_URL: databaseUrl! });
     db = database.db;
     pool = database.pool;
-    await migrate(db, { migrationsFolder: new URL('../db/migrations', import.meta.url).pathname });
+    await migrate(db, { migrationsFolder });
     service = new DrizzleHabitService(db, config);
   });
 

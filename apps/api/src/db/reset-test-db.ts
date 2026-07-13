@@ -1,6 +1,7 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { loadConfig } from '../config/env.js';
 import { createDatabase } from './client.js';
+import { migrationsFolder } from './migration-path.js';
 import { seedDatabase } from './seed.js';
 
 const config = loadConfig();
@@ -12,7 +13,7 @@ if (config.NODE_ENV !== 'test' || !databaseName.toLowerCase().includes('test')) 
 const { db, pool } = createDatabase(config);
 try {
   await pool.query('drop schema public cascade; create schema public');
-  await migrate(db, { migrationsFolder: new URL('./migrations', import.meta.url).pathname });
+  await migrate(db, { migrationsFolder });
   await seedDatabase(db, config);
   console.info(`Test database ${databaseName} reset completed`);
 } finally {

@@ -63,6 +63,13 @@
 - 最终验证：contracts/api 的 lint、typecheck、build 和格式检查全部通过；共享契约测试 2/2 通过；Drizzle 报告无待生成迁移；只读执行前端 typecheck 确认共享契约兼容并通过。数据库业务全量测试仍以本轮较早执行的 28/28 结果为准，最终检查阶段没有再次清空数据库，以保留恢复后的 demo 种子和本地访问密钥。
 - 隐私检查：本记录和验证输出没有复制数据库密码、Cookie Secret、pepper 或最终保存的访问密钥。
 
+## 2026-07-13：Windows 迁移路径兼容修复
+
+- 问题：Windows 环境执行 `db:migrate` 时，Drizzle 报告找不到 `meta/_journal.json`。
+- 原因：代码使用 `URL.pathname` 作为文件系统路径，在 Windows 生成带前导斜杠的 `/C:/...` 路径。
+- 修复：集中使用 Node.js `fileURLToPath()` 生成跨平台迁移目录，并同步替换 migrate、reset-test-db 和两份 PostgreSQL 集成测试中的路径构造。
+- 验证：API lint、typecheck、build 通过，无数据库测试 17/17 通过。Linux 执行迁移已越过迁移文件读取阶段，不再出现 journal 路径错误，但随后 Supabase 返回 `28P01` 密码认证失败；只读重连同样确认当前本地数据库凭据已失效。因此没有把本次实库迁移记录为通过，Windows 仍需用户拉取修复后复验。
+
 ## 2026-07-13：前后端首次 GitHub 交付准备
 
 - 任务摘要：按用户要求将两个终端产出的前端、后端、共享契约和项目文档提交到 `jimSemfoundry/check-in`。

@@ -4,6 +4,7 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { loadConfig } from '../config/env.js';
 import { createDatabase, type Database } from '../db/client.js';
+import { migrationsFolder } from '../db/migration-path.js';
 import {
   anonymousSessions,
   dailyHabitPlans,
@@ -39,7 +40,7 @@ describe.skipIf(!canRun)('PostgreSQL history and pet transactions', () => {
     const database = createDatabase({ DATABASE_URL: databaseUrl });
     db = database.db;
     pool = database.pool;
-    await migrate(db, { migrationsFolder: new URL('../db/migrations', import.meta.url).pathname });
+    await migrate(db, { migrationsFolder });
     historyService = new DrizzleHistoryService(db);
     petService = new DrizzlePetService(db);
   });
