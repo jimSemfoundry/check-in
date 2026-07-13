@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783870922268,
+      "tag": "0000_swift_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783873309170,
+      "tag": "0001_sleepy_shen",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783873668278,
+      "tag": "0002_wide_stepford_cuckoos",
+      "breakpoints": true
+    }
+  ]
+}

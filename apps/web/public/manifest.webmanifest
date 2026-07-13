@@ -1,0 +1,11 @@
+{
+  "name": "Soft Habit",
+  "short_name": "Soft Habit",
+  "start_url": "/today",
+  "display": "standalone",
+  "background_color": "#f8f5f3",
+  "theme_color": "#b78387",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,6 @@
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+docs/backend-development.md
+docs/frontend-development.md

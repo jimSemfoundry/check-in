@@ -1,0 +1,1 @@
+ALTER TABLE "reward_ledger" ADD COLUMN "remaining_amount" integer DEFAULT 0 NOT NULL;
