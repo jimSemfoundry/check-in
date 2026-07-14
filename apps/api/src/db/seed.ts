@@ -1,4 +1,6 @@
 import { eq } from 'drizzle-orm';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { loadConfig, type AppConfig } from '../config/env.js';
 import { generateSecret, hashSecret } from '../lib/crypto.js';
 import { createDatabase, type Database } from './client.js';
@@ -104,4 +106,5 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) await main();
+const invokedPath = process.argv[1];
+if (invokedPath && resolve(fileURLToPath(import.meta.url)) === resolve(invokedPath)) await main();
