@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { EmptyState, ErrorState, PageLoading } from '../components/States';
 import { RoleGate } from '../components/RoleGate';
+import { archiveHabit } from '../features/habits/api';
 import { getToday } from '../features/today/api';
 import { setCheckin } from '../features/checkins/api';
 import { friendlyError } from '../lib/api';
@@ -65,6 +66,21 @@ export function TodayPage() {
       ]);
     },
   });
+  const archive = useMutation({
+    mutationFn: archiveHabit,
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['today'] }),
+        client.invalidateQueries({ queryKey: ['habits'] }),
+        client.invalidateQueries({ queryKey: ['history'] }),
+        client.invalidateQueries({ queryKey: ['pet'] }),
+      ]);
+    },
+  });
+  const confirmArchive = (id: string, name: string) => {
+    if (!confirm(`删除“${name}”？删除后今日列表不再显示，历史记录会保留。`)) return;
+    archive.mutate(id);
+  };
   if (query.isLoading) return <PageLoading />;
   if (query.isError)
     return <ErrorState message={friendlyError(query.error)} retry={() => void query.refetch()} />;
@@ -117,6 +133,14 @@ export function TodayPage() {
                 >
                   <span className="material-symbols-rounded">edit</span>
                 </Link>
+                <button
+                  className="edit-button danger"
+                  aria-label={`删除${habit.name}`}
+                  disabled={archive.isPending}
+                  onClick={() => confirmArchive(habit.id, habit.name)}
+                >
+                  <span className="material-symbols-rounded">delete</span>
+                </button>
               </RoleGate>
               <button
                 className="check-button"

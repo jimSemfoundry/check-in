@@ -61,7 +61,11 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
   if (!habitService) {
     throw new Error('habitService is required when using a custom authStore');
   }
-  await app.register(cors, { origin: options.config.WEB_ORIGIN, credentials: true });
+  await app.register(cors, {
+    origin: options.config.WEB_ORIGIN,
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PATCH', 'DELETE'],
+  });
   await app.register(cookie, { secret: options.config.COOKIE_SECRET, hook: 'onRequest' });
   await app.register(authPlugin, { accessService });
 

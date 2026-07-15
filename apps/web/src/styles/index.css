@@ -244,6 +244,13 @@ h1 {
 .edit-button .material-symbols-rounded {
   font-size: 20px;
 }
+.edit-button.danger {
+  color: #b76c79;
+}
+.edit-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .check-button {
   border: 2px solid #d9d0cf;
   width: 34px;

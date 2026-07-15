@@ -151,6 +151,28 @@ describe('infrastructure', () => {
     expect(response.statusCode).toBe(400);
     expect(response.json().error.code).toBe('VALIDATION_ERROR');
   });
+
+  it('allows browser preflight requests for habit management methods', async () => {
+    const app = await buildApp({
+      config,
+      authStore: new MemoryAuthStore(),
+      habitService: unavailableHabitService,
+      logger: false,
+    });
+    apps.push(app);
+    const response = await app.inject({
+      method: 'OPTIONS',
+      url: '/api/v1/habits/10000000-0000-4000-8000-000000000002',
+      headers: {
+        origin: config.WEB_ORIGIN,
+        'access-control-request-method': 'PATCH',
+        'access-control-request-headers': 'content-type',
+      },
+    });
+    expect(response.statusCode).toBe(204);
+    expect(response.headers['access-control-allow-methods']).toContain('PATCH');
+    expect(response.headers['access-control-allow-methods']).toContain('DELETE');
+  });
 });
 
 describe('anonymous session lifecycle', () => {
