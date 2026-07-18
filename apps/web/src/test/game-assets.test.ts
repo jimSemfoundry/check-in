@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { tinySwordsAssets } from '../game/assets';
 
 describe('tiny swords asset manifest', () => {
-  it('lists only the asset groups required for the compact rock island scene', () => {
-    expect(tinySwordsAssets).toMatchObject({
-      sea: expect.stringContaining('/game/tiny-swords/'),
-      islandTiles: expect.stringContaining('/game/tiny-swords/'),
-      rockTiles: expect.stringContaining('/game/tiny-swords/'),
-      waterFoam: expect.stringContaining('/game/tiny-swords/'),
+  it('loads the compact island from the original Tiny Swords terrain tileset files', () => {
+    expect(tinySwordsAssets).toEqual({
+      sea: '/game/tiny-swords/Terrain/Tileset/Water Background color.png',
+      terrainTiles: '/game/tiny-swords/Terrain/Tileset/Tilemap_color1.png',
+      waterFoam: '/game/tiny-swords/Terrain/Tileset/Water Foam.png',
+      shadow: '/game/tiny-swords/Terrain/Tileset/Shadow.png',
     });
     expect(tinySwordsAssets).not.toHaveProperty('clouds');
     expect(tinySwordsAssets).not.toHaveProperty('trees');

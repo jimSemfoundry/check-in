@@ -22,16 +22,15 @@ export class FloatingIslandScene extends Phaser.Scene {
 
   preload() {
     this.load.image('sea', tinySwordsAssets.sea);
-    this.load.spritesheet('grass', tinySwordsAssets.islandTiles, {
-      frameWidth: TILE_SIZE,
-      frameHeight: TILE_SIZE,
-    });
-    this.load.image('grass-center', tinySwordsAssets.islandCenter);
-    this.load.spritesheet('rock-tiles', tinySwordsAssets.rockTiles, {
+    this.load.spritesheet('terrain-tiles', tinySwordsAssets.terrainTiles, {
       frameWidth: TILE_SIZE,
       frameHeight: TILE_SIZE,
     });
     this.load.spritesheet('water-foam', tinySwordsAssets.waterFoam, {
+      frameWidth: TILE_SIZE,
+      frameHeight: TILE_SIZE,
+    });
+    this.load.spritesheet('shadow', tinySwordsAssets.shadow, {
       frameWidth: TILE_SIZE,
       frameHeight: TILE_SIZE,
     });
@@ -49,6 +48,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.worldRoot = this.add.container(0, 0);
 
     this.createSea();
+    this.createIslandShadow();
     this.createRockIsland();
   }
 
@@ -57,6 +57,18 @@ export class FloatingIslandScene extends Phaser.Scene {
     sea.setOrigin(0.5);
     sea.setAlpha(0.94);
     this.worldRoot?.add(sea);
+  }
+
+  private createIslandShadow() {
+    const shadow = this.add.image(
+      0,
+      platformHeight / 2 - foamHeight + 18,
+      'shadow',
+      rockIslandScenePlan.frames.shadowFrame,
+    );
+    shadow.setScale(rockIslandScenePlan.platform.widthTiles + 0.6, 0.82);
+    shadow.setAlpha(0.28);
+    this.addToWorld(shadow);
   }
 
   private createRockIsland() {
@@ -72,23 +84,10 @@ export class FloatingIslandScene extends Phaser.Scene {
       for (let x = 0; x < rockIslandScenePlan.platform.widthTiles; x += 1) {
         const px = left + x * TILE_SIZE + TILE_SIZE / 2;
         const py = top + y * TILE_SIZE + TILE_SIZE / 2;
-        if (y === 0 || x === 0 || x === rockIslandScenePlan.platform.widthTiles - 1) {
-          this.addToWorld(this.add.image(px, py, 'grass', this.getGrassFrame(x, y)));
-        } else {
-          this.addToWorld(this.add.image(px, py, 'grass-center'));
-        }
+        const frame = rockIslandScenePlan.frames.grassRows[y]?.[x] ?? 0;
+        this.addToWorld(this.add.image(px, py, 'terrain-tiles', frame));
       }
     }
-  }
-
-  private getGrassFrame(x: number, y: number) {
-    const maxX = rockIslandScenePlan.platform.widthTiles - 1;
-    if (x === 0 && y === 0) return 0;
-    if (x === maxX && y === 0) return 4;
-    if (x === 0) return 20;
-    if (x === maxX) return 23;
-    if (y === 0) return 1 + (x % 3);
-    return 21 + (x % 2);
   }
 
   private createRockBody(left: number, top: number) {
@@ -96,28 +95,19 @@ export class FloatingIslandScene extends Phaser.Scene {
       for (let x = 0; x < rockIslandScenePlan.platform.widthTiles; x += 1) {
         const px = left + x * TILE_SIZE + TILE_SIZE / 2;
         const py = top + y * TILE_SIZE + TILE_SIZE / 2;
-        const frame = this.getRockFrame(x, y);
-        const tile = this.add.image(px, py, 'rock-tiles', frame);
-        tile.setTint(y === 0 ? 0xffffff : 0xd6f4f0);
-        this.addToWorld(tile);
+        const frame = rockIslandScenePlan.frames.rockRows[y]?.[x] ?? 41;
+        this.addToWorld(this.add.image(px, py, 'terrain-tiles', frame));
       }
     }
-  }
-
-  private getRockFrame(x: number, y: number) {
-    const maxX = rockIslandScenePlan.platform.widthTiles - 1;
-    if (x === 0) return y === 0 ? 12 : 20;
-    if (x === maxX) return y === 0 ? 15 : 23;
-    return y === 0 ? 13 + (x % 2) : 21 + (x % 2);
   }
 
   private createBottomFoam(left: number, top: number) {
     for (let x = 0; x < rockIslandScenePlan.platform.widthTiles; x += 1) {
       const px = left + x * TILE_SIZE + TILE_SIZE / 2;
       const py = top + TILE_SIZE / 2;
-      const foam = this.add.image(px, py, 'water-foam', x % 4);
-      foam.setAlpha(0.72);
-      foam.setTint(0xdbfff7);
+      const frame = rockIslandScenePlan.frames.foamFrames[x] ?? rockIslandScenePlan.frames.foamFrames[0];
+      const foam = this.add.image(px, py, 'water-foam', frame);
+      foam.setAlpha(0.8);
       this.addToWorld(foam);
     }
   }

@@ -123,3 +123,11 @@
 - 测试过程：先将资源 manifest 测试和新 `rockIslandScenePlan` 测试改为小岩石岛验收标准，并观察到旧实现缺少 `rockTiles`/`waterFoam` 和布局宽度不匹配的失败，再修改生产代码。
 - 验证：目标测试和 typecheck 已通过；本地 Playwright 打开 `http://localhost:5174/game` 的桌面 1280x720 与移动 390x844 截图均无 console/page error，canvas 全屏且显示单个岩石岛块。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：`/game` 切换到原始 Tiny Swords tileset
+
+- 任务摘要：用户手动上传完整 Tiny Swords 资源包后，要求分析并执行使用 `Tilemap_color1.png`、`Water Foam.png` 和岩石下方水浪的方案。
+- AI 贡献：同步远端资源包；将 `/game` 运行时资源 manifest 从临时裁剪图切换为原始 `Terrain/Tileset/Water Background color.png`、`Tilemap_color1.png`、`Water Foam.png` 和 `Shadow.png`；用 `Tilemap_color1.png` 的草地帧 `[0,1,1,2]`、`[18,19,19,20]` 与岩石帧 `[41,42,42,43]`、`[50,51,51,52]` 拼成单个连续岛块；用 `Water Foam.png` 的 `[96,97,97,98]` 作为岩石下方细水浪，并加入 `Shadow.png` 中央帧作为底部水面阴影。
+- 测试过程：先更新资源 manifest 和 `rockIslandScenePlan` 测试，观察到旧临时资源路径与缺失 frame 映射导致测试失败，再修改生产代码；浏览器验证时发现旧 dev server 将 public 资源 fallback 为 HTML，确认根因是端口上的旧服务状态后，使用明确端口 `5180` 的干净 Vite 服务复验。
+- 验证：目标测试通过；全量 `pnpm --filter web test` 11/11 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 打开 `http://127.0.0.1:5180/game` 的桌面 1280x720 与移动 390x844 截图均无 console error、无请求失败、无 AppShell、无 404；静态资源响应均为 `image/png`。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

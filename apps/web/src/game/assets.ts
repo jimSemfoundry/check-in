@@ -1,13 +1,8 @@
-const tinySwordsBase = '/game/tiny-swords';
+const tinySwordsBase = '/game/tiny-swords/Terrain/Tileset';
 
 export const tinySwordsAssets = {
-  sea: `${tinySwordsBase}/water-background.png`,
-  islandTiles: `${tinySwordsBase}/grass-tiles.png`,
-  islandCenter: `${tinySwordsBase}/grass-center.png`,
-  rockTiles: `${tinySwordsBase}/scene-layout.png`,
-  waterFoam: `${tinySwordsBase}/water-foam.png`,
-} as const;
-
-export const tinySwordsAssetNotes = {
-  source: `${tinySwordsBase}/SOURCE.txt`,
+  sea: `${tinySwordsBase}/Water Background color.png`,
+  terrainTiles: `${tinySwordsBase}/Tilemap_color1.png`,
+  waterFoam: `${tinySwordsBase}/Water Foam.png`,
+  shadow: `${tinySwordsBase}/Shadow.png`,
 } as const;
