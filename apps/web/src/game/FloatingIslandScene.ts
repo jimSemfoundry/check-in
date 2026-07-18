@@ -1,20 +1,23 @@
 import Phaser from 'phaser';
 import { tinySwordsAssets } from './assets';
 import { rockIslandScenePlan } from './rockIslandScenePlan';
+import {
+  createWaterFoamAnimation,
+  createWaterFoamSprites,
+  getWaterFoamBottomTiles,
+  getWaterFoamFrameSize,
+} from './waterFoam';
 
 const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
 const TILE_SIZE = 64;
 const SEA_COLOR = 0x4db6b5;
-const WATER_FOAM_ANIMATION_KEY = 'water-foam-break';
 
 const platformWidth = rockIslandScenePlan.platform.widthTiles * TILE_SIZE;
 const grassHeight = rockIslandScenePlan.platform.grassRows * TILE_SIZE;
 const rockHeight = rockIslandScenePlan.platform.rockRows * TILE_SIZE;
-const foamFrameSize = rockIslandScenePlan.foam.spriteTiles * TILE_SIZE;
-const foamBelowTiles = Math.max(
-  ...rockIslandScenePlan.foam.patches.map((patch) => patch.gridY + rockIslandScenePlan.foam.spriteTiles),
-);
+const foamFrameSize = getWaterFoamFrameSize(rockIslandScenePlan.foam, TILE_SIZE);
+const foamBelowTiles = getWaterFoamBottomTiles(rockIslandScenePlan.foam);
 const foamHeight = foamBelowTiles * TILE_SIZE;
 const platformHeight = grassHeight + rockHeight + foamHeight;
 
@@ -35,32 +38,14 @@ export class FloatingIslandScene extends Phaser.Scene {
       frameWidth: foamFrameSize,
       frameHeight: foamFrameSize,
     });
-    this.load.spritesheet('shadow', tinySwordsAssets.shadow, {
-      frameWidth: TILE_SIZE,
-      frameHeight: TILE_SIZE,
-    });
   }
 
   create() {
     this.scale.on('resize', this.layout, this);
     this.cameras.main.setBackgroundColor(SEA_COLOR);
-    this.createWaterFoamAnimation();
+    createWaterFoamAnimation(this, 'water-foam', rockIslandScenePlan.foam);
     this.buildScene();
     this.layout();
-  }
-
-  private createWaterFoamAnimation() {
-    if (this.anims.exists(WATER_FOAM_ANIMATION_KEY)) return;
-
-    this.anims.create({
-      key: WATER_FOAM_ANIMATION_KEY,
-      frames: this.anims.generateFrameNumbers('water-foam', {
-        start: 0,
-        end: rockIslandScenePlan.foam.animationFrames - 1,
-      }),
-      frameRate: rockIslandScenePlan.foam.frameRate,
-      repeat: -1,
-    });
   }
 
   private buildScene() {
@@ -68,7 +53,6 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.worldRoot = this.add.container(0, 0);
 
     this.createSea();
-    this.createIslandShadow();
     this.createRockIsland();
   }
 
@@ -77,18 +61,6 @@ export class FloatingIslandScene extends Phaser.Scene {
     sea.setOrigin(0.5);
     sea.setAlpha(0.94);
     this.worldRoot?.add(sea);
-  }
-
-  private createIslandShadow() {
-    const shadow = this.add.image(
-      0,
-      platformHeight / 2 - foamHeight + 18,
-      'shadow',
-      rockIslandScenePlan.frames.shadowFrame,
-    );
-    shadow.setScale(rockIslandScenePlan.platform.widthTiles + 0.6, 0.82);
-    shadow.setAlpha(0.28);
-    this.addToWorld(shadow);
   }
 
   private createRockIsland() {
@@ -122,16 +94,15 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private createBottomFoam(left: number, top: number) {
-    for (const patch of rockIslandScenePlan.foam.patches) {
-      const px = left + patch.gridX * rockIslandScenePlan.foam.gridStepTiles * TILE_SIZE;
-      const py = top + patch.gridY * rockIslandScenePlan.foam.gridStepTiles * TILE_SIZE;
-      const foam = this.add.sprite(px, py, 'water-foam', patch.startFrame);
-      foam.setOrigin(0, 0);
-      foam.setAlpha(0.86);
-      foam.play({
-        key: WATER_FOAM_ANIMATION_KEY,
-        startFrame: patch.startFrame,
-      });
+    const foamSprites = createWaterFoamSprites(this, {
+      left,
+      top,
+      tileSize: TILE_SIZE,
+      textureKey: 'water-foam',
+      foam: rockIslandScenePlan.foam,
+    });
+
+    for (const foam of foamSprites) {
       this.addToWorld(foam);
     }
   }

@@ -155,3 +155,11 @@
 - 测试过程：先更新 `rockIslandScenePlan` 测试，观察到旧 flat ground 帧导致测试失败，再修改生产配置。
 - 验证：目标测试通过；全量 `pnpm --filter web test` 11/11 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面和移动截图均无 console error、无请求失败、无 AppShell、无 404；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：改为 3 格 Tilemap_color4 石头并封装波浪
+
+- 任务摘要：用户指出 `Tilemap_color4.png` 中石头是 3 格一组，当前却显示 4 格；要求波浪封装为公共逻辑，当前场景使用 `2*3` 个同步播放波浪，并去掉造成缝隙的阴影。
+- AI 贡献：资源 manifest 切换到 `Tilemap_color4.png`；平台宽度从 4 格改为 3 格，草地帧改为 `[5,6,7]`、`[23,24,25]`，岩石帧改为 `[50,51,52]`；移除 `Shadow.png` 加载和阴影绘制；新增 `waterFoam.ts` 公共 helper，负责生成 2 行 x 3 列 wave patch、创建动画并渲染同步播放的 Water Foam sprite。
+- 测试过程：先更新资源、场景布局和新增 `water-foam` helper 测试，观察到旧 `Tilemap_color1.png`、4 格宽配置和缺失 helper 导致测试失败，再实现生产代码。
+- 验证：目标测试通过；全量 `pnpm --filter web test` 12/12 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面和移动截图均无 console error、无请求失败、无 AppShell、无 404；本地帧差分确认波浪动画播放，截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
