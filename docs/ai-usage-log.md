@@ -163,3 +163,11 @@
 - 测试过程：先更新资源、场景布局和新增 `water-foam` helper 测试，观察到旧 `Tilemap_color1.png`、4 格宽配置和缺失 helper 导致测试失败，再实现生产代码。
 - 验证：目标测试通过；全量 `pnpm --filter web test` 12/12 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面和移动截图均无 console error、无请求失败、无 AppShell、无 404；本地帧差分确认波浪动画播放，截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：上移 Water Foam 消除底部缝隙
+
+- 问题：用户截图反馈岩石底部与 Water Foam 之间仍有横向缝隙，要求海浪整体上移一格。
+- 根因：`2*3` Water Foam patch 的 `originGridY` 为 `-2`，下排 192px foam sprite 露出过多主体，和岩石底边之间形成明显空带。
+- AI 贡献：将公共波浪配置的 `originGridY` 从 `-2` 改为 `-3`，保持 `2*3` 同步播放结构不变，但让 foam sprite 多被岛体遮挡一格，只露出贴边浪线。
+- 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 12/12 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面和移动截图均无 console error、无请求失败、无 AppShell、无 404；本地帧差分确认波浪动画继续播放，截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

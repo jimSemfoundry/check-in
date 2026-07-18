@@ -8,16 +8,16 @@ describe('water foam layout', () => {
         columns: 3,
         rows: 2,
         originGridX: -1,
-        originGridY: -2,
+        originGridY: -3,
         startFrame: 0,
       }),
     ).toEqual([
+      { gridX: -1, gridY: -3, startFrame: 0 },
+      { gridX: 0, gridY: -3, startFrame: 0 },
+      { gridX: 1, gridY: -3, startFrame: 0 },
       { gridX: -1, gridY: -2, startFrame: 0 },
       { gridX: 0, gridY: -2, startFrame: 0 },
       { gridX: 1, gridY: -2, startFrame: 0 },
-      { gridX: -1, gridY: -1, startFrame: 0 },
-      { gridX: 0, gridY: -1, startFrame: 0 },
-      { gridX: 1, gridY: -1, startFrame: 0 },
     ]);
   });
 });

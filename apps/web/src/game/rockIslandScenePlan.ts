@@ -14,7 +14,7 @@ export const rockIslandScenePlan = {
       columns: 3,
       rows: 2,
       originGridX: -1,
-      originGridY: -2,
+      originGridY: -3,
     },
     startFrame: 0,
   },
