@@ -7,10 +7,19 @@ describe('tiny swords asset manifest', () => {
       sea: '/game/tiny-swords/Terrain/Tileset/Water Background color.png',
       terrainTiles: '/game/tiny-swords/Terrain/Tileset/Tilemap_color1.png',
       waterFoam: '/game/tiny-swords/Terrain/Tileset/Water Foam.png',
+      trees: {
+        tree1: '/game/tiny-swords/Terrain/Resources/Wood/Trees/Tree1.png',
+        tree2: '/game/tiny-swords/Terrain/Resources/Wood/Trees/Tree2.png',
+        tree3: '/game/tiny-swords/Terrain/Resources/Wood/Trees/Tree3.png',
+        tree4: '/game/tiny-swords/Terrain/Resources/Wood/Trees/Tree4.png',
+      },
+      sheep: {
+        idle: '/game/tiny-swords/Terrain/Resources/Meat/Sheep/Sheep_Idle.png',
+        move: '/game/tiny-swords/Terrain/Resources/Meat/Sheep/Sheep_Move.png',
+        grass: '/game/tiny-swords/Terrain/Resources/Meat/Sheep/Sheep_Grass.png',
+      },
     });
     expect(tinySwordsAssets).not.toHaveProperty('clouds');
-    expect(tinySwordsAssets).not.toHaveProperty('trees');
-    expect(tinySwordsAssets).not.toHaveProperty('sheep');
     expect(tinySwordsAssets).not.toHaveProperty('rocks');
   });
 });

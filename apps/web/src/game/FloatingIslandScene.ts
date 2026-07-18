@@ -8,6 +8,13 @@ import {
   getWaterFoamFrameSize,
 } from './waterFoam';
 import { tinySwordsTerrainTileset } from './terrainTileset';
+import {
+  sheepAnimationConfig,
+  sheepMotionConfig,
+  treeAnimationConfig,
+  treePlacements,
+} from './natureAssets';
+import { createSheepRouteTarget, getSheepMoveDurationMs } from './sheepMotion';
 
 const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
@@ -24,6 +31,7 @@ const platformHeight = grassHeight + rockHeight + foamHeight;
 
 export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
+  private sheep?: Phaser.GameObjects.Sprite;
 
   constructor() {
     super('floating-island');
@@ -39,12 +47,16 @@ export class FloatingIslandScene extends Phaser.Scene {
       frameWidth: foamFrameSize,
       frameHeight: foamFrameSize,
     });
+    this.loadTreeSpritesheets();
+    this.loadSheepSpritesheets();
   }
 
   create() {
     this.scale.on('resize', this.layout, this);
     this.cameras.main.setBackgroundColor(SEA_COLOR);
     createWaterFoamAnimation(this, 'water-foam', rockIslandScenePlan.foam);
+    this.createNatureAnimations();
+    this.createSheepAnimations();
     this.buildScene();
     this.layout();
   }
@@ -70,6 +82,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.createBottomFoam(left, top + grassHeight + rockHeight);
     this.createRockBody(left, top + grassHeight);
     this.createGrassCap(left, top);
+    this.createNature();
   }
 
   private createGrassCap(left: number, top: number) {
@@ -113,6 +126,171 @@ export class FloatingIslandScene extends Phaser.Scene {
     for (const foam of foamSprites) {
       this.addToWorld(foam);
     }
+  }
+
+  private loadTreeSpritesheets() {
+    this.load.spritesheet('tree-1', tinySwordsAssets.trees.tree1, {
+      frameWidth: treeAnimationConfig.frameWidth,
+      frameHeight: treeAnimationConfig.trees.tree1.frameHeight,
+    });
+    this.load.spritesheet('tree-2', tinySwordsAssets.trees.tree2, {
+      frameWidth: treeAnimationConfig.frameWidth,
+      frameHeight: treeAnimationConfig.trees.tree2.frameHeight,
+    });
+    this.load.spritesheet('tree-3', tinySwordsAssets.trees.tree3, {
+      frameWidth: treeAnimationConfig.frameWidth,
+      frameHeight: treeAnimationConfig.trees.tree3.frameHeight,
+    });
+    this.load.spritesheet('tree-4', tinySwordsAssets.trees.tree4, {
+      frameWidth: treeAnimationConfig.frameWidth,
+      frameHeight: treeAnimationConfig.trees.tree4.frameHeight,
+    });
+  }
+
+  private loadSheepSpritesheets() {
+    this.load.spritesheet('sheep-idle-texture', tinySwordsAssets.sheep.idle, {
+      frameWidth: sheepAnimationConfig.frameSize,
+      frameHeight: sheepAnimationConfig.frameSize,
+    });
+    this.load.spritesheet('sheep-move-texture', tinySwordsAssets.sheep.move, {
+      frameWidth: sheepAnimationConfig.frameSize,
+      frameHeight: sheepAnimationConfig.frameSize,
+    });
+    this.load.spritesheet('sheep-grass-texture', tinySwordsAssets.sheep.grass, {
+      frameWidth: sheepAnimationConfig.frameSize,
+      frameHeight: sheepAnimationConfig.frameSize,
+    });
+  }
+
+  private createNatureAnimations() {
+    for (const config of Object.values(treeAnimationConfig.trees)) {
+      if (this.anims.exists(config.animationKey)) continue;
+
+      this.anims.create({
+        key: config.animationKey,
+        frames: this.anims.generateFrameNumbers(config.textureKey, {
+          start: 0,
+          end: config.frames - 1,
+        }),
+        frameRate: config.frameRate,
+        repeat: -1,
+      });
+    }
+  }
+
+  private createSheepAnimations() {
+    this.createSheepAnimation(
+      sheepAnimationConfig.animations.idle.key,
+      'sheep-idle-texture',
+      sheepAnimationConfig.animations.idle.frames,
+      sheepAnimationConfig.animations.idle.frameRate,
+      -1,
+    );
+    this.createSheepAnimation(
+      sheepAnimationConfig.animations.move.key,
+      'sheep-move-texture',
+      sheepAnimationConfig.animations.move.frames,
+      sheepAnimationConfig.animations.move.frameRate,
+      -1,
+    );
+    this.createSheepAnimation(
+      sheepAnimationConfig.animations.grass.key,
+      'sheep-grass-texture',
+      sheepAnimationConfig.animations.grass.frames,
+      sheepAnimationConfig.animations.grass.frameRate,
+      0,
+    );
+  }
+
+  private createSheepAnimation(
+    animationKey: string,
+    textureKey: string,
+    frames: number,
+    frameRate: number,
+    repeat: number,
+  ) {
+    if (this.anims.exists(animationKey)) return;
+
+    this.anims.create({
+      key: animationKey,
+      frames: this.anims.generateFrameNumbers(textureKey, {
+        start: 0,
+        end: frames - 1,
+      }),
+      frameRate,
+      repeat,
+    });
+  }
+
+  private createNature() {
+    const natureObjects: Phaser.GameObjects.Sprite[] = [];
+
+    for (const placement of treePlacements) {
+      const tree = this.add.sprite(placement.x, placement.y, placement.textureKey, 0);
+      tree.setOrigin(0.5, 0.82);
+      tree.setScale(placement.scale);
+      tree.play(placement.animationKey);
+      natureObjects.push(tree);
+    }
+
+    const sheep = this.add.sprite(
+      sheepMotionConfig.start.x,
+      sheepMotionConfig.start.y,
+      'sheep-idle-texture',
+      0,
+    );
+    sheep.setOrigin(0.5, 0.74);
+    sheep.setScale(sheepMotionConfig.scale);
+    sheep.play(sheepAnimationConfig.animations.idle.key);
+    this.sheep = sheep;
+    natureObjects.push(sheep);
+
+    for (const gameObject of natureObjects.sort((a, b) => a.y - b.y)) {
+      this.addToWorld(gameObject);
+    }
+
+    this.queueSheepMove();
+  }
+
+  private queueSheepMove() {
+    if (!this.sheep) return;
+
+    this.time.delayedCall(sheepMotionConfig.idleMs, () => {
+      this.moveSheepToNextTarget();
+    });
+  }
+
+  private moveSheepToNextTarget() {
+    if (!this.sheep) return;
+
+    const target = createSheepRouteTarget(Math.random, sheepMotionConfig.bounds);
+    const duration = getSheepMoveDurationMs(this.sheep, target, sheepMotionConfig.movePixelsPerSecond);
+
+    this.sheep.setFlipX(target.x < this.sheep.x);
+    this.sheep.play(sheepAnimationConfig.animations.move.key, true);
+
+    this.tweens.add({
+      targets: this.sheep,
+      x: target.x,
+      y: target.y,
+      duration,
+      ease: 'Sine.easeInOut',
+      onComplete: () => {
+        this.playSheepGrass();
+      },
+    });
+  }
+
+  private playSheepGrass() {
+    if (!this.sheep) return;
+
+    this.sheep.play(sheepAnimationConfig.animations.grass.key, true);
+    this.time.delayedCall(sheepMotionConfig.grassMs, () => {
+      if (!this.sheep) return;
+
+      this.sheep.play(sheepAnimationConfig.animations.idle.key, true);
+      this.queueSheepMove();
+    });
   }
 
   private addToWorld<T extends Phaser.GameObjects.GameObject>(gameObject: T) {
