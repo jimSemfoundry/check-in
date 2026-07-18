@@ -1,6 +1,6 @@
 Tiny Swords scene milestone assets.
 
-The repository did not contain the downloaded Tiny Swords Free Pack zip, so the terrain, cloud, tree, rock, and water PNGs were extracted from the public Sprite Fusion Tiny Swords editor page.
+The repository did not contain the downloaded Tiny Swords Free Pack zip, so the grass, rock/cliff, water background, and foam PNGs were extracted or cropped from the public Sprite Fusion Tiny Swords editor page.
 
 Original artist: Pixel Frog.
 Sprite Fusion source page: https://www.spritefusion.com/editor/tiny-swords
@@ -11,8 +11,6 @@ Kept files:
 - grass-tiles.png
 - grass-center.png
 - scene-layout.png
-- clouds-decor.png
-- tree-pine.png
-- rocks.png
+- water-foam.png
 
-sheep-idle.png is a temporary local pixel-art placeholder because the public Sprite Fusion tileset does not include the newer Tiny Swords sheep resource. Replace it with the original `Terrain/Resources/Meat/Sheep/*.png` asset when the Free Pack zip is available.
+water-foam.png is cropped from the bottom water/foam row of scene-layout.png so the compact rock island can show foam directly under the rock.

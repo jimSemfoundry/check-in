@@ -115,3 +115,11 @@
 - 处理：将已验证的 `floating-island-map-design` 分支 fast-forward 合入 `main`，并推送 `origin/main` 到 `bef88c9`，触发 Cloudflare Pages 重新部署。
 - 验证：轮询生产 HTML 直到 bundle 切换为 `/assets/index-CgTmMFQ8.js` 且包含 `/game`/Tiny Swords 代码；Playwright 实际访问 `https://jimapp.ccwu.cc/game` 的桌面 1280x720 和移动 390x844，均检测到全屏 canvas、无 AppShell、无“页面走丢了”、无 console/page error，截图采样分别有 49 和 55 种颜色，确认生产非空渲染。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：`/game` 收敛为单个岩石岛块
+
+- 任务摘要：用户提供参考图，要求 `/game` 只显示一张小草地岩石块，并在岩石下方加入 Water Foam 风格波浪。
+- AI 贡献：将 Phaser 场景从 12x12 大方岛、树、羊、云和散落石头收敛为 4 格宽的单个草地岩石平台；保留海面背景；新增 `rockIslandScenePlan` 作为可测试布局说明；从 `scene-layout.png` 底部裁出 `water-foam.png`，放在岩石层下方；精简运行时资源 manifest，不再引用云、树、羊、散落石头资源。
+- 测试过程：先将资源 manifest 测试和新 `rockIslandScenePlan` 测试改为小岩石岛验收标准，并观察到旧实现缺少 `rockTiles`/`waterFoam` 和布局宽度不匹配的失败，再修改生产代码。
+- 验证：目标测试和 typecheck 已通过；本地 Playwright 打开 `http://localhost:5174/game` 的桌面 1280x720 与移动 390x844 截图均无 console/page error，canvas 全屏且显示单个岩石岛块。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
