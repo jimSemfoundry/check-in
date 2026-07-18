@@ -23,8 +23,8 @@ describe('compact rock island scene plan', () => {
     });
     expect(rockIslandScenePlan.frames).toEqual({
       grassRows: [
-        [0, 1, 1, 2],
-        [18, 19, 19, 20],
+        [5, 6, 6, 7],
+        [23, 24, 24, 25],
       ],
       rockRows: [
         [50, 51, 51, 52],

@@ -147,3 +147,11 @@
 - AI 贡献：将岩石层从 2 层减为 1 层；foam patch 上移到 `gridY: -2`，只露出岩石下方波浪边；改用 Phaser sprite animation 播放 16 帧 Water Foam，并为 3 个 patch 设置不同起始帧。
 - 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 11/11 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地帧差分显示桌面 8667 像素、移动 3995 像素变化，确认波浪动画在播放；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：按 guide 箭头切换 elevated ground 草地帧
+
+- 任务摘要：用户确认 Tilemap Guide 箭头指向右侧 elevated ground grass 和 cliff bottom，需要当前 `/game` 使用这组高地 tile。
+- AI 贡献：将草地帧从 flat ground 的 `[0,1,1,2]`、`[18,19,19,20]` 切换为 elevated ground grass 的 `[5,6,6,7]`、`[23,24,24,25]`；保留单层 cliff bottom `[50,51,51,52]`，避免恢复中间多余岩石层。
+- 测试过程：先更新 `rockIslandScenePlan` 测试，观察到旧 flat ground 帧导致测试失败，再修改生产配置。
+- 验证：目标测试通过；全量 `pnpm --filter web test` 11/11 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面和移动截图均无 console error、无请求失败、无 AppShell、无 404；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
