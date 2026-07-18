@@ -7,6 +7,7 @@ describe('compact rock island scene plan', () => {
       widthTiles: 3,
       grassRows: 2,
       rockRows: 1,
+      tileOverlapPixels: 1,
     });
     expect(rockIslandScenePlan.decorations).toEqual([]);
     expect(rockIslandScenePlan.foam).toMatchObject({

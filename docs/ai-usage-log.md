@@ -171,3 +171,11 @@
 - AI 贡献：将公共波浪配置的 `originGridY` 从 `-2` 改为 `-3`，保持 `2*3` 同步播放结构不变，但让 foam sprite 多被岛体遮挡一格，只露出贴边浪线。
 - 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 12/12 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面和移动截图均无 console error、无请求失败、无 AppShell、无 404；本地帧差分确认波浪动画继续播放，截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：消除草地与岩石采样缝
+
+- 问题：用户再次指出岛体上仍有一条缝，要求判断是下方岩石图片定位/定高问题，还是上方草地问题。
+- 根因：本地切图检查确认草地底边和岩石顶边均为不透明像素，64px 网格中心点也对齐；缝隙更符合 Phaser 在非整数整体缩放下将相邻 terrain tile 作为独立 sprite 采样时露出背景色的表现。
+- AI 贡献：在 `rockIslandScenePlan.platform` 增加 `tileOverlapPixels: 1`；渲染 terrain tile 时保持 64px 网格定位但显示尺寸扩大 1px；绘制顺序改为先 `Water Foam`、再岩石、最后草地，让草地边缘压住岩石顶边采样缝。
+- 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 12/12 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均无 console error、无请求失败、全屏 canvas 正常，帧差确认底部波浪仍在播放；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

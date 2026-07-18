@@ -67,8 +67,8 @@ export class FloatingIslandScene extends Phaser.Scene {
     const left = -platformWidth / 2;
     const top = -platformHeight / 2;
     this.createBottomFoam(left, top + grassHeight + rockHeight);
-    this.createGrassCap(left, top);
     this.createRockBody(left, top + grassHeight);
+    this.createGrassCap(left, top);
   }
 
   private createGrassCap(left: number, top: number) {
@@ -77,7 +77,7 @@ export class FloatingIslandScene extends Phaser.Scene {
         const px = left + x * TILE_SIZE + TILE_SIZE / 2;
         const py = top + y * TILE_SIZE + TILE_SIZE / 2;
         const frame = rockIslandScenePlan.frames.grassRows[y]?.[x] ?? 0;
-        this.addToWorld(this.add.image(px, py, 'terrain-tiles', frame));
+        this.addToWorld(this.createTerrainTile(px, py, frame));
       }
     }
   }
@@ -88,9 +88,16 @@ export class FloatingIslandScene extends Phaser.Scene {
         const px = left + x * TILE_SIZE + TILE_SIZE / 2;
         const py = top + y * TILE_SIZE + TILE_SIZE / 2;
         const frame = rockIslandScenePlan.frames.rockRows[y]?.[x] ?? 41;
-        this.addToWorld(this.add.image(px, py, 'terrain-tiles', frame));
+        this.addToWorld(this.createTerrainTile(px, py, frame));
       }
     }
+  }
+
+  private createTerrainTile(x: number, y: number, frame: number) {
+    const tile = this.add.image(x, y, 'terrain-tiles', frame);
+    const overlap = rockIslandScenePlan.platform.tileOverlapPixels;
+    tile.setDisplaySize(TILE_SIZE + overlap, TILE_SIZE + overlap);
+    return tile;
   }
 
   private createBottomFoam(left: number, top: number) {

@@ -3,6 +3,7 @@ export const rockIslandScenePlan = {
     widthTiles: 3,
     grassRows: 2,
     rockRows: 1,
+    tileOverlapPixels: 1,
   },
   foam: {
     placement: 'below-rock',
