@@ -10,7 +10,11 @@ const SEA_COLOR = 0x4db6b5;
 const platformWidth = rockIslandScenePlan.platform.widthTiles * TILE_SIZE;
 const grassHeight = rockIslandScenePlan.platform.grassRows * TILE_SIZE;
 const rockHeight = rockIslandScenePlan.platform.rockRows * TILE_SIZE;
-const foamHeight = rockIslandScenePlan.foam.rows * TILE_SIZE;
+const foamFrameSize = rockIslandScenePlan.foam.spriteTiles * TILE_SIZE;
+const foamBelowTiles = Math.max(
+  ...rockIslandScenePlan.foam.patches.map((patch) => patch.gridY + rockIslandScenePlan.foam.spriteTiles),
+);
+const foamHeight = foamBelowTiles * TILE_SIZE;
 const platformHeight = grassHeight + rockHeight + foamHeight;
 
 export class FloatingIslandScene extends Phaser.Scene {
@@ -27,8 +31,8 @@ export class FloatingIslandScene extends Phaser.Scene {
       frameHeight: TILE_SIZE,
     });
     this.load.spritesheet('water-foam', tinySwordsAssets.waterFoam, {
-      frameWidth: TILE_SIZE,
-      frameHeight: TILE_SIZE,
+      frameWidth: foamFrameSize,
+      frameHeight: foamFrameSize,
     });
     this.load.spritesheet('shadow', tinySwordsAssets.shadow, {
       frameWidth: TILE_SIZE,
@@ -74,9 +78,9 @@ export class FloatingIslandScene extends Phaser.Scene {
   private createRockIsland() {
     const left = -platformWidth / 2;
     const top = -platformHeight / 2;
+    this.createBottomFoam(left, top + grassHeight + rockHeight);
     this.createGrassCap(left, top);
     this.createRockBody(left, top + grassHeight);
-    this.createBottomFoam(left, top + grassHeight + rockHeight);
   }
 
   private createGrassCap(left: number, top: number) {
@@ -102,12 +106,12 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private createBottomFoam(left: number, top: number) {
-    for (let x = 0; x < rockIslandScenePlan.platform.widthTiles; x += 1) {
-      const px = left + x * TILE_SIZE + TILE_SIZE / 2;
-      const py = top + TILE_SIZE / 2;
-      const frame = rockIslandScenePlan.frames.foamFrames[x] ?? rockIslandScenePlan.frames.foamFrames[0];
-      const foam = this.add.image(px, py, 'water-foam', frame);
-      foam.setAlpha(0.8);
+    for (const patch of rockIslandScenePlan.foam.patches) {
+      const px = left + patch.gridX * rockIslandScenePlan.foam.gridStepTiles * TILE_SIZE;
+      const py = top + patch.gridY * rockIslandScenePlan.foam.gridStepTiles * TILE_SIZE;
+      const foam = this.add.image(px, py, 'water-foam', patch.frame);
+      foam.setOrigin(0, 0);
+      foam.setAlpha(0.86);
       this.addToWorld(foam);
     }
   }

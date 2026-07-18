@@ -131,3 +131,11 @@
 - 测试过程：先更新资源 manifest 和 `rockIslandScenePlan` 测试，观察到旧临时资源路径与缺失 frame 映射导致测试失败，再修改生产代码；浏览器验证时发现旧 dev server 将 public 资源 fallback 为 HTML，确认根因是端口上的旧服务状态后，使用明确端口 `5180` 的干净 Vite 服务复验。
 - 验证：目标测试通过；全量 `pnpm --filter web test` 11/11 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 打开 `http://127.0.0.1:5180/game` 的桌面 1280x720 与移动 390x844 截图均无 console error、无请求失败、无 AppShell、无 404；静态资源响应均为 `image/png`。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：按 Tiny Swords guide 实现 3x3 Water Foam
+
+- 任务摘要：用户指定 Tiny Swords Tilemap Guide 中的 Water Foam 示例图，要求在 `/game` 中实现同款泡沫铺法。
+- AI 贡献：将 `Water Foam.png` 从 `64x64` 小 tile 切法改为 `192x192` 动画帧切法；在 `rockIslandScenePlan` 中用 `spriteTiles: 3`、`gridStepTiles: 1` 和 3 个 patch 描述 3x3 foam sprite 如何按 64px 网格重叠铺在岩石下沿；Phaser 场景改为先绘制泡沫、后绘制岛体，让泡沫接触岩石但被岛体正确遮挡。
+- 测试过程：先修改 `rockIslandScenePlan` 测试，观察到旧 `rows: 1` 单格泡沫设计不满足 3x3 patch 结构的失败，再实现生产代码。
+- 验证：目标测试通过；全量 `pnpm --filter web test` 11/11 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 打开 `http://127.0.0.1:5180/game` 的桌面 1280x720 与移动 390x844，均无 console error、无请求失败、无 AppShell、无 404；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
