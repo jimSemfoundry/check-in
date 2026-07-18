@@ -6,6 +6,7 @@ const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
 const TILE_SIZE = 64;
 const SEA_COLOR = 0x4db6b5;
+const WATER_FOAM_ANIMATION_KEY = 'water-foam-break';
 
 const platformWidth = rockIslandScenePlan.platform.widthTiles * TILE_SIZE;
 const grassHeight = rockIslandScenePlan.platform.grassRows * TILE_SIZE;
@@ -43,8 +44,23 @@ export class FloatingIslandScene extends Phaser.Scene {
   create() {
     this.scale.on('resize', this.layout, this);
     this.cameras.main.setBackgroundColor(SEA_COLOR);
+    this.createWaterFoamAnimation();
     this.buildScene();
     this.layout();
+  }
+
+  private createWaterFoamAnimation() {
+    if (this.anims.exists(WATER_FOAM_ANIMATION_KEY)) return;
+
+    this.anims.create({
+      key: WATER_FOAM_ANIMATION_KEY,
+      frames: this.anims.generateFrameNumbers('water-foam', {
+        start: 0,
+        end: rockIslandScenePlan.foam.animationFrames - 1,
+      }),
+      frameRate: rockIslandScenePlan.foam.frameRate,
+      repeat: -1,
+    });
   }
 
   private buildScene() {
@@ -109,9 +125,13 @@ export class FloatingIslandScene extends Phaser.Scene {
     for (const patch of rockIslandScenePlan.foam.patches) {
       const px = left + patch.gridX * rockIslandScenePlan.foam.gridStepTiles * TILE_SIZE;
       const py = top + patch.gridY * rockIslandScenePlan.foam.gridStepTiles * TILE_SIZE;
-      const foam = this.add.image(px, py, 'water-foam', patch.frame);
+      const foam = this.add.sprite(px, py, 'water-foam', patch.startFrame);
       foam.setOrigin(0, 0);
       foam.setAlpha(0.86);
+      foam.play({
+        key: WATER_FOAM_ANIMATION_KEY,
+        startFrame: patch.startFrame,
+      });
       this.addToWorld(foam);
     }
   }

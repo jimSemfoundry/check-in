@@ -6,17 +6,19 @@ describe('compact rock island scene plan', () => {
     expect(rockIslandScenePlan.platform).toMatchObject({
       widthTiles: 4,
       grassRows: 2,
-      rockRows: 2,
+      rockRows: 1,
     });
     expect(rockIslandScenePlan.decorations).toEqual([]);
     expect(rockIslandScenePlan.foam).toMatchObject({
       placement: 'below-rock',
       spriteTiles: 3,
       gridStepTiles: 1,
+      animationFrames: 16,
+      frameRate: 8,
       patches: [
-        { gridX: -1, gridY: -1, frame: 0 },
-        { gridX: 0, gridY: -1, frame: 4 },
-        { gridX: 1, gridY: -1, frame: 8 },
+        { gridX: -1, gridY: -2, startFrame: 0 },
+        { gridX: 0, gridY: -2, startFrame: 5 },
+        { gridX: 1, gridY: -2, startFrame: 10 },
       ],
     });
     expect(rockIslandScenePlan.frames).toEqual({
@@ -25,7 +27,6 @@ describe('compact rock island scene plan', () => {
         [18, 19, 19, 20],
       ],
       rockRows: [
-        [41, 42, 42, 43],
         [50, 51, 51, 52],
       ],
       shadowFrame: 4,

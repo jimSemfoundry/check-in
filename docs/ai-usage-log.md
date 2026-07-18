@@ -139,3 +139,11 @@
 - 测试过程：先修改 `rockIslandScenePlan` 测试，观察到旧 `rows: 1` 单格泡沫设计不满足 3x3 patch 结构的失败，再实现生产代码。
 - 验证：目标测试通过；全量 `pnpm --filter web test` 11/11 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 打开 `http://127.0.0.1:5180/game` 的桌面 1280x720 与移动 390x844，均无 console error、无请求失败、无 AppShell、无 404；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：修正岩石层和动态水浪
+
+- 问题：用户截图反馈 `/game` 岛体中间多出一层岩石，底部 Water Foam 仍是静态大块而不是动态波浪。
+- 根因：`rockIslandScenePlan` 保留了两层 cliff rock；`Water Foam.png` 虽按 `192x192` 加载，但使用静态 image，并且 patch 位置太低，露出了大面积泡沫主体。
+- AI 贡献：将岩石层从 2 层减为 1 层；foam patch 上移到 `gridY: -2`，只露出岩石下方波浪边；改用 Phaser sprite animation 播放 16 帧 Water Foam，并为 3 个 patch 设置不同起始帧。
+- 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 11/11 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地帧差分显示桌面 8667 像素、移动 3995 像素变化，确认波浪动画在播放；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
