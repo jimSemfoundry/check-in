@@ -7,10 +7,11 @@ import {
   getWaterFoamBottomTiles,
   getWaterFoamFrameSize,
 } from './waterFoam';
+import { tinySwordsTerrainTileset } from './terrainTileset';
 
 const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
-const TILE_SIZE = 64;
+const TILE_SIZE = tinySwordsTerrainTileset.tileSize;
 const SEA_COLOR = 0x4db6b5;
 
 const platformWidth = rockIslandScenePlan.platform.widthTiles * TILE_SIZE;

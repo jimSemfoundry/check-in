@@ -1,10 +1,7 @@
+import { tinySwordsTerrainTileset } from './terrainTileset';
+
 export const rockIslandScenePlan = {
-  platform: {
-    widthTiles: 3,
-    grassRows: 2,
-    rockRows: 1,
-    tileOverlapPixels: 1,
-  },
+  platform: tinySwordsTerrainTileset.platform,
   foam: {
     placement: 'below-rock',
     spriteTiles: 3,
@@ -19,14 +16,6 @@ export const rockIslandScenePlan = {
     },
     startFrame: 0,
   },
-  frames: {
-    grassRows: [
-      [5, 6, 7],
-      [23, 24, 25],
-    ],
-    rockRows: [
-      [50, 51, 52],
-    ],
-  },
+  frames: tinySwordsTerrainTileset.frames,
   decorations: [],
 } as const;

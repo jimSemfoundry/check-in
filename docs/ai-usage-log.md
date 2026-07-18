@@ -179,3 +179,11 @@
 - AI 贡献：在 `rockIslandScenePlan.platform` 增加 `tileOverlapPixels: 1`；渲染 terrain tile 时保持 64px 网格定位但显示尺寸扩大 1px；绘制顺序改为先 `Water Foam`、再岩石、最后草地，让草地边缘压住岩石顶边采样缝。
 - 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 12/12 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均无 console error、无请求失败、全屏 canvas 正常，帧差确认底部波浪仍在播放；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：封装 Tilemap_color1 地形配置
+
+- 任务摘要：用户要求当前 `/game` 从 `Tilemap_color4.png` 换回 `Tilemap_color1.png`，并将该 tileset 选择封装起来。
+- AI 贡献：新增 `terrainTileset.ts`，集中封装 `Tilemap_color1.png` 路径、64px tile 尺寸、3 格平台尺寸、1px overlap 和草地/岩石帧映射；资源 manifest 和浮岛布局改为从该配置读取，避免 tileset 细节散落在场景代码中。
+- 测试过程：先新增 `terrain-tileset` 测试并更新资源 manifest 测试，观察到旧代码缺少封装模块且仍指向 `Tilemap_color4.png` 的失败，再实现生产代码。
+- 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 13/13 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均只请求 `Tilemap_color1.png`、`Water Foam.png` 和海面背景，未请求 `Tilemap_color4.png` 或 `Shadow.png`，底部波浪帧差确认动画仍播放；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
