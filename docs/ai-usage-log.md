@@ -107,3 +107,11 @@
 - 验证：`pnpm --filter web test` 10/10 通过；`pnpm --filter web lint` 通过；`pnpm --filter web typecheck` 通过；`pnpm --filter web build` 通过。Playwright 打开 `http://localhost:5174/game` 的桌面 1280x720 和移动 390x844 截图均无 console/page error，canvas 全屏、无 AppShell，截图采样分别有 56 和 63 种颜色，确认非空渲染。
 - 验证限制：build 输出 Phaser 游戏 chunk 超过 500 kB 的 Vite 警告；这是当前 `/game` 懒加载 Phaser 后的体积提示，未阻断构建。未使用真实 Tiny Swords sheep PNG，需在拿到 Free Pack zip 后替换。
 - 隐私检查：没有记录下载会话、访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：生产 `/game` 访问修复
+
+- 问题：用户反馈 `https://jimapp.ccwu.cc/game` 访问失败，截图显示应用内 404“页面走丢了”。
+- 根因：HTTP 层返回 200，但生产 HTML 仍引用旧 bundle `/assets/index-BuKAXvGY.js`；旧 bundle 中没有 `/game` 路由。浮岛实现当时只在 `floating-island-map-design` 分支和 `origin/floating-island-map-design`，Cloudflare 自定义域名仍部署 `origin/main` 的旧提交。
+- 处理：将已验证的 `floating-island-map-design` 分支 fast-forward 合入 `main`，并推送 `origin/main` 到 `bef88c9`，触发 Cloudflare Pages 重新部署。
+- 验证：轮询生产 HTML 直到 bundle 切换为 `/assets/index-CgTmMFQ8.js` 且包含 `/game`/Tiny Swords 代码；Playwright 实际访问 `https://jimapp.ccwu.cc/game` 的桌面 1280x720 和移动 390x844，均检测到全屏 canvas、无 AppShell、无“页面走丢了”、无 console/page error，截图采样分别有 49 和 55 种颜色，确认生产非空渲染。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
