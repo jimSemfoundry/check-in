@@ -97,3 +97,13 @@
 - 产出：`docs/superpowers/specs/2026-07-18-floating-island-map-design.md`。
 - 验证：本轮只写方案文档，没有实现或运行前端代码；文档列出后续执行方需要运行的 `pnpm --filter web typecheck` 和 `pnpm --filter web build`。
 - 隐私检查：未记录下载链接签名、访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-18：Tiny Swords 浮岛地图第一阶段实现
+
+- 任务摘要：按 `docs/superpowers/specs/2026-07-18-floating-island-map-design.md` 在 `apps/web` 实现 `/game` 静态浮岛画面。
+- AI 贡献：安装 Phaser；新增 `/game` 顶层路由、React 全屏宿主页、Phaser 创建封装、静态 `FloatingIslandScene` 和 Tiny Swords 资源 manifest；用 12x12 草地方岛、海面、边缘浪花、底部高度阴影、云、树、石头和 3 只羊搭出首个视觉里程碑；让 `SessionProvider` 在独立游戏路由跳过无关会话请求。
+- 素材来源偏差：本地仓库和 `/home/lucas` 未找到已下载的 Tiny Swords Free Pack zip；terrain、cloud、tree、rock、water 资源改从公开 Sprite Fusion Tiny Swords editor 页面提取，并在 `apps/web/public/game/tiny-swords/SOURCE.txt` 记录来源。该公开 tileset 不含新版 sheep 资源，因此 `sheep-idle.png` 是临时本地像素占位图，待用户提供 Free Pack zip 后替换为原始 `Terrain/Resources/Meat/Sheep/*.png`。
+- 测试过程：按 TDD 添加 `/game` 路由测试、资源清单测试和 `/game` 跳过 session fetch 的回归测试；先观察到 `/game` 404、资源模块缺失、以及 `SessionProvider` 会请求 `/api/v1/session` 的失败，再实现对应功能。
+- 验证：`pnpm --filter web test` 10/10 通过；`pnpm --filter web lint` 通过；`pnpm --filter web typecheck` 通过；`pnpm --filter web build` 通过。Playwright 打开 `http://localhost:5174/game` 的桌面 1280x720 和移动 390x844 截图均无 console/page error，canvas 全屏、无 AppShell，截图采样分别有 56 和 63 种颜色，确认非空渲染。
+- 验证限制：build 输出 Phaser 游戏 chunk 超过 500 kB 的 Vite 警告；这是当前 `/game` 懒加载 Phaser 后的体积提示，未阻断构建。未使用真实 Tiny Swords sheep PNG，需在拿到 Free Pack zip 后替换。
+- 隐私检查：没有记录下载会话、访问密钥、Token、数据库连接串或其他秘密信息。

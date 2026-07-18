@@ -12,12 +12,18 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const client = useQueryClient();
-  const query = useQuery({ queryKey: ['session'], queryFn: getSession, retry: false });
+  const isStandaloneRoute = window.location.pathname === '/game';
+  const query = useQuery({
+    queryKey: ['session'],
+    queryFn: getSession,
+    retry: false,
+    enabled: !isStandaloneRoute,
+  });
   return (
     <SessionContext.Provider
       value={{
         session: query.data ?? null,
-        loading: query.isLoading,
+        loading: isStandaloneRoute ? false : query.isLoading,
         refresh: () => client.invalidateQueries({ queryKey: ['session'] }),
       }}
     >

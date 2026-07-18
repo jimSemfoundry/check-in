@@ -21,6 +21,7 @@ const HabitFormPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import('../pages/SettingsPage').then((m) => ({ default: m.SettingsPage })),
 );
+const GamePage = lazy(() => import('../pages/GamePage').then((m) => ({ default: m.GamePage })));
 const LazyOutlet = () => (
   <Suspense fallback={<PageLoading />}>
     <Outlet />
@@ -32,6 +33,14 @@ export function App() {
     <Routes>
       <Route path="/w/:slug/:mode" element={<AccessPage />} />
       <Route path="/welcome" element={<WelcomePage />} />
+      <Route
+        path="/game"
+        element={
+          <Suspense fallback={<PageLoading />}>
+            <GamePage />
+          </Suspense>
+        }
+      />
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route element={<LazyOutlet />}>
