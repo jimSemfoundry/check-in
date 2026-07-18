@@ -88,3 +88,12 @@
 - AI 贡献：审阅修改及 monorepo 依赖关系；移走本地 `packages/contracts/dist` 后模拟干净环境；确认原 Pages 外部命令无需变更，仍从仓库根目录执行 `pnpm --filter web build`，输出目录仍为 `apps/web/dist`。
 - 验证：干净模拟构建成功并转换 204 个模块；前端 lint、typecheck、测试 5/5 和目标文件格式检查通过。
 - 隐私检查：修改仅涉及公开的 package 脚本和本记录，没有环境变量值或凭据。
+
+## 2026-07-18：Tiny Swords 浮岛地图第一阶段方案
+
+- 任务摘要：根据用户提供的 Tiny Swords tilemap guide、素材包结构和参考截图，为另一个终端执行的第一阶段静态地图原型编写方案。
+- AI 贡献：验证素材包包含地形、浪花、海面、云、树、石头、羊、建筑、单位和 UI 资源；分析参考截图的浮岛经营画面结构；将首个里程碑收敛为“正方形浮岛、海、浪、云、少量资源物”的静态视觉验证。
+- 人工决策：用户希望第一步先看到正方形浮岛地图，周围有浪、海和云；暂不进入建造、资源、战斗或 APK 打包。
+- 产出：`docs/superpowers/specs/2026-07-18-floating-island-map-design.md`。
+- 验证：本轮只写方案文档，没有实现或运行前端代码；文档列出后续执行方需要运行的 `pnpm --filter web typecheck` 和 `pnpm --filter web build`。
+- 隐私检查：未记录下载链接签名、访问密钥、Token、数据库连接串或其他秘密信息。
