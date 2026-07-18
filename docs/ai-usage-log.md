@@ -193,5 +193,5 @@
 - 任务摘要：用户要求实现 `Tree1.png` 到 `Tree4.png`，并加入 `Sheep_Grass.png` 吃草、`Sheep_Idle.png` 静止、`Sheep_Move.png` 移动三套动画，羊运动路线随机。
 - AI 贡献：新增树和羊资源封装、羊运动 helper、短设计/计划文档；在 Phaser 场景加载四棵树和三套羊 spritesheet，添加树摇动动画与羊 `idle -> move -> grass` 循环，移动目标由受限随机路线生成，保持在 3x2 草地范围内。
 - 过程纠正：初始计划误判树图集为 256px 宽一帧，浏览器截图出现右侧树残片；检查原图后确认树图集为 192px 宽一帧、8 帧，并更新配置、测试和计划文档。
-- 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 18/18 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均请求 `Tree1.png`、`Tree2.png`、`Tree3.png`、`Tree4.png`、`Sheep_Idle.png`、`Sheep_Move.png` 和 `Sheep_Grass.png`，未请求 `Tilemap_color4.png` 或 `Shadow.png`，无 console/request error，帧差确认动画播放；截图已更新。
+- 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 18/18 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均请求 `Tree1.png`、`Tree2.png`、`Tree3.png`、`Tree4.png`、`Sheep_Idle.png`、`Sheep_Move.png` 和 `Sheep_Grass.png`，未请求 `Tilemap_color4.png` 或 `Shadow.png`，无 console/request error，帧差确认动画播放；截图已更新。生产 `https://jimapp.ccwu.cc/game` 已切到新 bundle，桌面和移动验证同样加载四棵树与三套羊动画资源，无 404、无 console/request error，帧差确认动画运行。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

@@ -97,10 +97,10 @@ Run local Vite, open `/game` with Playwright, check tree/sheep PNG requests, no 
 
 Run: `pnpm --filter web test`, `pnpm --filter web lint`, `pnpm --filter web typecheck`, and `pnpm --filter web build`.
 
-- [ ] **Step 2: Commit and push**
+- [x] **Step 2: Commit and push**
 
 Commit all code, tests, docs, and screenshots; push `origin main`.
 
-- [ ] **Step 3: Verify production**
+- [x] **Step 3: Verify production**
 
 Wait for Cloudflare bundle update, then verify `https://jimapp.ccwu.cc/game` requests tree/sheep assets, no old shadow asset, no errors, canvas renders, and animations move.
