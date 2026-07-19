@@ -10,7 +10,9 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 20_000, refetchOnWindowFocus: true, retry: 1 } },
 });
 if ('serviceWorker' in navigator && import.meta.env.PROD)
-  void navigator.serviceWorker.register('/sw.js');
+  void navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => void registration.unregister());
+  });
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
