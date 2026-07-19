@@ -55,14 +55,6 @@ export const gameHudLayout = {
     width: 216,
     height: 113,
   },
-  woodTableSlotsDisplaySize: {
-    width: 96,
-    height: 96,
-  },
-  woodTableSlotsOffset: {
-    x: 0,
-    y: 0,
-  },
   bottomGap: 18,
   getHudTransform(width: number, height: number) {
     const scale = Math.min(width / (this.bannerBounds.width + 24), 1);

@@ -87,18 +87,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       return bannerPiece;
     });
 
-    const slots = this.add.image(
-      gameHudLayout.woodTableSlotsOffset.x,
-      gameHudLayout.woodTableSlotsOffset.y,
-      'hud-wood-table-slots',
-    );
-    slots.setDisplaySize(
-      gameHudLayout.woodTableSlotsDisplaySize.width,
-      gameHudLayout.woodTableSlotsDisplaySize.height,
-    );
-    slots.setOrigin(0.5);
-
-    this.hudRoot.add([...bannerPieces, slots]);
+    this.hudRoot.add(bannerPieces);
   }
 
   private createHudBannerFrames() {

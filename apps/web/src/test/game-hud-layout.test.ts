@@ -22,7 +22,7 @@ describe('game HUD layout', () => {
     ]);
   });
 
-  it('removes atlas whitespace and centers the wood table on the packed banner', () => {
+  it('removes atlas whitespace without a wood table overlay', () => {
     expect(gameHudLayout.bannerBounds).toEqual({
       left: -110,
       top: -56.5,
@@ -31,10 +31,8 @@ describe('game HUD layout', () => {
       width: 216,
       height: 113,
     });
-    expect(gameHudLayout.woodTableSlotsOffset).toEqual({
-      x: 0,
-      y: 0,
-    });
+    expect(gameHudLayout).not.toHaveProperty('woodTableSlotsOffset');
+    expect(gameHudLayout).not.toHaveProperty('woodTableSlotsDisplaySize');
   });
 
   it('anchors the packed banner bottom to the viewport bottom center', () => {
