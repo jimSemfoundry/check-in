@@ -44,7 +44,13 @@ type SlotCursorTarget = {
 
 type SlotItem = {
   slotIndex: number;
-  frame: number;
+  key: string;
+  source: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
   displayScale: number;
 };
 
@@ -101,10 +107,10 @@ const slotPieces: SlotPiece[] = [
 ];
 
 const slotItems: SlotItem[] = [
-  { slotIndex: 0, frame: 30, displayScale: 0.62 },
-  { slotIndex: 1, frame: 28, displayScale: 0.68 },
-  { slotIndex: 2, frame: 12, displayScale: 0.68 },
-  { slotIndex: 3, frame: 10, displayScale: 0.68 },
+  { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62 },
+  { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72 },
+  { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72 },
+  { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72 },
 ];
 
 function getBannerWidth(viewportWidth: number) {
@@ -182,15 +188,18 @@ function getSlotItemTargets(viewportWidth: number): SlotItemTarget[] {
   const slotSize = getSlotSize(viewportWidth);
 
   return slotItems.map((item) => {
-    const itemSize = Math.floor(slotSize * item.displayScale);
+    const maxItemSize = Math.floor(slotSize * item.displayScale);
+    const aspect = item.source.width / item.source.height;
+    const itemWidth = aspect >= 1 ? maxItemSize : Math.floor(maxItemSize * aspect);
+    const itemHeight = aspect >= 1 ? Math.floor(maxItemSize / aspect) : maxItemSize;
 
     return {
       ...item,
       target: {
         x: getSlotCenterX(viewportWidth, item.slotIndex),
         y: SLOT_CENTER_Y,
-        width: itemSize,
-        height: itemSize,
+        width: itemWidth,
+        height: itemHeight,
       },
     };
   });

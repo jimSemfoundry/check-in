@@ -127,18 +127,29 @@ describe('game HUD layout', () => {
   });
 
   it('places the numbered terrain tiles into the first four slots', () => {
-    expect(gameHudLayout.slotItems.map((item) => item.frame)).toEqual([30, 28, 12, 10]);
+    expect(gameHudLayout.slotItems.map((item) => item.key)).toEqual([
+      'hud-terrain-1',
+      'hud-terrain-2',
+      'hud-terrain-3',
+      'hud-terrain-4',
+    ]);
+    expect(gameHudLayout.slotItems.map((item) => item.source)).toEqual([
+      { x: 192, y: 192, width: 64, height: 64 },
+      { x: 0, y: 192, width: 192, height: 64 },
+      { x: 192, y: 0, width: 64, height: 192 },
+      { x: 0, y: 0, width: 192, height: 192 },
+    ]);
     expect(gameHudLayout.getSlotItemTargets(1280)).toEqual([
-      { slotIndex: 0, frame: 30, displayScale: 0.62, target: { x: -132, y: -24, width: 35, height: 35 } },
-      { slotIndex: 1, frame: 28, displayScale: 0.68, target: { x: -66, y: -24, width: 39, height: 39 } },
-      { slotIndex: 2, frame: 12, displayScale: 0.68, target: { x: 0, y: -24, width: 39, height: 39 } },
-      { slotIndex: 3, frame: 10, displayScale: 0.68, target: { x: 66, y: -24, width: 39, height: 39 } },
+      { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: -132, y: -24, width: 35, height: 35 } },
+      { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: -66, y: -24, width: 41, height: 13 } },
+      { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: 0, y: -24, width: 13, height: 41 } },
+      { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: 66, y: -24, width: 41, height: 41 } },
     ]);
     expect(gameHudLayout.getSlotItemTargets(320)).toEqual([
-      { slotIndex: 0, frame: 30, displayScale: 0.62, target: { x: -92, y: -24, width: 22, height: 22 } },
-      { slotIndex: 1, frame: 28, displayScale: 0.68, target: { x: -46, y: -24, width: 24, height: 24 } },
-      { slotIndex: 2, frame: 12, displayScale: 0.68, target: { x: 0, y: -24, width: 24, height: 24 } },
-      { slotIndex: 3, frame: 10, displayScale: 0.68, target: { x: 46, y: -24, width: 24, height: 24 } },
+      { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: -92, y: -24, width: 22, height: 22 } },
+      { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: -46, y: -24, width: 25, height: 8 } },
+      { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: 0, y: -24, width: 8, height: 25 } },
+      { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: 46, y: -24, width: 25, height: 25 } },
     ]);
   });
 

@@ -86,6 +86,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot.setDepth(100);
     this.createHudFrames('hud-store-banner', gameHudLayout.bannerPieces);
     this.createHudFrames('hud-store-banner-slots', gameHudLayout.slotPieces);
+    this.createHudTerrainItemFrames();
 
     this.hudBannerPieces = gameHudLayout.bannerPieces.map((piece) => {
       const bannerPiece = this.add.image(0, 0, 'hud-store-banner', piece.key);
@@ -105,7 +106,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     });
 
     this.hudSlotItems = gameHudLayout.slotItems.map((item) => {
-      const slotItem = this.add.image(0, 0, 'terrain-tiles', item.frame);
+      const slotItem = this.add.image(0, 0, 'terrain-tiles', item.key);
       slotItem.setOrigin(0.5);
       return slotItem;
     });
@@ -137,6 +138,23 @@ export class FloatingIslandScene extends Phaser.Scene {
         piece.source.y,
         piece.source.width,
         piece.source.height,
+      );
+    }
+  }
+
+  private createHudTerrainItemFrames() {
+    const texture = this.textures.get('terrain-tiles');
+
+    for (const item of gameHudLayout.slotItems) {
+      if (texture.has(item.key)) continue;
+
+      texture.add(
+        item.key,
+        0,
+        item.source.x,
+        item.source.y,
+        item.source.width,
+        item.source.height,
       );
     }
   }
