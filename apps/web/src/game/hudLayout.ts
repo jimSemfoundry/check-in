@@ -46,7 +46,7 @@ const MIN_BANNER_WIDTH = LEFT_BOTTOM_WIDTH + RIGHT_BOTTOM_WIDTH + 16;
 const HUD_BOTTOM_INSET = 18;
 const HUD_BOTTOM_EXTENT = 41;
 const SLOT_COUNT = 5;
-const MAX_SLOT_STEP = 62;
+const MAX_SLOT_STEP = 66;
 const MAX_SLOT_SIZE = 58;
 const SLOT_CENTER_Y = -24;
 
@@ -95,7 +95,7 @@ function roundLayoutValue(value: number) {
 }
 
 function getSlotStep(viewportWidth: number) {
-  return Math.min(MAX_SLOT_STEP, Math.floor(getBannerWidth(viewportWidth) * 0.1617647059));
+  return Math.min(MAX_SLOT_STEP, Math.floor(getBannerWidth(viewportWidth) * 0.1691176471));
 }
 
 function getSlotSize(viewportWidth: number) {
