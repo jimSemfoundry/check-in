@@ -26,13 +26,22 @@ describe('game HUD layout', () => {
   });
 
   it('packs the red-box banner pieces from the Banner atlas', () => {
-    expect(gameHudLayout.bannerPieces).toHaveLength(2);
+    expect(gameHudLayout.bannerPieces).toHaveLength(11);
     expect(gameHudLayout.bannerPieces.map((piece) => piece.source)).toEqual([
+      { x: 4, y: 0, width: 60, height: 64 },
+      { x: 256, y: 0, width: 64, height: 64 },
+      { x: 384, y: 0, width: 64, height: 64 },
+      { x: 640, y: 0, width: 44, height: 64 },
+      { x: 4, y: 128, width: 60, height: 64 },
+      { x: 320, y: 128, width: 64, height: 64 },
+      { x: 640, y: 128, width: 44, height: 64 },
       { x: 4, y: 256, width: 188, height: 92 },
+      { x: 256, y: 256, width: 64, height: 64 },
+      { x: 384, y: 256, width: 64, height: 64 },
       { x: 512, y: 256, width: 172, height: 98 },
     ]);
     expect(gameHudLayout.bannerPieces.map((piece) => piece.target.x)).toEqual([
-      -63, 63,
+      -100, -16, 16, 89, -100, 0, 89, -63, -16, 16, 63,
     ]);
   });
 
