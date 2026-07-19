@@ -4,26 +4,26 @@ import { gameHudLayout } from '../game/hudLayout';
 describe('game HUD layout', () => {
   it('uses the numbered Banner atlas pieces', () => {
     expect(gameHudLayout.bannerPieces.map((piece) => piece.id)).toEqual([
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+      0, 2, 8, 1, 3, 4, 5, 6, 7, 9, 10,
     ]);
     expect(gameHudLayout.bannerPieces.map((piece) => piece.source)).toEqual([
       { x: 320, y: 128, width: 64, height: 64 },
-      { x: 4, y: 0, width: 60, height: 64 },
       { x: 256, y: 0, width: 64, height: 64 },
+      { x: 256, y: 256, width: 64, height: 64 },
+      { x: 4, y: 0, width: 60, height: 64 },
       { x: 384, y: 0, width: 64, height: 64 },
       { x: 640, y: 0, width: 44, height: 64 },
       { x: 4, y: 128, width: 60, height: 64 },
       { x: 640, y: 128, width: 44, height: 64 },
       { x: 4, y: 256, width: 188, height: 92 },
-      { x: 256, y: 256, width: 64, height: 64 },
       { x: 384, y: 256, width: 64, height: 64 },
       { x: 512, y: 256, width: 172, height: 98 },
     ]);
   });
 
-  it('uses piece 0 as the only stretchable filler', () => {
+  it('uses pieces 2, 0, and 8 as the only stretchable row fillers', () => {
     expect(gameHudLayout.bannerPieces.filter((piece) => piece.stretch).map((piece) => piece.id)).toEqual([
-      0,
+      0, 2, 8,
     ]);
   });
 
@@ -35,22 +35,26 @@ describe('game HUD layout', () => {
 
   it('combines numbered pieces into left, fill, and right groups', () => {
     const desktop = gameHudLayout.getBannerPieceTargets(1280);
-    expect(desktop.map((piece) => piece.id)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(desktop.map((piece) => piece.id)).toEqual([0, 2, 8, 1, 3, 4, 5, 6, 7, 9, 10]);
     expect(desktop.map((piece) => piece.target.x)).toEqual([
-      4, -189, -158, 144, 193, -189, 193, -157, -94, 102, 161,
+      0, -12, -12, -189, 166, 193, -189, 193, -157, 102, 161,
     ]);
     expect(desktop.map((piece) => piece.target.y)).toEqual([
-      -16, -56, -56, -56, -56, -24, -24, 24, 24, 24, 24,
+      -16, -56, 24, -56, -56, -56, -24, -24, 24, 24, 24,
     ]);
-    expect(desktop.find((piece) => piece.id === 0)?.target.width).toBe(356);
+    expect(desktop.find((piece) => piece.id === 2)?.target.width).toBe(324);
+    expect(desktop.find((piece) => piece.id === 0)?.target.width).toBe(408);
+    expect(desktop.find((piece) => piece.id === 8)?.target.width).toBe(196);
     expect(desktop.find((piece) => piece.id === 0)?.target.height).toBe(112);
 
     const narrow = gameHudLayout.getBannerPieceTargets(320);
-    expect(narrow[1].target.x).toBe(-121);
-    expect(narrow[2].target.x).toBe(-90);
-    expect(narrow[3].target.x).toBe(76);
-    expect(narrow[4].target.x).toBe(125);
-    expect(narrow.find((piece) => piece.id === 0)?.target.width).toBe(220);
+    expect(narrow.find((piece) => piece.id === 1)?.target.x).toBe(-121);
+    expect(narrow.find((piece) => piece.id === 2)?.target.x).toBe(-12);
+    expect(narrow.find((piece) => piece.id === 3)?.target.x).toBe(98);
+    expect(narrow.find((piece) => piece.id === 4)?.target.x).toBe(125);
+    expect(narrow.find((piece) => piece.id === 2)?.target.width).toBe(188);
+    expect(narrow.find((piece) => piece.id === 0)?.target.width).toBe(272);
+    expect(narrow.find((piece) => piece.id === 8)?.target.width).toBe(60);
   });
 
   it('anchors the composed banner bottom to the viewport bottom center', () => {
