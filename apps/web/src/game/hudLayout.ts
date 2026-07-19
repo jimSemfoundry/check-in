@@ -102,9 +102,9 @@ const slotPieces: SlotPiece[] = [
 
 const slotItems: SlotItem[] = [
   { slotIndex: 0, frame: 30, displayScale: 0.62 },
-  { slotIndex: 1, frame: 28, displayScale: 0.72 },
-  { slotIndex: 2, frame: 12, displayScale: 0.72 },
-  { slotIndex: 3, frame: 10, displayScale: 0.72 },
+  { slotIndex: 1, frame: 28, displayScale: 0.6 },
+  { slotIndex: 2, frame: 12, displayScale: 0.6 },
+  { slotIndex: 3, frame: 10, displayScale: 0.6 },
 ];
 
 function getBannerWidth(viewportWidth: number) {
