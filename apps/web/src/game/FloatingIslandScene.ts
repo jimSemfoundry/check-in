@@ -15,17 +15,12 @@ import {
   treePlacements,
 } from './natureAssets';
 import { createSheepRouteTarget, getSheepMoveDurationMs } from './sheepMotion';
+import { gameHudLayout } from './hudLayout';
 
 const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
 const TILE_SIZE = tinySwordsTerrainTileset.tileSize;
 const SEA_COLOR = 0x4db6b5;
-const HUD_BANNER_SOURCE_WIDTH = 704;
-const HUD_BANNER_SOURCE_HEIGHT = 384;
-const HUD_BANNER_WIDTH = 352;
-const HUD_BANNER_HEIGHT = 192;
-const HUD_SLOT_SIZE = 96;
-const HUD_BOTTOM_GAP = 18;
 
 const platformWidth = rockIslandScenePlan.platform.widthTiles * TILE_SIZE;
 const grassHeight = rockIslandScenePlan.platform.grassRows * TILE_SIZE;
@@ -85,12 +80,27 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot.setDepth(100);
 
     const banner = this.add.image(0, 0, 'hud-store-banner');
-    banner.setCrop(0, 0, HUD_BANNER_SOURCE_WIDTH, HUD_BANNER_SOURCE_HEIGHT);
-    banner.setDisplaySize(HUD_BANNER_WIDTH, HUD_BANNER_HEIGHT);
+    banner.setCrop(
+      gameHudLayout.bannerSourceFrame.x,
+      gameHudLayout.bannerSourceFrame.y,
+      gameHudLayout.bannerSourceFrame.width,
+      gameHudLayout.bannerSourceFrame.height,
+    );
+    banner.setDisplaySize(
+      gameHudLayout.bannerDisplaySize.width,
+      gameHudLayout.bannerDisplaySize.height,
+    );
     banner.setOrigin(0.5);
 
-    const slots = this.add.image(0, 0, 'hud-wood-table-slots');
-    slots.setDisplaySize(HUD_SLOT_SIZE, HUD_SLOT_SIZE);
+    const slots = this.add.image(
+      gameHudLayout.woodTableSlotsOffset.x,
+      gameHudLayout.woodTableSlotsOffset.y,
+      'hud-wood-table-slots',
+    );
+    slots.setDisplaySize(
+      gameHudLayout.woodTableSlotsDisplaySize.width,
+      gameHudLayout.woodTableSlotsDisplaySize.height,
+    );
     slots.setOrigin(0.5);
 
     this.hudRoot.add([banner, slots]);
@@ -345,8 +355,8 @@ export class FloatingIslandScene extends Phaser.Scene {
   private layoutHud(width: number, height: number) {
     if (!this.hudRoot) return;
 
-    const hudScale = Math.min(width / (HUD_BANNER_WIDTH + 24), 1);
-    this.hudRoot.setScale(hudScale);
-    this.hudRoot.setPosition(width / 2, height - HUD_BANNER_HEIGHT * hudScale * 0.5 - HUD_BOTTOM_GAP);
+    const hudTransform = gameHudLayout.getHudTransform(width, height);
+    this.hudRoot.setScale(hudTransform.scale);
+    this.hudRoot.setPosition(hudTransform.x, hudTransform.y);
   }
 }
