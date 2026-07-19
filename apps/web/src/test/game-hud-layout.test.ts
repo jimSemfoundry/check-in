@@ -99,6 +99,33 @@ describe('game HUD layout', () => {
     expect(mobile.map((piece) => piece.target.height)).toContain(12);
   });
 
+  it('places a cursor over the selected slot', () => {
+    expect(gameHudLayout.getSlotCursorTarget(1280, 0)).toEqual({
+      x: -132,
+      y: -24,
+      width: 66,
+      height: 66,
+    });
+    expect(gameHudLayout.getSlotCursorTarget(1280, 2)).toEqual({
+      x: 0,
+      y: -24,
+      width: 66,
+      height: 66,
+    });
+    expect(gameHudLayout.getSlotCursorTarget(1280, 4)).toEqual({
+      x: 132,
+      y: -24,
+      width: 66,
+      height: 66,
+    });
+    expect(gameHudLayout.getSlotCursorTarget(320, 4)).toEqual({
+      x: 92,
+      y: -24,
+      width: 46,
+      height: 46,
+    });
+  });
+
   it('anchors the composed banner bottom to the viewport bottom center', () => {
     expect(gameHudLayout.getHudTransform(1280, 720)).toEqual({
       x: 640,

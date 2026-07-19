@@ -13,5 +13,6 @@ export const tinySwordsAssets = {
   hud: {
     storeBanner: `${tinySwordsUiBase}/UI Banners from the store page/Banner/Banner.png`,
     storeBannerSlots: `${tinySwordsUiBase}/UI Banners from the store page/Banner/Slots.png`,
+    slotCursor: `${tinySwordsUiBase}/UI Elements/Cursors/Cursor_04.png`,
   },
 } as const;

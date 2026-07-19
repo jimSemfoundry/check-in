@@ -23,6 +23,7 @@ describe('tiny swords asset manifest', () => {
           '/game/tiny-swords/UI Elements/UI Banners from the store page/Banner/Banner.png',
         storeBannerSlots:
           '/game/tiny-swords/UI Elements/UI Banners from the store page/Banner/Slots.png',
+        slotCursor: '/game/tiny-swords/UI Elements/UI Elements/Cursors/Cursor_04.png',
       },
     });
     expect(tinySwordsAssets).not.toHaveProperty('clouds');

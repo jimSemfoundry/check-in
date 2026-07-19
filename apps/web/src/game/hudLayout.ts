@@ -35,6 +35,13 @@ type SlotPieceTarget = SlotPiece & {
   };
 };
 
+type SlotCursorTarget = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 const BANNER_PIECE_SCALE = 0.5;
 const MAX_BANNER_WIDTH = 408;
 const HORIZONTAL_MARGIN = 48;
@@ -129,6 +136,19 @@ function getSlotTargets(viewportWidth: number): SlotPieceTarget[] {
       };
     });
   }).flat();
+}
+
+function getSlotCursorTarget(viewportWidth: number, slotIndex: number): SlotCursorTarget {
+  const step = getSlotStep(viewportWidth);
+  const clampedSlotIndex = Math.max(0, Math.min(SLOT_COUNT - 1, slotIndex));
+  const startX = -step * (SLOT_COUNT - 1) / 2;
+
+  return {
+    x: roundLayoutValue(startX + step * clampedSlotIndex),
+    y: SLOT_CENTER_Y,
+    width: step,
+    height: step,
+  };
 }
 
 function getBannerPieceTargets(viewportWidth: number): BannerPieceTarget[] {
@@ -232,5 +252,6 @@ export const gameHudLayout = {
   getBannerWidth,
   getBannerPieceTargets,
   getSlotTargets,
+  getSlotCursorTarget,
   getHudTransform,
 };
