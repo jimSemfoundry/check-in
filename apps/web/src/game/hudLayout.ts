@@ -79,10 +79,10 @@ function getBannerPieceTargets(viewportWidth: number): BannerPieceTarget[] {
       height: scaled(64),
     },
     0: {
-      x: 0,
-      y: -16,
-      width: bannerWidth,
-      height: scaled(224),
+      x: centerBetween(leftEdge + LEFT_TOP_WIDTH, rightEdge - scaled(44)),
+      y: -24,
+      width: rightEdge - scaled(44) - (leftEdge + LEFT_TOP_WIDTH),
+      height: scaled(64),
     },
     8: {
       x: centerBetween(bottomFillLeft, bottomFillRight),
