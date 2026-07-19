@@ -78,19 +78,14 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot?.destroy(true);
     this.hudRoot = this.add.container(0, 0);
     this.hudRoot.setDepth(100);
+    this.createHudBannerFrames();
 
-    const banner = this.add.image(0, 0, 'hud-store-banner');
-    banner.setCrop(
-      gameHudLayout.bannerSourceFrame.x,
-      gameHudLayout.bannerSourceFrame.y,
-      gameHudLayout.bannerSourceFrame.width,
-      gameHudLayout.bannerSourceFrame.height,
-    );
-    banner.setDisplaySize(
-      gameHudLayout.bannerDisplaySize.width,
-      gameHudLayout.bannerDisplaySize.height,
-    );
-    banner.setOrigin(0.5);
+    const bannerPieces = gameHudLayout.bannerPieces.map((piece) => {
+      const bannerPiece = this.add.image(piece.target.x, piece.target.y, 'hud-store-banner', piece.key);
+      bannerPiece.setDisplaySize(piece.target.width, piece.target.height);
+      bannerPiece.setOrigin(0.5);
+      return bannerPiece;
+    });
 
     const slots = this.add.image(
       gameHudLayout.woodTableSlotsOffset.x,
@@ -103,7 +98,24 @@ export class FloatingIslandScene extends Phaser.Scene {
     );
     slots.setOrigin(0.5);
 
-    this.hudRoot.add([banner, slots]);
+    this.hudRoot.add([...bannerPieces, slots]);
+  }
+
+  private createHudBannerFrames() {
+    const bannerTexture = this.textures.get('hud-store-banner');
+
+    for (const piece of gameHudLayout.bannerPieces) {
+      if (bannerTexture.has(piece.key)) continue;
+
+      bannerTexture.add(
+        piece.key,
+        0,
+        piece.source.x,
+        piece.source.y,
+        piece.source.width,
+        piece.source.height,
+      );
+    }
   }
 
   private createSea() {

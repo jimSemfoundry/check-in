@@ -2,40 +2,48 @@ import { describe, expect, it } from 'vitest';
 import { gameHudLayout } from '../game/hudLayout';
 
 describe('game HUD layout', () => {
-  it('uses the red-box banner group from the Banner atlas', () => {
-    expect(gameHudLayout.bannerSourceFrame).toEqual({
-      x: 0,
-      y: 0,
-      width: 704,
-      height: 384,
-    });
+  it('packs the red-box banner pieces from the Banner atlas', () => {
+    expect(gameHudLayout.bannerPieces).toHaveLength(11);
+    expect(gameHudLayout.bannerPieces.map((piece) => piece.source)).toEqual([
+      { x: 4, y: 0, width: 60, height: 64 },
+      { x: 256, y: 0, width: 64, height: 64 },
+      { x: 384, y: 0, width: 64, height: 64 },
+      { x: 640, y: 0, width: 44, height: 64 },
+      { x: 4, y: 128, width: 60, height: 64 },
+      { x: 320, y: 128, width: 64, height: 64 },
+      { x: 640, y: 128, width: 44, height: 64 },
+      { x: 4, y: 256, width: 188, height: 92 },
+      { x: 256, y: 256, width: 64, height: 64 },
+      { x: 384, y: 256, width: 64, height: 64 },
+      { x: 512, y: 256, width: 172, height: 98 },
+    ]);
   });
 
-  it('centers the wood table on the visible banner pixels', () => {
-    expect(gameHudLayout.bannerVisibleBounds).toEqual({
-      left: -174,
-      top: -96,
-      right: 166,
-      bottom: 81,
-      centerX: -4,
-      centerY: -7.5,
+  it('removes atlas whitespace and centers the wood table on the packed banner', () => {
+    expect(gameHudLayout.bannerBounds).toEqual({
+      left: -122,
+      top: -56.5,
+      right: 122,
+      bottom: 56.5,
+      width: 244,
+      height: 113,
     });
     expect(gameHudLayout.woodTableSlotsOffset).toEqual({
-      x: -4,
-      y: -7.5,
+      x: 0,
+      y: 0,
     });
   });
 
-  it('anchors the visible banner bottom to the viewport bottom center', () => {
+  it('anchors the packed banner bottom to the viewport bottom center', () => {
     expect(gameHudLayout.getHudTransform(1280, 720)).toEqual({
-      x: 644,
-      y: 621,
+      x: 640,
+      y: 645.5,
       scale: 1,
     });
     expect(gameHudLayout.getHudTransform(320, 568)).toEqual({
-      x: 163.40425531914894,
-      y: 481.06382978723406,
-      scale: 0.851063829787234,
+      x: 160,
+      y: 493.5,
+      scale: 1,
     });
   });
 });
