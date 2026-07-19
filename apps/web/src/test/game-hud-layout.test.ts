@@ -40,7 +40,7 @@ describe('game HUD layout', () => {
       4, -12, -12, -189, 166, 193, -189, 193, -157, 102, 161,
     ]);
     expect(desktop.map((piece) => piece.target.y)).toEqual([
-      -24, -56, 24, -56, -56, -56, -24, -24, 24, 24, 24,
+      -24, -56, 8, -56, -56, -56, -24, -24, 15, 8, 16.5,
     ]);
     expect(desktop.find((piece) => piece.id === 2)?.target.width).toBe(324);
     expect(desktop.find((piece) => piece.id === 0)?.target.width).toBe(356);
@@ -60,12 +60,12 @@ describe('game HUD layout', () => {
   it('anchors the composed banner bottom to the viewport bottom center', () => {
     expect(gameHudLayout.getHudTransform(1280, 720)).toEqual({
       x: 640,
-      y: 653,
+      y: 661,
       scale: 1,
     });
     expect(gameHudLayout.getHudTransform(320, 568)).toEqual({
       x: 160,
-      y: 501,
+      y: 509,
       scale: 1,
     });
   });

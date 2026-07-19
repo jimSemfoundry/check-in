@@ -30,7 +30,7 @@ const RIGHT_TOP_WIDTH = (64 + 44) * BANNER_PIECE_SCALE;
 const RIGHT_BOTTOM_WIDTH = (64 + 172) * BANNER_PIECE_SCALE;
 const MIN_BANNER_WIDTH = LEFT_BOTTOM_WIDTH + RIGHT_BOTTOM_WIDTH + 16;
 const HUD_BOTTOM_INSET = 18;
-const HUD_BOTTOM_EXTENT = 49;
+const HUD_BOTTOM_EXTENT = 41;
 
 const scaled = (value: number) => value * BANNER_PIECE_SCALE;
 
@@ -86,7 +86,7 @@ function getBannerPieceTargets(viewportWidth: number): BannerPieceTarget[] {
     },
     8: {
       x: centerBetween(bottomFillLeft, bottomFillRight),
-      y: 24,
+      y: 8,
       width: bottomFillRight - bottomFillLeft,
       height: scaled(64),
     },
@@ -122,19 +122,19 @@ function getBannerPieceTargets(viewportWidth: number): BannerPieceTarget[] {
     },
     7: {
       x: -halfBannerWidth + scaled(94),
-      y: 24,
+      y: 15,
       width: scaled(188),
       height: scaled(92),
     },
     9: {
       x: rightEdge - scaled(172) - scaled(32),
-      y: 24,
+      y: 8,
       width: scaled(64),
       height: scaled(64),
     },
     10: {
       x: halfBannerWidth - scaled(86),
-      y: 24,
+      y: 16.5,
       width: scaled(172),
       height: scaled(98),
     },
