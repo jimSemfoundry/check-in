@@ -1,5 +1,5 @@
 const BANNER_PIECE_SCALE = 0.5;
-const MAX_ROW_WIDTH = 352;
+const MAX_ROW_WIDTH = 408;
 const HORIZONTAL_MARGIN = 48;
 
 type BannerRow = 'top' | 'middle' | 'bottom';
@@ -78,11 +78,11 @@ export const gameHudLayout = {
     piece('bottom', 'right', { x: 512, y: 256, width: 172, height: 98 }),
   ],
   bannerBounds: {
-    left: -176,
+    left: -204,
     top: -80,
-    right: 176,
+    right: 204,
     bottom: 49,
-    width: 352,
+    width: 408,
     height: 129,
   },
   bottomGap: 18,

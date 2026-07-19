@@ -33,7 +33,7 @@ describe('game HUD layout', () => {
   });
 
   it('computes an adaptive row width from the viewport', () => {
-    expect(gameHudLayout.getRowWidth(1280)).toBe(352);
+    expect(gameHudLayout.getRowWidth(1280)).toBe(408);
     expect(gameHudLayout.getRowWidth(390)).toBe(342);
     expect(gameHudLayout.getRowWidth(320)).toBe(272);
   });
@@ -41,7 +41,7 @@ describe('game HUD layout', () => {
   it('lays out selected pieces in three adaptive rows', () => {
     const desktop = gameHudLayout.getBannerPieceTargets(1280);
     expect(desktop.map((piece) => piece.target.x)).toEqual([
-      -161, -18, 18, 165, -161, 0, 165, -129, -18, 18, 133,
+      -189, -18, 18, 193, -189, 0, 193, -157, -18, 18, 161,
     ]);
     expect(desktop.map((piece) => piece.target.y)).toEqual([
       -64, -64, -64, -64, -24, -24, -24, 24, 24, 24, 24,
