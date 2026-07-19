@@ -195,3 +195,12 @@
 - 过程纠正：初始计划误判树图集为 256px 宽一帧，浏览器截图出现右侧树残片；检查原图后确认树图集为 192px 宽一帧、8 帧，并更新配置、测试和计划文档。
 - 验证：目标测试先失败后通过；全量 `pnpm --filter web test` 18/18 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均请求 `Tree1.png`、`Tree2.png`、`Tree3.png`、`Tree4.png`、`Sheep_Idle.png`、`Sheep_Move.png` 和 `Sheep_Grass.png`，未请求 `Tilemap_color4.png` 或 `Shadow.png`，无 console/request error，帧差确认动画播放；截图已更新。生产 `https://jimapp.ccwu.cc/game` 已切到新 bundle，桌面和移动验证同样加载四棵树与三套羊动画资源，无 404、无 console/request error，帧差确认动画运行。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-19：记录 `/game` 底部 HUD banner 最终拼接规则
+
+- 任务摘要：用户多次通过截图纠正 `Banner.png` atlas 拼接方式，最终确认 `/game` 底部 HUD banner 的效果正确，并要求把最终实现记录到文档。
+- AI 贡献：将最终规则写入 `docs/frontend-development.md` 的 `/game` HUD Banner 小节，记录 Tiny Swords `UI Banners from the store page/Banner/Banner.png` 的 0-10 编号裁切区域、三行组合规则、左右竖边规则、动态填充块限制和对齐约束。
+- 人工决策：用户明确要求去掉规则外填补；最终实现只允许 `2/0/8` 作为动态填充块，固定边为 `1/5/7` 与 `3/4/6/9/10`，并要求 `8/9` 上边对齐、第二行和第三行之间无缝。
+- 过程纠正：早期 AI 尝试用 `0` 铺成整块底板补缝，用户指出这属于规则外区域；后续按用户规则收回 `0`，再通过调整第三行垂直坐标修正 `8/9` 对齐和行间缝隙。
+- 验证：实现阶段已通过 `pnpm --filter web typecheck`、`pnpm --filter web lint`、`pnpm --filter web test`，并用 Playwright 检查 `/game` 桌面与移动截图；本次文档更新已通过 `git diff --check`。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
