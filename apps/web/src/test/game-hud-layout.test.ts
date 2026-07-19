@@ -80,15 +80,15 @@ describe('game HUD layout', () => {
     expect(desktop).toHaveLength(5);
     expect([...new Set(desktop.map((piece) => piece.slotIndex))]).toEqual([0, 1, 2, 3, 4]);
     expect(desktop.map((piece) => piece.id)).toEqual([5, 5, 5, 5, 5]);
-    expect(desktop.map((piece) => piece.target.x)).toEqual([-160, -80, 0, 80, 160]);
+    expect(desktop.map((piece) => piece.target.x)).toEqual([-128, -64, 0, 64, 128]);
     expect(desktop.map((piece) => piece.target.y)).toEqual([-24, -24, -24, -24, -24]);
     expect(desktop.map((piece) => piece.target.width)).toEqual([58, 58, 58, 58, 58]);
     expect(desktop.map((piece) => piece.target.height)).toEqual([58, 58, 58, 58, 58]);
 
     const mobile = gameHudLayout.getSlotTargets(320);
-    expect(mobile.map((piece) => piece.target.x)).toEqual([-108.8, -54.4, 0, 54.4, 108.8]);
-    expect(mobile.map((piece) => piece.target.width)).toEqual([42, 42, 42, 42, 42]);
-    expect(mobile.map((piece) => piece.target.height)).toEqual([42, 42, 42, 42, 42]);
+    expect(mobile.map((piece) => piece.target.x)).toEqual([-84, -42, 0, 42, 84]);
+    expect(mobile.map((piece) => piece.target.width)).toEqual([36, 36, 36, 36, 36]);
+    expect(mobile.map((piece) => piece.target.height)).toEqual([36, 36, 36, 36, 36]);
   });
 
   it('anchors the composed banner bottom to the viewport bottom center', () => {
