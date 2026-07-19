@@ -204,3 +204,11 @@
 - 过程纠正：早期 AI 尝试用 `0` 铺成整块底板补缝，用户指出这属于规则外区域；后续按用户规则收回 `0`，再通过调整第三行垂直坐标修正 `8/9` 对齐和行间缝隙。
 - 验证：实现阶段已通过 `pnpm --filter web typecheck`、`pnpm --filter web lint`、`pnpm --filter web test`，并用 Playwright 检查 `/game` 桌面与移动截图；本次文档更新已通过 `git diff --check`。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-19：修正 `/game` HUD slots 为 9 张合成并增加间距
+
+- 任务摘要：用户确认 slots 当前图形正确，但要求记录该实现，同时指出 5 个 slots 太靠中，需要增加间距。
+- AI 贡献：保留 `Slots.png` 的 `1..9` 九张切片合成一个 slot 的实现；将 5 个 slot 的桌面中心位置从 `[-116,-58,0,58,116]` 调整为 `[-124,-62,0,62,124]`，移动端从 `[-84,-42,0,42,84]` 调整为 `[-88,-44,0,44,88]`；更新 `docs/frontend-development.md` 记录 slot 组合规则和间距。
+- 人工决策：用户明确要求不是复制单张 slot，而是 9 张组合成一个 slot；同时要求第一格不能靠左、整体不能太靠中。
+- 验证：本次调整已通过 `pnpm --filter web typecheck`、`pnpm --filter web lint`、`pnpm --filter web test` 和 `git diff --check`；Playwright 检查 `/game` 桌面与移动截图，slot 为 9 张合成且保留间距。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

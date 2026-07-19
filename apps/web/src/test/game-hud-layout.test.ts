@@ -83,7 +83,7 @@ describe('game HUD layout', () => {
       1, 2, 3, 4, 5, 6, 7, 8, 9,
     ]);
     expect(desktop.filter((piece) => piece.id === 5).map((piece) => piece.target.x)).toEqual([
-      -116, -58, 0, 58, 116,
+      -124, -62, 0, 62, 124,
     ]);
     expect(desktop.filter((piece) => piece.id === 5).map((piece) => piece.target.y)).toEqual([
       -24, -24, -24, -24, -24,
@@ -93,7 +93,7 @@ describe('game HUD layout', () => {
 
     const mobile = gameHudLayout.getSlotTargets(320);
     expect(mobile.filter((piece) => piece.id === 5).map((piece) => piece.target.x)).toEqual([
-      -84, -42, 0, 42, 84,
+      -88, -44, 0, 44, 88,
     ]);
     expect(mobile.map((piece) => piece.target.width)).toContain(12);
     expect(mobile.map((piece) => piece.target.height)).toContain(12);

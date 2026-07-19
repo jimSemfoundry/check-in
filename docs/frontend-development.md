@@ -142,6 +142,14 @@ Banner 只能由当前编号规则内的 atlas 区域组成，不允许再用额
 - `8` 和 `9` 必须上边对齐；第二行和第三行之间不能留横向背景缝。
 - Banner 宽度按视口自适应，最大 408px，左右总 margin 48px；底部居中锚定。
 
+Slots 使用同目录下的资源：
+
+```text
+Tiny Swords (Free Pack)/UI Elements/UI Banners from the store page/Banner/Slots.png
+```
+
+`Slots.png` 的 9 个编号区域必须全部组合成一个 slot，不允许只复制其中一张。每个 slot 由 `1..9` 以 3×3 方式合成，整体等比缩放到当前 slot 尺寸；slot 内部的 9 张切片不单独拉伸。HUD 当前显示 5 个 slot，整体在 banner 内垂直居中，桌面端 slot 中心 x 为 `[-124, -62, 0, 62, 124]`，移动端为 `[-88, -44, 0, 44, 88]`，保证第一格与左边缘之间保留可见距离。
+
 ## 7. API 使用约定
 
 - API 前缀：`/api/v1`
