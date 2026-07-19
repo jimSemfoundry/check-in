@@ -35,6 +35,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   private hudRoot?: Phaser.GameObjects.Container;
   private hudBannerPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotPieces: Phaser.GameObjects.Image[] = [];
+  private hudSlotItems: Phaser.GameObjects.Image[] = [];
   private hudSlotCursor?: Phaser.GameObjects.Image;
   private selectedHudSlotIndex = 0;
   private sheep?: Phaser.GameObjects.Sprite;
@@ -103,10 +104,21 @@ export class FloatingIslandScene extends Phaser.Scene {
       return slotPiece;
     });
 
+    this.hudSlotItems = gameHudLayout.slotItems.map((item) => {
+      const slotItem = this.add.image(0, 0, 'terrain-tiles', item.frame);
+      slotItem.setOrigin(0.5);
+      return slotItem;
+    });
+
     this.hudSlotCursor = this.add.image(0, 0, 'hud-slot-cursor');
     this.hudSlotCursor.setOrigin(0.5);
 
-    this.hudRoot.add([...this.hudBannerPieces, ...this.hudSlotPieces, this.hudSlotCursor]);
+    this.hudRoot.add([
+      ...this.hudBannerPieces,
+      ...this.hudSlotPieces,
+      ...this.hudSlotItems,
+      this.hudSlotCursor,
+    ]);
   }
 
   private createHudFrames(
@@ -381,6 +393,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     const hudTransform = gameHudLayout.getHudTransform(width, height);
     const bannerPieces = gameHudLayout.getBannerPieceTargets(width);
     const slotPieces = gameHudLayout.getSlotTargets(width);
+    const slotItems = gameHudLayout.getSlotItemTargets(width);
     const slotCursor = gameHudLayout.getSlotCursorTarget(width, this.selectedHudSlotIndex);
 
     for (const [index, piece] of bannerPieces.entries()) {
@@ -397,6 +410,14 @@ export class FloatingIslandScene extends Phaser.Scene {
 
       slotPiece.setPosition(piece.target.x, piece.target.y);
       slotPiece.setDisplaySize(piece.target.width, piece.target.height);
+    }
+
+    for (const [index, item] of slotItems.entries()) {
+      const slotItem = this.hudSlotItems[index];
+      if (!slotItem) continue;
+
+      slotItem.setPosition(item.target.x, item.target.y);
+      slotItem.setDisplaySize(item.target.width, item.target.height);
     }
 
     this.hudSlotCursor?.setPosition(slotCursor.x, slotCursor.y);

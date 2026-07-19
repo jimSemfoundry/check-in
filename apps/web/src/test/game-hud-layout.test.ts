@@ -126,6 +126,22 @@ describe('game HUD layout', () => {
     });
   });
 
+  it('places the numbered terrain tiles into the first four slots', () => {
+    expect(gameHudLayout.slotItems.map((item) => item.frame)).toEqual([30, 28, 12, 10]);
+    expect(gameHudLayout.getSlotItemTargets(1280)).toEqual([
+      { slotIndex: 0, frame: 30, target: { x: -132, y: -24, width: 35, height: 35 } },
+      { slotIndex: 1, frame: 28, target: { x: -66, y: -24, width: 35, height: 35 } },
+      { slotIndex: 2, frame: 12, target: { x: 0, y: -24, width: 35, height: 35 } },
+      { slotIndex: 3, frame: 10, target: { x: 66, y: -24, width: 35, height: 35 } },
+    ]);
+    expect(gameHudLayout.getSlotItemTargets(320)).toEqual([
+      { slotIndex: 0, frame: 30, target: { x: -92, y: -24, width: 22, height: 22 } },
+      { slotIndex: 1, frame: 28, target: { x: -46, y: -24, width: 22, height: 22 } },
+      { slotIndex: 2, frame: 12, target: { x: 0, y: -24, width: 22, height: 22 } },
+      { slotIndex: 3, frame: 10, target: { x: 46, y: -24, width: 22, height: 22 } },
+    ]);
+  });
+
   it('anchors the composed banner bottom to the viewport bottom center', () => {
     expect(gameHudLayout.getHudTransform(1280, 720)).toEqual({
       x: 640,

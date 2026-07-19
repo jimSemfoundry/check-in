@@ -42,6 +42,20 @@ type SlotCursorTarget = {
   height: number;
 };
 
+type SlotItem = {
+  slotIndex: number;
+  frame: number;
+};
+
+type SlotItemTarget = SlotItem & {
+  target: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+};
+
 const BANNER_PIECE_SCALE = 0.5;
 const MAX_BANNER_WIDTH = 408;
 const HORIZONTAL_MARGIN = 48;
@@ -85,6 +99,13 @@ const slotPieces: SlotPiece[] = [
   { id: 9, key: 'slot-piece-9', source: { x: 256, y: 256, width: 24, height: 47 } },
 ];
 
+const slotItems: SlotItem[] = [
+  { slotIndex: 0, frame: 30 },
+  { slotIndex: 1, frame: 28 },
+  { slotIndex: 2, frame: 12 },
+  { slotIndex: 3, frame: 10 },
+];
+
 function getBannerWidth(viewportWidth: number) {
   return Math.max(
     MIN_BANNER_WIDTH,
@@ -107,6 +128,16 @@ function getSlotStep(viewportWidth: number) {
 
 function getSlotSize(viewportWidth: number) {
   return Math.min(MAX_SLOT_SIZE, Math.floor(getBannerWidth(viewportWidth) * 0.1617647059 - 8));
+}
+
+function getSlotItemSize(viewportWidth: number) {
+  return Math.floor(getSlotSize(viewportWidth) * 0.62);
+}
+
+function getSlotCenterX(viewportWidth: number, slotIndex: number) {
+  const step = getSlotStep(viewportWidth);
+  const startX = -step * (SLOT_COUNT - 1) / 2;
+  return roundLayoutValue(startX + step * slotIndex);
 }
 
 function getSlotTargets(viewportWidth: number): SlotPieceTarget[] {
@@ -141,14 +172,27 @@ function getSlotTargets(viewportWidth: number): SlotPieceTarget[] {
 function getSlotCursorTarget(viewportWidth: number, slotIndex: number): SlotCursorTarget {
   const step = getSlotStep(viewportWidth);
   const clampedSlotIndex = Math.max(0, Math.min(SLOT_COUNT - 1, slotIndex));
-  const startX = -step * (SLOT_COUNT - 1) / 2;
 
   return {
-    x: roundLayoutValue(startX + step * clampedSlotIndex),
+    x: getSlotCenterX(viewportWidth, clampedSlotIndex),
     y: SLOT_CENTER_Y,
     width: step,
     height: step,
   };
+}
+
+function getSlotItemTargets(viewportWidth: number): SlotItemTarget[] {
+  const itemSize = getSlotItemSize(viewportWidth);
+
+  return slotItems.map((item) => ({
+    ...item,
+    target: {
+      x: getSlotCenterX(viewportWidth, item.slotIndex),
+      y: SLOT_CENTER_Y,
+      width: itemSize,
+      height: itemSize,
+    },
+  }));
 }
 
 function getBannerPieceTargets(viewportWidth: number): BannerPieceTarget[] {
@@ -249,9 +293,11 @@ function getHudTransform(viewportWidth: number, viewportHeight: number) {
 export const gameHudLayout = {
   bannerPieces,
   slotPieces,
+  slotItems,
   getBannerWidth,
   getBannerPieceTargets,
   getSlotTargets,
   getSlotCursorTarget,
+  getSlotItemTargets,
   getHudTransform,
 };
