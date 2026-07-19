@@ -77,20 +77,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot?.destroy(true);
     this.hudRoot = this.add.container(0, 0);
     this.hudRoot.setDepth(100);
-    this.createHudFrames('hud-store-banner', [gameHudLayout.bannerFillPiece]);
     this.createHudFrames('hud-store-banner', gameHudLayout.bannerPieces);
-
-    const slotFill = this.add.image(
-      gameHudLayout.bannerFillPiece.target.x,
-      gameHudLayout.bannerFillPiece.target.y,
-      'hud-store-banner',
-      gameHudLayout.bannerFillPiece.key,
-    );
-    slotFill.setDisplaySize(
-      gameHudLayout.bannerFillPiece.target.width,
-      gameHudLayout.bannerFillPiece.target.height,
-    );
-    slotFill.setOrigin(0.5);
 
     const bannerPieces = gameHudLayout.bannerPieces.map((piece) => {
       const bannerPiece = this.add.image(piece.target.x, piece.target.y, 'hud-store-banner', piece.key);
@@ -99,12 +86,12 @@ export class FloatingIslandScene extends Phaser.Scene {
       return bannerPiece;
     });
 
-    this.hudRoot.add([slotFill, ...bannerPieces]);
+    this.hudRoot.add(bannerPieces);
   }
 
   private createHudFrames(
     textureKey: string,
-    pieces: readonly (typeof gameHudLayout.bannerPieces[number] | typeof gameHudLayout.bannerFillPiece)[],
+    pieces: typeof gameHudLayout.bannerPieces,
   ) {
     const texture = this.textures.get(textureKey);
 

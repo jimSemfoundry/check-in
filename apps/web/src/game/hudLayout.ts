@@ -38,19 +38,6 @@ function piece(
 }
 
 export const gameHudLayout = {
-  bannerFillPiece: piece(
-    'hud-banner-fill-piece',
-    { x: 320, y: 128, width: 64, height: 64 },
-    { x: 0, y: 0, width: 200, height: 96 },
-  ),
-  bannerFillBounds: {
-    left: -100,
-    top: -48,
-    right: 100,
-    bottom: 48,
-    width: 200,
-    height: 96,
-  },
   bannerPieces: [
     piece('hud-banner-piece', { x: 4, y: 0, width: 60, height: 64 }, { x: -100, y: -40.5 }),
     piece('hud-banner-piece', { x: 256, y: 0, width: 64, height: 64 }, { x: -16, y: -40.5 }),
