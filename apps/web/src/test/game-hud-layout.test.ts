@@ -2,23 +2,37 @@ import { describe, expect, it } from 'vitest';
 import { gameHudLayout } from '../game/hudLayout';
 
 describe('game HUD layout', () => {
+  it('builds a filled banner body from the store Slots atlas center tile', () => {
+    expect(gameHudLayout.slotFillPiece.source).toEqual({
+      x: 128,
+      y: 128,
+      width: 64,
+      height: 64,
+    });
+    expect(gameHudLayout.slotFillPiece.target).toEqual({
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 96,
+    });
+    expect(gameHudLayout.slotBounds).toEqual({
+      left: -100,
+      top: -48,
+      right: 100,
+      bottom: 48,
+      width: 200,
+      height: 96,
+    });
+  });
+
   it('packs the red-box banner pieces from the Banner atlas', () => {
-    expect(gameHudLayout.bannerPieces).toHaveLength(11);
+    expect(gameHudLayout.bannerPieces).toHaveLength(2);
     expect(gameHudLayout.bannerPieces.map((piece) => piece.source)).toEqual([
-      { x: 4, y: 0, width: 60, height: 64 },
-      { x: 256, y: 0, width: 64, height: 64 },
-      { x: 384, y: 0, width: 64, height: 64 },
-      { x: 640, y: 0, width: 44, height: 64 },
-      { x: 4, y: 128, width: 60, height: 64 },
-      { x: 320, y: 128, width: 64, height: 64 },
-      { x: 640, y: 128, width: 44, height: 64 },
       { x: 4, y: 256, width: 188, height: 92 },
-      { x: 256, y: 256, width: 64, height: 64 },
-      { x: 384, y: 256, width: 64, height: 64 },
       { x: 512, y: 256, width: 172, height: 98 },
     ]);
     expect(gameHudLayout.bannerPieces.map((piece) => piece.target.x)).toEqual([
-      -63, -16, 16, 59, -63, 0, 59, -63, -16, 16, 63,
+      -63, 63,
     ]);
   });
 

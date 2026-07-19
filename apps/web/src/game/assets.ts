@@ -12,6 +12,6 @@ export const tinySwordsAssets = {
   sheep: tinySwordsNatureAssets.sheep,
   hud: {
     storeBanner: `${tinySwordsUiBase}/UI Banners from the store page/Banner/Banner.png`,
-    woodTableSlots: `${tinySwordsUiBase}/UI Elements/Wood Table/WoodTable_Slots.png`,
+    storeSlots: `${tinySwordsUiBase}/UI Banners from the store page/Banner/Slots.png`,
   },
 } as const;

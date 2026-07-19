@@ -52,7 +52,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.loadTreeSpritesheets();
     this.loadSheepSpritesheets();
     this.load.image('hud-store-banner', tinySwordsAssets.hud.storeBanner);
-    this.load.image('hud-wood-table-slots', tinySwordsAssets.hud.woodTableSlots);
+    this.load.image('hud-store-slots', tinySwordsAssets.hud.storeSlots);
   }
 
   create() {
@@ -78,7 +78,20 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot?.destroy(true);
     this.hudRoot = this.add.container(0, 0);
     this.hudRoot.setDepth(100);
-    this.createHudBannerFrames();
+    this.createHudFrames('hud-store-slots', [gameHudLayout.slotFillPiece]);
+    this.createHudFrames('hud-store-banner', gameHudLayout.bannerPieces);
+
+    const slotFill = this.add.image(
+      gameHudLayout.slotFillPiece.target.x,
+      gameHudLayout.slotFillPiece.target.y,
+      'hud-store-slots',
+      gameHudLayout.slotFillPiece.key,
+    );
+    slotFill.setDisplaySize(
+      gameHudLayout.slotFillPiece.target.width,
+      gameHudLayout.slotFillPiece.target.height,
+    );
+    slotFill.setOrigin(0.5);
 
     const bannerPieces = gameHudLayout.bannerPieces.map((piece) => {
       const bannerPiece = this.add.image(piece.target.x, piece.target.y, 'hud-store-banner', piece.key);
@@ -87,16 +100,19 @@ export class FloatingIslandScene extends Phaser.Scene {
       return bannerPiece;
     });
 
-    this.hudRoot.add(bannerPieces);
+    this.hudRoot.add([slotFill, ...bannerPieces]);
   }
 
-  private createHudBannerFrames() {
-    const bannerTexture = this.textures.get('hud-store-banner');
+  private createHudFrames(
+    textureKey: string,
+    pieces: readonly (typeof gameHudLayout.bannerPieces[number] | typeof gameHudLayout.slotFillPiece)[],
+  ) {
+    const texture = this.textures.get(textureKey);
 
-    for (const piece of gameHudLayout.bannerPieces) {
-      if (bannerTexture.has(piece.key)) continue;
+    for (const piece of pieces) {
+      if (texture.has(piece.key)) continue;
 
-      bannerTexture.add(
+      texture.add(
         piece.key,
         0,
         piece.source.x,
