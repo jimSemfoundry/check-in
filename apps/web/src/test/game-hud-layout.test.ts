@@ -130,15 +130,15 @@ describe('game HUD layout', () => {
     expect(gameHudLayout.slotItems.map((item) => item.frame)).toEqual([30, 28, 12, 10]);
     expect(gameHudLayout.getSlotItemTargets(1280)).toEqual([
       { slotIndex: 0, frame: 30, displayScale: 0.62, target: { x: -132, y: -24, width: 35, height: 35 } },
-      { slotIndex: 1, frame: 28, displayScale: 0.72, target: { x: -66, y: -24, width: 41, height: 41 } },
-      { slotIndex: 2, frame: 12, displayScale: 0.72, target: { x: 0, y: -24, width: 41, height: 41 } },
-      { slotIndex: 3, frame: 10, displayScale: 0.72, target: { x: 66, y: -24, width: 41, height: 41 } },
+      { slotIndex: 1, frame: 28, displayScale: 0.92, target: { x: -66, y: -24, width: 53, height: 53 } },
+      { slotIndex: 2, frame: 12, displayScale: 0.92, target: { x: 0, y: -24, width: 53, height: 53 } },
+      { slotIndex: 3, frame: 10, displayScale: 0.92, target: { x: 66, y: -24, width: 53, height: 53 } },
     ]);
     expect(gameHudLayout.getSlotItemTargets(320)).toEqual([
       { slotIndex: 0, frame: 30, displayScale: 0.62, target: { x: -92, y: -24, width: 22, height: 22 } },
-      { slotIndex: 1, frame: 28, displayScale: 0.72, target: { x: -46, y: -24, width: 25, height: 25 } },
-      { slotIndex: 2, frame: 12, displayScale: 0.72, target: { x: 0, y: -24, width: 25, height: 25 } },
-      { slotIndex: 3, frame: 10, displayScale: 0.72, target: { x: 46, y: -24, width: 25, height: 25 } },
+      { slotIndex: 1, frame: 28, displayScale: 0.92, target: { x: -46, y: -24, width: 33, height: 33 } },
+      { slotIndex: 2, frame: 12, displayScale: 0.92, target: { x: 0, y: -24, width: 33, height: 33 } },
+      { slotIndex: 3, frame: 10, displayScale: 0.92, target: { x: 46, y: -24, width: 33, height: 33 } },
     ]);
   });
 
