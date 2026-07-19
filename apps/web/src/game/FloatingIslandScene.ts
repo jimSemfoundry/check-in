@@ -33,6 +33,7 @@ const platformHeight = grassHeight + rockHeight + foamHeight;
 export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
   private hudRoot?: Phaser.GameObjects.Container;
+  private hudBannerPieces: Phaser.GameObjects.Image[] = [];
   private sheep?: Phaser.GameObjects.Sprite;
 
   constructor() {
@@ -79,14 +80,13 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot.setDepth(100);
     this.createHudFrames('hud-store-banner', gameHudLayout.bannerPieces);
 
-    const bannerPieces = gameHudLayout.bannerPieces.map((piece) => {
-      const bannerPiece = this.add.image(piece.target.x, piece.target.y, 'hud-store-banner', piece.key);
-      bannerPiece.setDisplaySize(piece.target.width, piece.target.height);
+    this.hudBannerPieces = gameHudLayout.bannerPieces.map((piece) => {
+      const bannerPiece = this.add.image(0, 0, 'hud-store-banner', piece.key);
       bannerPiece.setOrigin(0.5);
       return bannerPiece;
     });
 
-    this.hudRoot.add(bannerPieces);
+    this.hudRoot.add(this.hudBannerPieces);
   }
 
   private createHudFrames(
@@ -359,6 +359,16 @@ export class FloatingIslandScene extends Phaser.Scene {
     if (!this.hudRoot) return;
 
     const hudTransform = gameHudLayout.getHudTransform(width, height);
+    const bannerPieces = gameHudLayout.getBannerPieceTargets(width);
+
+    for (const [index, piece] of bannerPieces.entries()) {
+      const bannerPiece = this.hudBannerPieces[index];
+      if (!bannerPiece) continue;
+
+      bannerPiece.setPosition(piece.target.x, piece.target.y);
+      bannerPiece.setDisplaySize(piece.target.width, piece.target.height);
+    }
+
     this.hudRoot.setScale(hudTransform.scale);
     this.hudRoot.setPosition(hudTransform.x, hudTransform.y);
   }

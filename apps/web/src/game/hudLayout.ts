@@ -1,4 +1,8 @@
 const BANNER_PIECE_SCALE = 0.5;
+const MAX_ROW_WIDTH = 352;
+const HORIZONTAL_MARGIN = 48;
+
+type BannerRow = 'top' | 'middle' | 'bottom';
 
 type BannerPieceSource = {
   x: number;
@@ -14,59 +18,94 @@ type BannerPieceTarget = {
   height: number;
 };
 
-function piece(
-  prefix: string,
-  source: BannerPieceSource,
-  target: { x: number; y: number; width?: number; height?: number },
-): {
+type BannerPieceRole = 'left' | 'leftCenter' | 'center' | 'rightCenter' | 'right';
+
+type BannerPiece = {
   key: string;
+  row: BannerRow;
+  role: BannerPieceRole;
   source: BannerPieceSource;
   target: BannerPieceTarget;
-} {
-  const key = `${prefix}-${source.x}-${source.y}-${source.width}-${source.height}`;
+};
+
+function piece(
+  row: BannerRow,
+  role: BannerPieceRole,
+  source: BannerPieceSource,
+): BannerPiece {
+  const key = `hud-banner-piece-${source.x}-${source.y}-${source.width}-${source.height}`;
 
   return {
     key,
+    row,
+    role,
     source,
     target: {
-      x: target.x,
-      y: target.y,
-      width: target.width ?? source.width * BANNER_PIECE_SCALE,
-      height: target.height ?? source.height * BANNER_PIECE_SCALE,
+      x: 0,
+      y: 0,
+      width: source.width * BANNER_PIECE_SCALE,
+      height: source.height * BANNER_PIECE_SCALE,
     },
   };
 }
 
+function getRowY(row: BannerRow) {
+  if (row === 'top') return -64;
+  if (row === 'middle') return -24;
+  return 24;
+}
+
+function getRoleX(role: BannerPieceRole, rowWidth: number, pieceWidth: number) {
+  if (role === 'left') return -rowWidth / 2 + pieceWidth / 2;
+  if (role === 'right') return rowWidth / 2 - pieceWidth / 2;
+  if (role === 'leftCenter') return -18;
+  if (role === 'rightCenter') return 18;
+  return 0;
+}
+
 export const gameHudLayout = {
   bannerPieces: [
-    piece('hud-banner-piece', { x: 4, y: 0, width: 60, height: 64 }, { x: -100, y: -40.5 }),
-    piece('hud-banner-piece', { x: 256, y: 0, width: 64, height: 64 }, { x: -16, y: -40.5 }),
-    piece('hud-banner-piece', { x: 384, y: 0, width: 64, height: 64 }, { x: 16, y: -40.5 }),
-    piece('hud-banner-piece', { x: 640, y: 0, width: 44, height: 64 }, { x: 89, y: -40.5 }),
-    piece('hud-banner-piece', { x: 4, y: 128, width: 60, height: 64 }, { x: -100, y: -8.5 }),
-    piece('hud-banner-piece', { x: 320, y: 128, width: 64, height: 64 }, { x: 0, y: -8.5 }),
-    piece('hud-banner-piece', { x: 640, y: 128, width: 44, height: 64 }, { x: 89, y: -8.5 }),
-    piece('hud-banner-piece', { x: 4, y: 256, width: 188, height: 92 }, { x: -63, y: 10.5 }),
-    piece('hud-banner-piece', { x: 256, y: 256, width: 64, height: 64 }, { x: -16, y: 24.5 }),
-    piece('hud-banner-piece', { x: 384, y: 256, width: 64, height: 64 }, { x: 16, y: 24.5 }),
-    piece('hud-banner-piece', { x: 512, y: 256, width: 172, height: 98 }, { x: 63, y: 7.5 }),
+    piece('top', 'left', { x: 4, y: 0, width: 60, height: 64 }),
+    piece('top', 'leftCenter', { x: 256, y: 0, width: 64, height: 64 }),
+    piece('top', 'rightCenter', { x: 384, y: 0, width: 64, height: 64 }),
+    piece('top', 'right', { x: 640, y: 0, width: 44, height: 64 }),
+    piece('middle', 'left', { x: 4, y: 128, width: 60, height: 64 }),
+    piece('middle', 'center', { x: 320, y: 128, width: 64, height: 64 }),
+    piece('middle', 'right', { x: 640, y: 128, width: 44, height: 64 }),
+    piece('bottom', 'left', { x: 4, y: 256, width: 188, height: 92 }),
+    piece('bottom', 'leftCenter', { x: 256, y: 256, width: 64, height: 64 }),
+    piece('bottom', 'rightCenter', { x: 384, y: 256, width: 64, height: 64 }),
+    piece('bottom', 'right', { x: 512, y: 256, width: 172, height: 98 }),
   ],
   bannerBounds: {
-    left: -110,
-    top: -56.5,
-    right: 106,
-    bottom: 56.5,
-    width: 216,
-    height: 113,
+    left: -176,
+    top: -80,
+    right: 176,
+    bottom: 49,
+    width: 352,
+    height: 129,
   },
   bottomGap: 18,
-  getHudTransform(width: number, height: number) {
-    const scale = Math.min(width / (this.bannerBounds.width + 24), 1);
+  getRowWidth(width: number) {
+    return Math.min(Math.max(width - HORIZONTAL_MARGIN, 0), MAX_ROW_WIDTH);
+  },
+  getBannerPieceTargets(width: number) {
+    const rowWidth = this.getRowWidth(width);
 
+    return this.bannerPieces.map((bannerPiece) => ({
+      ...bannerPiece,
+      target: {
+        ...bannerPiece.target,
+        x: getRoleX(bannerPiece.role, rowWidth, bannerPiece.target.width),
+        y: getRowY(bannerPiece.row),
+      },
+    }));
+  },
+  getHudTransform(width: number, height: number) {
     return {
       x: width / 2,
-      y: height - this.bottomGap - this.bannerBounds.bottom * scale,
-      scale,
+      y: height - this.bottomGap - this.bannerBounds.bottom,
+      scale: 1,
     };
   },
 } as const;
