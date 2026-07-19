@@ -38,12 +38,12 @@ function piece(
 }
 
 export const gameHudLayout = {
-  slotFillPiece: piece(
-    'hud-slot-fill-piece',
-    { x: 128, y: 128, width: 64, height: 64 },
+  bannerFillPiece: piece(
+    'hud-banner-fill-piece',
+    { x: 320, y: 128, width: 64, height: 64 },
     { x: 0, y: 0, width: 200, height: 96 },
   ),
-  slotBounds: {
+  bannerFillBounds: {
     left: -100,
     top: -48,
     right: 100,

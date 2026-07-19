@@ -52,7 +52,6 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.loadTreeSpritesheets();
     this.loadSheepSpritesheets();
     this.load.image('hud-store-banner', tinySwordsAssets.hud.storeBanner);
-    this.load.image('hud-store-slots', tinySwordsAssets.hud.storeSlots);
   }
 
   create() {
@@ -78,18 +77,18 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot?.destroy(true);
     this.hudRoot = this.add.container(0, 0);
     this.hudRoot.setDepth(100);
-    this.createHudFrames('hud-store-slots', [gameHudLayout.slotFillPiece]);
+    this.createHudFrames('hud-store-banner', [gameHudLayout.bannerFillPiece]);
     this.createHudFrames('hud-store-banner', gameHudLayout.bannerPieces);
 
     const slotFill = this.add.image(
-      gameHudLayout.slotFillPiece.target.x,
-      gameHudLayout.slotFillPiece.target.y,
-      'hud-store-slots',
-      gameHudLayout.slotFillPiece.key,
+      gameHudLayout.bannerFillPiece.target.x,
+      gameHudLayout.bannerFillPiece.target.y,
+      'hud-store-banner',
+      gameHudLayout.bannerFillPiece.key,
     );
     slotFill.setDisplaySize(
-      gameHudLayout.slotFillPiece.target.width,
-      gameHudLayout.slotFillPiece.target.height,
+      gameHudLayout.bannerFillPiece.target.width,
+      gameHudLayout.bannerFillPiece.target.height,
     );
     slotFill.setOrigin(0.5);
 
@@ -105,7 +104,7 @@ export class FloatingIslandScene extends Phaser.Scene {
 
   private createHudFrames(
     textureKey: string,
-    pieces: readonly (typeof gameHudLayout.bannerPieces[number] | typeof gameHudLayout.slotFillPiece)[],
+    pieces: readonly (typeof gameHudLayout.bannerPieces[number] | typeof gameHudLayout.bannerFillPiece)[],
   ) {
     const texture = this.textures.get(textureKey);
 

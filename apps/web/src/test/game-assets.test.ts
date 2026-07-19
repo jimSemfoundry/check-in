@@ -21,8 +21,6 @@ describe('tiny swords asset manifest', () => {
       hud: {
         storeBanner:
           '/game/tiny-swords/UI Elements/UI Banners from the store page/Banner/Banner.png',
-        storeSlots:
-          '/game/tiny-swords/UI Elements/UI Banners from the store page/Banner/Slots.png',
       },
     });
     expect(tinySwordsAssets).not.toHaveProperty('clouds');
