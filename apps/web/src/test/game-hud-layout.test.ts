@@ -27,6 +27,24 @@ describe('game HUD layout', () => {
     ]);
   });
 
+  it('uses the Slots atlas as nine fixed slot pieces', () => {
+    expect(gameHudLayout.slotPieces.map((piece) => piece.id)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9,
+    ]);
+    expect(gameHudLayout.slotPieces.map((piece) => piece.source)).toEqual([
+      { x: 43, y: 8, width: 21, height: 56 },
+      { x: 128, y: 8, width: 64, height: 56 },
+      { x: 256, y: 8, width: 24, height: 56 },
+      { x: 43, y: 128, width: 21, height: 64 },
+      { x: 128, y: 128, width: 64, height: 64 },
+      { x: 256, y: 128, width: 24, height: 64 },
+      { x: 43, y: 256, width: 21, height: 47 },
+      { x: 128, y: 256, width: 64, height: 47 },
+      { x: 256, y: 256, width: 24, height: 47 },
+    ]);
+    expect(gameHudLayout.slotPieces.some((piece) => piece.stretch)).toBe(false);
+  });
+
   it('computes an adaptive banner width from the viewport', () => {
     expect(gameHudLayout.getBannerWidth(1280)).toBe(408);
     expect(gameHudLayout.getBannerWidth(390)).toBe(342);
@@ -55,6 +73,22 @@ describe('game HUD layout', () => {
     expect(narrow.find((piece) => piece.id === 2)?.target.width).toBe(188);
     expect(narrow.find((piece) => piece.id === 0)?.target.width).toBe(220);
     expect(narrow.find((piece) => piece.id === 8)?.target.width).toBe(60);
+  });
+
+  it('lays out five fixed square slots centered inside the banner body', () => {
+    const desktop = gameHudLayout.getSlotTargets(1280);
+    expect(desktop).toHaveLength(5);
+    expect([...new Set(desktop.map((piece) => piece.slotIndex))]).toEqual([0, 1, 2, 3, 4]);
+    expect(desktop.map((piece) => piece.id)).toEqual([5, 5, 5, 5, 5]);
+    expect(desktop.map((piece) => piece.target.x)).toEqual([-160, -80, 0, 80, 160]);
+    expect(desktop.map((piece) => piece.target.y)).toEqual([-24, -24, -24, -24, -24]);
+    expect(desktop.map((piece) => piece.target.width)).toEqual([58, 58, 58, 58, 58]);
+    expect(desktop.map((piece) => piece.target.height)).toEqual([58, 58, 58, 58, 58]);
+
+    const mobile = gameHudLayout.getSlotTargets(320);
+    expect(mobile.map((piece) => piece.target.x)).toEqual([-108.8, -54.4, 0, 54.4, 108.8]);
+    expect(mobile.map((piece) => piece.target.width)).toEqual([42, 42, 42, 42, 42]);
+    expect(mobile.map((piece) => piece.target.height)).toEqual([42, 42, 42, 42, 42]);
   });
 
   it('anchors the composed banner bottom to the viewport bottom center', () => {

@@ -1,7 +1,8 @@
 type BannerPieceId = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+type SlotPieceId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
-type BannerPiece = {
-  id: BannerPieceId;
+type HudPiece<TId extends number> = {
+  id: TId;
   key: string;
   source: {
     x: number;
@@ -12,7 +13,20 @@ type BannerPiece = {
   stretch?: boolean;
 };
 
+type BannerPiece = HudPiece<BannerPieceId>;
+type SlotPiece = HudPiece<SlotPieceId>;
+
 type BannerPieceTarget = BannerPiece & {
+  target: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+};
+
+type SlotPieceTarget = SlotPiece & {
+  slotIndex: number;
   target: {
     x: number;
     y: number;
@@ -31,6 +45,10 @@ const RIGHT_BOTTOM_WIDTH = (64 + 172) * BANNER_PIECE_SCALE;
 const MIN_BANNER_WIDTH = LEFT_BOTTOM_WIDTH + RIGHT_BOTTOM_WIDTH + 16;
 const HUD_BOTTOM_INSET = 18;
 const HUD_BOTTOM_EXTENT = 41;
+const SLOT_COUNT = 5;
+const MAX_SLOT_STEP = 80;
+const MAX_SLOT_SIZE = 58;
+const SLOT_CENTER_Y = -24;
 
 const scaled = (value: number) => value * BANNER_PIECE_SCALE;
 
@@ -48,6 +66,18 @@ const bannerPieces: BannerPiece[] = [
   { id: 10, key: 'piece-10', source: { x: 512, y: 256, width: 172, height: 98 } },
 ];
 
+const slotPieces: SlotPiece[] = [
+  { id: 1, key: 'slot-piece-1', source: { x: 43, y: 8, width: 21, height: 56 } },
+  { id: 2, key: 'slot-piece-2', source: { x: 128, y: 8, width: 64, height: 56 } },
+  { id: 3, key: 'slot-piece-3', source: { x: 256, y: 8, width: 24, height: 56 } },
+  { id: 4, key: 'slot-piece-4', source: { x: 43, y: 128, width: 21, height: 64 } },
+  { id: 5, key: 'slot-piece-5', source: { x: 128, y: 128, width: 64, height: 64 } },
+  { id: 6, key: 'slot-piece-6', source: { x: 256, y: 128, width: 24, height: 64 } },
+  { id: 7, key: 'slot-piece-7', source: { x: 43, y: 256, width: 21, height: 47 } },
+  { id: 8, key: 'slot-piece-8', source: { x: 128, y: 256, width: 64, height: 47 } },
+  { id: 9, key: 'slot-piece-9', source: { x: 256, y: 256, width: 24, height: 47 } },
+];
+
 function getBannerWidth(viewportWidth: number) {
   return Math.max(
     MIN_BANNER_WIDTH,
@@ -57,6 +87,36 @@ function getBannerWidth(viewportWidth: number) {
 
 function centerBetween(left: number, right: number) {
   return left + (right - left) / 2;
+}
+
+function roundLayoutValue(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
+function getSlotStep(viewportWidth: number) {
+  return Math.min(MAX_SLOT_STEP, getBannerWidth(viewportWidth) / SLOT_COUNT);
+}
+
+function getSlotSize(viewportWidth: number) {
+  return Math.min(MAX_SLOT_SIZE, Math.floor(getBannerWidth(viewportWidth) / 6.4));
+}
+
+function getSlotTargets(viewportWidth: number): SlotPieceTarget[] {
+  const step = getSlotStep(viewportWidth);
+  const startX = -step * (SLOT_COUNT - 1) / 2;
+  const slotSize = getSlotSize(viewportWidth);
+  const slotPiece = slotPieces.find((piece) => piece.id === 5) ?? slotPieces[4];
+
+  return Array.from({ length: SLOT_COUNT }, (_, slotIndex) => ({
+    ...slotPiece,
+    slotIndex,
+    target: {
+      x: roundLayoutValue(startX + step * slotIndex),
+      y: SLOT_CENTER_Y,
+      width: slotSize,
+      height: slotSize,
+    },
+  }));
 }
 
 function getBannerPieceTargets(viewportWidth: number): BannerPieceTarget[] {
@@ -156,7 +216,9 @@ function getHudTransform(viewportWidth: number, viewportHeight: number) {
 
 export const gameHudLayout = {
   bannerPieces,
+  slotPieces,
   getBannerWidth,
   getBannerPieceTargets,
+  getSlotTargets,
   getHudTransform,
 };

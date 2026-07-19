@@ -34,6 +34,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
   private hudRoot?: Phaser.GameObjects.Container;
   private hudBannerPieces: Phaser.GameObjects.Image[] = [];
+  private hudSlotPieces: Phaser.GameObjects.Image[] = [];
   private sheep?: Phaser.GameObjects.Sprite;
 
   constructor() {
@@ -53,6 +54,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.loadTreeSpritesheets();
     this.loadSheepSpritesheets();
     this.load.image('hud-store-banner', tinySwordsAssets.hud.storeBanner);
+    this.load.image('hud-store-banner-slots', tinySwordsAssets.hud.storeBannerSlots);
   }
 
   create() {
@@ -79,6 +81,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot = this.add.container(0, 0);
     this.hudRoot.setDepth(100);
     this.createHudFrames('hud-store-banner', gameHudLayout.bannerPieces);
+    this.createHudFrames('hud-store-banner-slots', gameHudLayout.slotPieces);
 
     this.hudBannerPieces = gameHudLayout.bannerPieces.map((piece) => {
       const bannerPiece = this.add.image(0, 0, 'hud-store-banner', piece.key);
@@ -86,12 +89,18 @@ export class FloatingIslandScene extends Phaser.Scene {
       return bannerPiece;
     });
 
-    this.hudRoot.add(this.hudBannerPieces);
+    this.hudSlotPieces = gameHudLayout.getSlotTargets(this.scale.width || DESIGN_WIDTH).map((piece) => {
+      const slotPiece = this.add.image(0, 0, 'hud-store-banner-slots', piece.key);
+      slotPiece.setOrigin(0.5);
+      return slotPiece;
+    });
+
+    this.hudRoot.add([...this.hudBannerPieces, ...this.hudSlotPieces]);
   }
 
   private createHudFrames(
     textureKey: string,
-    pieces: typeof gameHudLayout.bannerPieces,
+    pieces: typeof gameHudLayout.bannerPieces | typeof gameHudLayout.slotPieces,
   ) {
     const texture = this.textures.get(textureKey);
 
@@ -360,6 +369,7 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     const hudTransform = gameHudLayout.getHudTransform(width, height);
     const bannerPieces = gameHudLayout.getBannerPieceTargets(width);
+    const slotPieces = gameHudLayout.getSlotTargets(width);
 
     for (const [index, piece] of bannerPieces.entries()) {
       const bannerPiece = this.hudBannerPieces[index];
@@ -367,6 +377,14 @@ export class FloatingIslandScene extends Phaser.Scene {
 
       bannerPiece.setPosition(piece.target.x, piece.target.y);
       bannerPiece.setDisplaySize(piece.target.width, piece.target.height);
+    }
+
+    for (const [index, piece] of slotPieces.entries()) {
+      const slotPiece = this.hudSlotPieces[index];
+      if (!slotPiece) continue;
+
+      slotPiece.setPosition(piece.target.x, piece.target.y);
+      slotPiece.setDisplaySize(piece.target.width, piece.target.height);
     }
 
     this.hudRoot.setScale(hudTransform.scale);
