@@ -27,7 +27,7 @@ function loadServiceWorker(fetchResponse: Response = new Response('ok')) {
     caches: {
       open: vi.fn(async () => cache),
       match: vi.fn(),
-      keys: vi.fn(async () => ['soft-habit-v1', 'soft-habit-v2']),
+      keys: vi.fn(async () => ['soft-habit-v1', 'soft-habit-v2', 'soft-habit-v3']),
       delete: vi.fn(),
     },
     fetch: vi.fn(async () => fetchResponse.clone()),
@@ -53,7 +53,7 @@ describe('service worker', () => {
     expect(respondWith).not.toHaveBeenCalled();
   });
 
-  it('does not cache HTML fallback responses for missing script assets', async () => {
+  it('passes through HTML fallback responses for script assets without caching them', async () => {
     const htmlResponse = new Response('<!doctype html>', {
       headers: { 'content-type': 'text/html; charset=utf-8' },
     });
@@ -67,7 +67,8 @@ describe('service worker', () => {
 
     const response = await respondWith.mock.calls[0]?.[0];
 
-    expect(response.status).toBe(502);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
     expect(cache.put).not.toHaveBeenCalled();
   });
 
@@ -80,6 +81,7 @@ describe('service worker', () => {
     await waitUntil.mock.calls[0]?.[0];
 
     expect(context.caches.delete).toHaveBeenCalledWith('soft-habit-v1');
-    expect(context.caches.delete).not.toHaveBeenCalledWith('soft-habit-v2');
+    expect(context.caches.delete).toHaveBeenCalledWith('soft-habit-v2');
+    expect(context.caches.delete).not.toHaveBeenCalledWith('soft-habit-v3');
   });
 });

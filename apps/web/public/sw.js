@@ -1,4 +1,4 @@
-const CACHE = 'soft-habit-v2';
+const CACHE = 'soft-habit-v3';
 const PRECACHE_URLS = ['/', '/today', '/game'];
 
 self.addEventListener('install', (event) => {
@@ -25,13 +25,6 @@ function isCacheableResponse(request, url, response) {
   return true;
 }
 
-function invalidAssetResponse(url) {
-  return new Response(`Invalid asset response for ${url.pathname}`, {
-    status: 502,
-    headers: { 'content-type': 'text/plain; charset=utf-8' },
-  });
-}
-
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
@@ -39,19 +32,20 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        if (!isCacheableResponse(event.request, url, response)) {
-          if (url.pathname.startsWith('/assets/')) return invalidAssetResponse(url);
-          return response;
-        }
+        if (url.pathname.startsWith('/assets/')) return response;
+        if (!isCacheableResponse(event.request, url, response)) return response;
         const copy = response.clone();
         caches.open(CACHE).then((cache) => cache.put(event.request, copy));
         return response;
       })
       .catch(() =>
         caches.match(event.request).then((match) => {
-          if (match) return match;
+          if (match && isCacheableResponse(event.request, url, match)) return match;
           if (event.request.mode === 'navigate') return caches.match('/');
-          return undefined;
+          return new Response('Asset unavailable', {
+            status: 504,
+            headers: { 'content-type': 'text/plain; charset=utf-8' },
+          });
         }),
       ),
   );
