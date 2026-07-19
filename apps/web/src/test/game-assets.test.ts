@@ -18,6 +18,12 @@ describe('tiny swords asset manifest', () => {
         move: '/game/tiny-swords/Terrain/Resources/Meat/Sheep/Sheep_Move.png',
         grass: '/game/tiny-swords/Terrain/Resources/Meat/Sheep/Sheep_Grass.png',
       },
+      hud: {
+        storeBanner:
+          '/game/tiny-swords/UI Elements/UI Banners from the store page/Banner/Banner.png',
+        woodTableSlots:
+          '/game/tiny-swords/UI Elements/UI Elements/Wood Table/WoodTable_Slots.png',
+      },
     });
     expect(tinySwordsAssets).not.toHaveProperty('clouds');
     expect(tinySwordsAssets).not.toHaveProperty('rocks');

@@ -20,6 +20,12 @@ const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
 const TILE_SIZE = tinySwordsTerrainTileset.tileSize;
 const SEA_COLOR = 0x4db6b5;
+const HUD_BANNER_SOURCE_WIDTH = 704;
+const HUD_BANNER_SOURCE_HEIGHT = 384;
+const HUD_BANNER_WIDTH = 352;
+const HUD_BANNER_HEIGHT = 192;
+const HUD_SLOT_SIZE = 96;
+const HUD_BOTTOM_GAP = 18;
 
 const platformWidth = rockIslandScenePlan.platform.widthTiles * TILE_SIZE;
 const grassHeight = rockIslandScenePlan.platform.grassRows * TILE_SIZE;
@@ -31,6 +37,7 @@ const platformHeight = grassHeight + rockHeight + foamHeight;
 
 export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
+  private hudRoot?: Phaser.GameObjects.Container;
   private sheep?: Phaser.GameObjects.Sprite;
 
   constructor() {
@@ -49,6 +56,8 @@ export class FloatingIslandScene extends Phaser.Scene {
     });
     this.loadTreeSpritesheets();
     this.loadSheepSpritesheets();
+    this.load.image('hud-store-banner', tinySwordsAssets.hud.storeBanner);
+    this.load.image('hud-wood-table-slots', tinySwordsAssets.hud.woodTableSlots);
   }
 
   create() {
@@ -58,6 +67,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.createNatureAnimations();
     this.createSheepAnimations();
     this.buildScene();
+    this.createHud();
     this.layout();
   }
 
@@ -67,6 +77,23 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     this.createSea();
     this.createRockIsland();
+  }
+
+  private createHud() {
+    this.hudRoot?.destroy(true);
+    this.hudRoot = this.add.container(0, 0);
+    this.hudRoot.setDepth(100);
+
+    const banner = this.add.image(0, 0, 'hud-store-banner');
+    banner.setCrop(0, 0, HUD_BANNER_SOURCE_WIDTH, HUD_BANNER_SOURCE_HEIGHT);
+    banner.setDisplaySize(HUD_BANNER_WIDTH, HUD_BANNER_HEIGHT);
+    banner.setOrigin(0.5);
+
+    const slots = this.add.image(0, 0, 'hud-wood-table-slots');
+    slots.setDisplaySize(HUD_SLOT_SIZE, HUD_SLOT_SIZE);
+    slots.setOrigin(0.5);
+
+    this.hudRoot.add([banner, slots]);
   }
 
   private createSea() {
@@ -312,5 +339,14 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     this.worldRoot.setPosition(width / 2, height / 2);
     this.worldRoot.setScale(zoom);
+    this.layoutHud(width, height);
+  }
+
+  private layoutHud(width: number, height: number) {
+    if (!this.hudRoot) return;
+
+    const hudScale = Math.min(width / (HUD_BANNER_WIDTH + 24), 1);
+    this.hudRoot.setScale(hudScale);
+    this.hudRoot.setPosition(width / 2, height - HUD_BANNER_HEIGHT * hudScale * 0.5 - HUD_BOTTOM_GAP);
   }
 }
