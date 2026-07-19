@@ -212,3 +212,10 @@
 - 人工决策：用户明确要求不是复制单张 slot，而是 9 张组合成一个 slot；同时要求第一格不能靠左、整体不能太靠中。
 - 验证：本次调整已通过 `pnpm --filter web typecheck`、`pnpm --filter web lint`、`pnpm --filter web test` 和 `git diff --check`；Playwright 检查 `/game` 桌面与移动截图，slot 为 9 张合成且保留间距。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-19：记录 `/game` HUD slots 当前选中态
+
+- 任务摘要：用户要求用 Tiny Swords `Cursor_04.png` 给 slots 点击加选中态，并在确认当前状态后要求记录。
+- AI 贡献：在 `docs/frontend-development.md` 更新当前 slots 规则：5 个 slot 仍由 `Slots.png` 的 `1..9` 九张合成；桌面中心为 `[-132,-66,0,66,132]`，移动端中心为 `[-92,-46,0,46,92]`；选中态使用 `UI Elements/UI Elements/Cursors/Cursor_04.png`，默认选中第一个 slot，点击任意 slot 后 cursor 移动到对应 slot。
+- 验证：实现阶段已通过 `pnpm --filter web typecheck`、`pnpm --filter web lint`、`pnpm --filter web test`，并用 Playwright 确认默认选中与点击后移动；本次文档更新已通过 `git diff --check`。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
