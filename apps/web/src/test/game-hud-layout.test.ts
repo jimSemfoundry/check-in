@@ -75,20 +75,28 @@ describe('game HUD layout', () => {
     expect(narrow.find((piece) => piece.id === 8)?.target.width).toBe(60);
   });
 
-  it('lays out five fixed square slots centered inside the banner body', () => {
+  it('lays out five composed slots centered inside the banner body', () => {
     const desktop = gameHudLayout.getSlotTargets(1280);
-    expect(desktop).toHaveLength(5);
+    expect(desktop).toHaveLength(45);
     expect([...new Set(desktop.map((piece) => piece.slotIndex))]).toEqual([0, 1, 2, 3, 4]);
-    expect(desktop.map((piece) => piece.id)).toEqual([5, 5, 5, 5, 5]);
-    expect(desktop.map((piece) => piece.target.x)).toEqual([-128, -64, 0, 64, 128]);
-    expect(desktop.map((piece) => piece.target.y)).toEqual([-24, -24, -24, -24, -24]);
-    expect(desktop.map((piece) => piece.target.width)).toEqual([58, 58, 58, 58, 58]);
-    expect(desktop.map((piece) => piece.target.height)).toEqual([58, 58, 58, 58, 58]);
+    expect(desktop.filter((piece) => piece.slotIndex === 0).map((piece) => piece.id)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9,
+    ]);
+    expect(desktop.filter((piece) => piece.id === 5).map((piece) => piece.target.x)).toEqual([
+      -116, -58, 0, 58, 116,
+    ]);
+    expect(desktop.filter((piece) => piece.id === 5).map((piece) => piece.target.y)).toEqual([
+      -24, -24, -24, -24, -24,
+    ]);
+    expect(desktop.map((piece) => piece.target.width)).toContain(19.33);
+    expect(desktop.map((piece) => piece.target.height)).toContain(19.33);
 
     const mobile = gameHudLayout.getSlotTargets(320);
-    expect(mobile.map((piece) => piece.target.x)).toEqual([-84, -42, 0, 42, 84]);
-    expect(mobile.map((piece) => piece.target.width)).toEqual([36, 36, 36, 36, 36]);
-    expect(mobile.map((piece) => piece.target.height)).toEqual([36, 36, 36, 36, 36]);
+    expect(mobile.filter((piece) => piece.id === 5).map((piece) => piece.target.x)).toEqual([
+      -84, -42, 0, 42, 84,
+    ]);
+    expect(mobile.map((piece) => piece.target.width)).toContain(12);
+    expect(mobile.map((piece) => piece.target.height)).toContain(12);
   });
 
   it('anchors the composed banner bottom to the viewport bottom center', () => {

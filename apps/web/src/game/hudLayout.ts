@@ -46,7 +46,7 @@ const MIN_BANNER_WIDTH = LEFT_BOTTOM_WIDTH + RIGHT_BOTTOM_WIDTH + 16;
 const HUD_BOTTOM_INSET = 18;
 const HUD_BOTTOM_EXTENT = 41;
 const SLOT_COUNT = 5;
-const MAX_SLOT_STEP = 64;
+const MAX_SLOT_STEP = 58;
 const MAX_SLOT_SIZE = 58;
 const SLOT_CENTER_Y = -24;
 
@@ -90,11 +90,12 @@ function centerBetween(left: number, right: number) {
 }
 
 function roundLayoutValue(value: number) {
-  return Math.round(value * 100) / 100;
+  const rounded = Math.round(value * 100) / 100;
+  return Object.is(rounded, -0) ? 0 : rounded;
 }
 
 function getSlotStep(viewportWidth: number) {
-  return Math.min(MAX_SLOT_STEP, getBannerWidth(viewportWidth) * 0.1617647059 - 2);
+  return Math.min(MAX_SLOT_STEP, Math.floor(getBannerWidth(viewportWidth) * 0.1617647059 - 2));
 }
 
 function getSlotSize(viewportWidth: number) {
@@ -105,18 +106,29 @@ function getSlotTargets(viewportWidth: number): SlotPieceTarget[] {
   const step = getSlotStep(viewportWidth);
   const startX = -step * (SLOT_COUNT - 1) / 2;
   const slotSize = getSlotSize(viewportWidth);
-  const slotPiece = slotPieces.find((piece) => piece.id === 5) ?? slotPieces[4];
+  const cellSize = slotSize / 3;
 
-  return Array.from({ length: SLOT_COUNT }, (_, slotIndex) => ({
-    ...slotPiece,
-    slotIndex,
-    target: {
-      x: roundLayoutValue(startX + step * slotIndex),
-      y: SLOT_CENTER_Y,
-      width: slotSize,
-      height: slotSize,
-    },
-  }));
+  return Array.from({ length: SLOT_COUNT }, (_, slotIndex) => {
+    const slotCenterX = startX + step * slotIndex;
+    const left = slotCenterX - slotSize / 2;
+    const top = SLOT_CENTER_Y - slotSize / 2;
+
+    return slotPieces.map((piece) => {
+      const column = (piece.id - 1) % 3;
+      const row = Math.floor((piece.id - 1) / 3);
+
+      return {
+        ...piece,
+        slotIndex,
+        target: {
+          x: roundLayoutValue(left + cellSize * column + cellSize / 2),
+          y: roundLayoutValue(top + cellSize * row + cellSize / 2),
+          width: roundLayoutValue(cellSize),
+          height: roundLayoutValue(cellSize),
+        },
+      };
+    });
+  }).flat();
 }
 
 function getBannerPieceTargets(viewportWidth: number): BannerPieceTarget[] {
