@@ -7,6 +7,7 @@ import {
   getGrassShapeCells,
   getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
+  getGrassTerrainFrame,
   getToggledGrassSlotIndex,
   placeGrassPatch,
 } from '../game/grassPlacement';
@@ -161,6 +162,35 @@ describe('grass placement model', () => {
       grid: { columns: 12, rows: 8 },
       patches,
     })).toHaveLength(2);
+  });
+
+  it('selects terrain frames from neighboring occupied grass cells', () => {
+    const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 1, y: 1 });
+
+    expect(getGrassTerrainFrame({ cell: { x: 1, y: 1 }, occupiedCells })).toBe(0);
+    expect(getGrassTerrainFrame({ cell: { x: 2, y: 1 }, occupiedCells })).toBe(1);
+    expect(getGrassTerrainFrame({ cell: { x: 3, y: 1 }, occupiedCells })).toBe(2);
+    expect(getGrassTerrainFrame({ cell: { x: 1, y: 2 }, occupiedCells })).toBe(9);
+    expect(getGrassTerrainFrame({ cell: { x: 2, y: 2 }, occupiedCells })).toBe(10);
+    expect(getGrassTerrainFrame({ cell: { x: 3, y: 2 }, occupiedCells })).toBe(11);
+    expect(getGrassTerrainFrame({ cell: { x: 1, y: 3 }, occupiedCells })).toBe(18);
+    expect(getGrassTerrainFrame({ cell: { x: 2, y: 3 }, occupiedCells })).toBe(19);
+    expect(getGrassTerrainFrame({ cell: { x: 3, y: 3 }, occupiedCells })).toBe(20);
+  });
+
+  it('uses strip and single-cell frames when grass is one tile wide or tall', () => {
+    expect(getGrassTerrainFrame({
+      cell: { x: 0, y: 0 },
+      occupiedCells: [{ x: 0, y: 0 }],
+    })).toBe(30);
+    expect(getGrassTerrainFrame({
+      cell: { x: 1, y: 0 },
+      occupiedCells: getGrassShapeCells(grassShapes['three-horizontal'], { x: 0, y: 0 }),
+    })).toBe(28);
+    expect(getGrassTerrainFrame({
+      cell: { x: 0, y: 1 },
+      occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 0, y: 0 }),
+    })).toBe(12);
   });
 
   it('converts world points inside the grass grid to grid cells', () => {

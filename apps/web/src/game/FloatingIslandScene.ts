@@ -4,12 +4,15 @@ import { gameHudLayout } from './hudLayout';
 import {
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
+  getGrassShapeCells,
   getGrassShapeForHudSlot,
+  getGrassTerrainFrame,
   getGridCellFromWorldPoint,
   getToggledGrassSlotIndex,
   placeGrassPatch,
   type GrassShape,
   type GrassPatch,
+  type GridCell,
 } from './grassPlacement';
 import { seaLevelScenePlan } from './seaLevelScenePlan';
 
@@ -82,7 +85,6 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.createHudFrames('hud-store-banner', gameHudLayout.bannerPieces);
     this.createHudFrames('hud-store-banner-slots', gameHudLayout.slotPieces);
     this.createHudTerrainItemFrames();
-    this.createGrassShapeFrames();
 
     this.hudBannerPieces = gameHudLayout.bannerPieces.map((piece) => {
       const bannerPiece = this.add.image(0, 0, 'hud-store-banner', piece.key);
@@ -160,23 +162,6 @@ export class FloatingIslandScene extends Phaser.Scene {
     }
   }
 
-  private createGrassShapeFrames() {
-    const texture = this.textures.get('terrain-tiles');
-
-    for (const frame of Object.values(seaLevelScenePlan.grassShapeFrames)) {
-      if (texture.has(frame.key)) continue;
-
-      texture.add(
-        frame.key,
-        0,
-        frame.source.x,
-        frame.source.y,
-        frame.source.width,
-        frame.source.height,
-      );
-    }
-  }
-
   private createSea() {
     const sea = this.add.tileSprite(0, 0, DESIGN_WIDTH + 640, DESIGN_HEIGHT + 640, 'sea');
     sea.setOrigin(0.5);
@@ -230,7 +215,7 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     this.nextGrassPatchId += 1;
     this.grassPatches = nextPatches;
-    this.renderGrassPatch(nextPatches[nextPatches.length - 1]);
+    this.renderGrassPatches();
     this.renderPreviewAtAnchor(anchor, shape);
   }
 
@@ -343,24 +328,38 @@ export class FloatingIslandScene extends Phaser.Scene {
     return { x: touch.clientX, y: touch.clientY };
   }
 
-  private renderGrassPatch(patch: GrassPatch | undefined) {
-    if (!patch || !this.grassRoot || !this.occupiedCellRoot) return;
+  private renderGrassPatches() {
+    if (!this.grassRoot || !this.occupiedCellRoot) return;
+
+    this.grassRoot.removeAll(true);
+    this.occupiedCellRoot.removeAll(true);
 
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
-    const frame = seaLevelScenePlan.grassShapeFrames[patch.shapeKey];
-    const tile = this.add.image(
-      gridLeft + patch.anchor.x * TILE_SIZE + frame.source.width / 2,
-      gridTop + patch.anchor.y * TILE_SIZE + frame.source.height / 2,
-      'terrain-tiles',
-      frame.key,
-    );
-    tile.setDisplaySize(frame.source.width + 1, frame.source.height + 1);
-    this.grassRoot.add(tile);
+    const occupiedCells = this.getOccupiedGrassCells();
 
-    for (const cell of patch.cells) {
+    for (const cell of occupiedCells) {
+      this.grassRoot.add(this.createGrassTile(cell, occupiedCells, gridLeft, gridTop, 1));
       this.occupiedCellRoot.add(this.createCellStateRectangle(cell, gridLeft, gridTop, 'occupied'));
     }
+  }
+
+  private createGrassTile(
+    cell: GridCell,
+    occupiedCells: GridCell[],
+    gridLeft: number,
+    gridTop: number,
+    alpha: number,
+  ) {
+    const tile = this.add.image(
+      gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
+      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
+      'terrain-tiles',
+      getGrassTerrainFrame({ cell, occupiedCells }),
+    );
+    tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
+    tile.setAlpha(alpha);
+    return tile;
   }
 
   private renderPreviewAtAnchor(anchor: { x: number; y: number }, shape: GrassShape) {
@@ -370,16 +369,12 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
-    const frame = seaLevelScenePlan.grassShapeFrames[shape.key];
-    const tile = this.add.image(
-      gridLeft + anchor.x * TILE_SIZE + frame.source.width / 2,
-      gridTop + anchor.y * TILE_SIZE + frame.source.height / 2,
-      'terrain-tiles',
-      frame.key,
-    );
-    tile.setDisplaySize(frame.source.width + 1, frame.source.height + 1);
-    tile.setAlpha(0.72);
-    this.previewRoot.add(tile);
+    const previewCells = getGrassShapeCells(shape, anchor);
+    const previewOccupiedCells = [...this.getOccupiedGrassCells(), ...previewCells];
+
+    for (const cell of previewCells) {
+      this.previewRoot.add(this.createGrassTile(cell, previewOccupiedCells, gridLeft, gridTop, 0.72));
+    }
   }
 
   private clearPreview() {
@@ -397,6 +392,10 @@ export class FloatingIslandScene extends Phaser.Scene {
         this.availableCellRoot.add(this.createCellStateRectangle({ x, y }, gridLeft, gridTop, 'available'));
       }
     }
+  }
+
+  private getOccupiedGrassCells() {
+    return this.grassPatches.flatMap((patch) => patch.cells);
   }
 
   private createCellStateRectangle(

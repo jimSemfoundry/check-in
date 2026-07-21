@@ -23,6 +23,25 @@ export type GrassPatch = {
   cells: GridCell[];
 };
 
+const grassTerrainFramesByOpenEdgeMask: Record<number, number> = {
+  0: 10,
+  1: 1,
+  2: 11,
+  3: 2,
+  4: 19,
+  5: 28,
+  6: 20,
+  7: 29,
+  8: 9,
+  9: 0,
+  10: 12,
+  11: 3,
+  12: 18,
+  13: 27,
+  14: 21,
+  15: 30,
+};
+
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
   'three-horizontal': { key: 'three-horizontal', width: 3, height: 1 },
@@ -115,6 +134,23 @@ export function placeGrassPatch(args: {
       cells: getGrassShapeCells(args.shape, args.anchor),
     },
   ];
+}
+
+export function getGrassTerrainFrame(args: {
+  cell: GridCell;
+  occupiedCells: GridCell[];
+}) {
+  const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
+  const top = !occupied.has(`${args.cell.x},${args.cell.y - 1}`);
+  const right = !occupied.has(`${args.cell.x + 1},${args.cell.y}`);
+  const bottom = !occupied.has(`${args.cell.x},${args.cell.y + 1}`);
+  const left = !occupied.has(`${args.cell.x - 1},${args.cell.y}`);
+  const openEdgeMask = (top ? 1 : 0)
+    | (right ? 2 : 0)
+    | (bottom ? 4 : 0)
+    | (left ? 8 : 0);
+
+  return grassTerrainFramesByOpenEdgeMask[openEdgeMask];
 }
 
 export function getGridCellFromWorldPoint(args: {

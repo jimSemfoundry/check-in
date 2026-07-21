@@ -9,23 +9,23 @@ describe('sea-level grass placement scene plan', () => {
         columns: 12,
         rows: 8,
       },
-      grassShapeFrames: {
-        one: {
-          key: 'grass-shape-one',
-          source: { x: 192, y: 192, width: 64, height: 64 },
-        },
-        'three-horizontal': {
-          key: 'grass-shape-three-horizontal',
-          source: { x: 0, y: 192, width: 192, height: 64 },
-        },
-        'three-vertical': {
-          key: 'grass-shape-three-vertical',
-          source: { x: 192, y: 0, width: 64, height: 192 },
-        },
-        nine: {
-          key: 'grass-shape-nine',
-          source: { x: 0, y: 0, width: 192, height: 192 },
-        },
+      grassTerrainFrames: {
+        none: 10,
+        top: 1,
+        right: 11,
+        bottom: 19,
+        left: 9,
+        topRight: 2,
+        bottomRight: 20,
+        bottomLeft: 18,
+        topLeft: 0,
+        topBottom: 28,
+        leftRight: 12,
+        topBottomRight: 29,
+        bottomLeftRight: 21,
+        topBottomLeft: 27,
+        topLeftRight: 3,
+        topBottomLeftRight: 30,
       },
       cellStates: {
         available: {
