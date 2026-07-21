@@ -4,6 +4,7 @@ import {
   canPlaceGrassShape,
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
+  getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
@@ -119,6 +120,19 @@ describe('grass placement model', () => {
       grid: { columns: 6, rows: 6 },
       occupiedCells: [{ x: 4, y: 1 }],
     })).toBe('placeable');
+  });
+
+  it('marks only overlapping preview cells as blocked and leaves the rest placeable', () => {
+    expect(getGrassPlacementPreviewCells({
+      shape: grassShapes['three-horizontal'],
+      anchor: { x: 1, y: 1 },
+      grid: { columns: 6, rows: 6 },
+      occupiedCells: [{ x: 2, y: 1 }],
+    })).toEqual([
+      { cell: { x: 1, y: 1 }, state: 'placeable' },
+      { cell: { x: 2, y: 1 }, state: 'blocked' },
+      { cell: { x: 3, y: 1 }, state: 'placeable' },
+    ]);
   });
 
   it('adds a grass patch record with occupied cells when grass placement is valid', () => {

@@ -4,7 +4,7 @@ import { gameHudLayout } from './hudLayout';
 import {
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
-  getGrassPlacementPreviewState,
+  getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
   getGrassTerrainFrame,
@@ -23,6 +23,8 @@ const TILE_SIZE = seaLevelScenePlan.tileSize;
 const SEA_COLOR = 0x4db6b5;
 const BLOCKED_PREVIEW_TINT = 0xff0000;
 const BLOCKED_PREVIEW_ALPHA = 0.78;
+const PLACEABLE_PREVIEW_TINT = 0xffd400;
+const PLACEABLE_PREVIEW_ALPHA = 0.7;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
 const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
@@ -375,22 +377,22 @@ export class FloatingIslandScene extends Phaser.Scene {
     const previewCells = getGrassShapeCells(shape, anchor);
     const occupiedCells = this.getOccupiedGrassCells();
     const previewOccupiedCells = [...occupiedCells, ...previewCells];
-    const previewState = getGrassPlacementPreviewState({
+    const previewCellStates = getGrassPlacementPreviewCells({
       shape,
       anchor,
       grid: seaLevelScenePlan.grid,
       occupiedCells,
     });
 
-    for (const cell of previewCells) {
+    for (const { cell, state } of previewCellStates) {
       const tile = this.createGrassTile(cell, previewOccupiedCells, gridLeft, gridTop, 0.72);
-      if (previewState === 'blocked') {
+      if (state === 'blocked') {
         tile.setTint(BLOCKED_PREVIEW_TINT);
+      } else {
+        tile.setTint(PLACEABLE_PREVIEW_TINT);
       }
       this.previewRoot.add(tile);
-      if (previewState === 'blocked') {
-        this.previewRoot.add(this.createBlockedPreviewRectangle(cell, gridLeft, gridTop));
-      }
+      this.previewRoot.add(this.createPreviewStateRectangle(cell, gridLeft, gridTop, state));
     }
   }
 
@@ -415,16 +417,24 @@ export class FloatingIslandScene extends Phaser.Scene {
     return this.grassPatches.flatMap((patch) => patch.cells);
   }
 
-  private createBlockedPreviewRectangle(cell: GridCell, gridLeft: number, gridTop: number) {
+  private createPreviewStateRectangle(
+    cell: GridCell,
+    gridLeft: number,
+    gridTop: number,
+    state: 'placeable' | 'blocked',
+  ) {
+    const fillColor = state === 'blocked' ? BLOCKED_PREVIEW_TINT : PLACEABLE_PREVIEW_TINT;
+    const fillAlpha = state === 'blocked' ? BLOCKED_PREVIEW_ALPHA : PLACEABLE_PREVIEW_ALPHA;
+    const strokeColor = state === 'blocked' ? 0xffd2d2 : 0xffef8a;
     const rect = this.add.rectangle(
       gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
       gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
       TILE_SIZE - 8,
       TILE_SIZE - 8,
-      BLOCKED_PREVIEW_TINT,
-      BLOCKED_PREVIEW_ALPHA,
+      fillColor,
+      fillAlpha,
     );
-    rect.setStrokeStyle(2, 0xffd2d2, 0.9);
+    rect.setStrokeStyle(2, strokeColor, 0.9);
     return rect;
   }
 

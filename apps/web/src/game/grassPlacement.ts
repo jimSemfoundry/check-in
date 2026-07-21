@@ -23,6 +23,8 @@ export type GrassPatch = {
   cells: GridCell[];
 };
 
+export type GrassPlacementPreviewCellState = 'placeable' | 'blocked';
+
 const grassTerrainFramesByOpenEdgeMask: Record<number, number> = {
   0: 10,
   1: 1,
@@ -114,6 +116,27 @@ export function getGrassPlacementPreviewState(args: {
   occupiedCells: GridCell[];
 }) {
   return canPlaceGrassShape(args) ? 'placeable' : 'blocked';
+}
+
+export function getGrassPlacementPreviewCells(args: {
+  shape: GrassShape;
+  anchor: GridCell;
+  grid: GridSize;
+  occupiedCells: GridCell[];
+}) {
+  const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
+
+  return getGrassShapeCells(args.shape, args.anchor).map((cell) => {
+    const isInsideGrid = cell.x >= 0
+      && cell.y >= 0
+      && cell.x < args.grid.columns
+      && cell.y < args.grid.rows;
+    const state: GrassPlacementPreviewCellState = (
+      isInsideGrid && !occupied.has(`${cell.x},${cell.y}`)
+    ) ? 'placeable' : 'blocked';
+
+    return { cell, state };
+  });
 }
 
 export function placeGrassPatch(args: {
