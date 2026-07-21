@@ -3,10 +3,10 @@ export type GridCell = {
   y: number;
 };
 
-export type FootprintKey = 'one' | 'three-horizontal' | 'three-vertical' | 'nine';
+export type GrassShapeKey = 'one' | 'three-horizontal' | 'three-vertical' | 'nine';
 
-export type Footprint = {
-  key: FootprintKey;
+export type GrassShape = {
+  key: GrassShapeKey;
   width: number;
   height: number;
 };
@@ -16,48 +16,48 @@ export type GridSize = {
   rows: number;
 };
 
-export type PlacedBuilding = {
+export type GrassPatch = {
   id: string;
-  footprintKey: FootprintKey;
+  shapeKey: GrassShapeKey;
   anchor: GridCell;
   cells: GridCell[];
 };
 
-export const buildingFootprints: Record<FootprintKey, Footprint> = {
+export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
   'three-horizontal': { key: 'three-horizontal', width: 3, height: 1 },
   'three-vertical': { key: 'three-vertical', width: 1, height: 3 },
   nine: { key: 'nine', width: 3, height: 3 },
 };
 
-const hudSlotFootprints: Array<Footprint | undefined> = [
-  buildingFootprints.one,
-  buildingFootprints['three-horizontal'],
-  buildingFootprints['three-vertical'],
-  buildingFootprints.nine,
+const hudSlotGrassShapes: Array<GrassShape | undefined> = [
+  grassShapes.one,
+  grassShapes['three-horizontal'],
+  grassShapes['three-vertical'],
+  grassShapes.nine,
   undefined,
 ];
 
-export function getFootprintForHudSlot(slotIndex: number) {
-  return hudSlotFootprints[slotIndex];
+export function getGrassShapeForHudSlot(slotIndex: number) {
+  return hudSlotGrassShapes[slotIndex];
 }
 
-export function getFootprintCells(footprint: Footprint, anchor: GridCell) {
-  return Array.from({ length: footprint.height }, (_rowValue, row) =>
-    Array.from({ length: footprint.width }, (_columnValue, column) => ({
+export function getGrassShapeCells(shape: GrassShape, anchor: GridCell) {
+  return Array.from({ length: shape.height }, (_rowValue, row) =>
+    Array.from({ length: shape.width }, (_columnValue, column) => ({
       x: anchor.x + column,
       y: anchor.y + row,
     })),
   ).flat();
 }
 
-export function canPlaceFootprint(args: {
-  footprint: Footprint;
+export function canPlaceGrassShape(args: {
+  shape: GrassShape;
   anchor: GridCell;
   grid: GridSize;
   occupiedCells: GridCell[];
 }) {
-  const cells = getFootprintCells(args.footprint, args.anchor);
+  const cells = getGrassShapeCells(args.shape, args.anchor);
   const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
 
   return cells.every((cell) => (
@@ -69,31 +69,31 @@ export function canPlaceFootprint(args: {
   ));
 }
 
-export function placeBuilding(args: {
+export function placeGrassPatch(args: {
   id: string;
-  footprint: Footprint;
+  shape: GrassShape;
   anchor: GridCell;
   grid: GridSize;
-  buildings: PlacedBuilding[];
+  patches: GrassPatch[];
 }) {
-  const occupiedCells = args.buildings.flatMap((building) => building.cells);
+  const occupiedCells = args.patches.flatMap((patch) => patch.cells);
 
-  if (!canPlaceFootprint({
-    footprint: args.footprint,
+  if (!canPlaceGrassShape({
+    shape: args.shape,
     anchor: args.anchor,
     grid: args.grid,
     occupiedCells,
   })) {
-    return args.buildings;
+    return args.patches;
   }
 
   return [
-    ...args.buildings,
+    ...args.patches,
     {
       id: args.id,
-      footprintKey: args.footprint.key,
+      shapeKey: args.shape.key,
       anchor: args.anchor,
-      cells: getFootprintCells(args.footprint, args.anchor),
+      cells: getGrassShapeCells(args.shape, args.anchor),
     },
   ];
 }

@@ -1,36 +1,36 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildingFootprints,
-  canPlaceFootprint,
+  grassShapes,
+  canPlaceGrassShape,
   getCanvasPointFromPointerEvent,
-  getFootprintCells,
-  getFootprintForHudSlot,
+  getGrassShapeCells,
+  getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
-  placeBuilding,
-} from '../game/buildingPlacement';
+  placeGrassPatch,
+} from '../game/grassPlacement';
 
-describe('building placement model', () => {
-  it('maps the first four HUD slots to footprint templates and leaves the fifth empty', () => {
-    expect(getFootprintForHudSlot(0)).toEqual({ key: 'one', width: 1, height: 1 });
-    expect(getFootprintForHudSlot(1)).toEqual({ key: 'three-horizontal', width: 3, height: 1 });
-    expect(getFootprintForHudSlot(2)).toEqual({ key: 'three-vertical', width: 1, height: 3 });
-    expect(getFootprintForHudSlot(3)).toEqual({ key: 'nine', width: 3, height: 3 });
-    expect(getFootprintForHudSlot(4)).toBeUndefined();
+describe('grass placement model', () => {
+  it('maps the first four HUD slots to grass shape templates and leaves the fifth empty', () => {
+    expect(getGrassShapeForHudSlot(0)).toEqual({ key: 'one', width: 1, height: 1 });
+    expect(getGrassShapeForHudSlot(1)).toEqual({ key: 'three-horizontal', width: 3, height: 1 });
+    expect(getGrassShapeForHudSlot(2)).toEqual({ key: 'three-vertical', width: 1, height: 3 });
+    expect(getGrassShapeForHudSlot(3)).toEqual({ key: 'nine', width: 3, height: 3 });
+    expect(getGrassShapeForHudSlot(4)).toBeUndefined();
   });
 
-  it('derives occupied cells for each rectangular footprint from the anchor', () => {
-    expect(getFootprintCells(buildingFootprints.one, { x: 2, y: 1 })).toEqual([{ x: 2, y: 1 }]);
-    expect(getFootprintCells(buildingFootprints['three-horizontal'], { x: 2, y: 1 })).toEqual([
+  it('derives occupied cells for each rectangular grass shape from the anchor', () => {
+    expect(getGrassShapeCells(grassShapes.one, { x: 2, y: 1 })).toEqual([{ x: 2, y: 1 }]);
+    expect(getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 1 })).toEqual([
       { x: 2, y: 1 },
       { x: 3, y: 1 },
       { x: 4, y: 1 },
     ]);
-    expect(getFootprintCells(buildingFootprints['three-vertical'], { x: 2, y: 1 })).toEqual([
+    expect(getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 1 })).toEqual([
       { x: 2, y: 1 },
       { x: 2, y: 2 },
       { x: 2, y: 3 },
     ]);
-    expect(getFootprintCells(buildingFootprints.nine, { x: 1, y: 2 })).toEqual([
+    expect(getGrassShapeCells(grassShapes.nine, { x: 1, y: 2 })).toEqual([
       { x: 1, y: 2 },
       { x: 2, y: 2 },
       { x: 3, y: 2 },
@@ -43,63 +43,63 @@ describe('building placement model', () => {
     ]);
   });
 
-  it('allows placement only when the full footprint fits inside the grid', () => {
+  it('allows placement only when the full grass shape fits inside the grid', () => {
     const grid = { columns: 6, rows: 6 };
 
-    expect(canPlaceFootprint({
-      footprint: buildingFootprints.nine,
+    expect(canPlaceGrassShape({
+      shape: grassShapes.nine,
       anchor: { x: 3, y: 3 },
       grid,
       occupiedCells: [],
     })).toBe(true);
-    expect(canPlaceFootprint({
-      footprint: buildingFootprints.nine,
+    expect(canPlaceGrassShape({
+      shape: grassShapes.nine,
       anchor: { x: 4, y: 3 },
       grid,
       occupiedCells: [],
     })).toBe(false);
-    expect(canPlaceFootprint({
-      footprint: buildingFootprints.nine,
+    expect(canPlaceGrassShape({
+      shape: grassShapes.nine,
       anchor: { x: 3, y: 4 },
       grid,
       occupiedCells: [],
     })).toBe(false);
-    expect(canPlaceFootprint({
-      footprint: buildingFootprints.one,
+    expect(canPlaceGrassShape({
+      shape: grassShapes.one,
       anchor: { x: -1, y: 0 },
       grid,
       occupiedCells: [],
     })).toBe(false);
-    expect(canPlaceFootprint({
-      footprint: buildingFootprints.one,
+    expect(canPlaceGrassShape({
+      shape: grassShapes.one,
       anchor: { x: 0, y: -1 },
       grid,
       occupiedCells: [],
     })).toBe(false);
   });
 
-  it('rejects placement when any footprint cell overlaps occupied cells', () => {
-    expect(canPlaceFootprint({
-      footprint: buildingFootprints['three-horizontal'],
+  it('rejects placement when any grass shape cell overlaps occupied cells', () => {
+    expect(canPlaceGrassShape({
+      shape: grassShapes['three-horizontal'],
       anchor: { x: 1, y: 1 },
       grid: { columns: 6, rows: 6 },
       occupiedCells: [{ x: 2, y: 1 }],
     })).toBe(false);
   });
 
-  it('adds a building record with occupied cells when placement is valid', () => {
-    const buildings = placeBuilding({
-      id: 'building-1',
-      footprint: buildingFootprints['three-vertical'],
+  it('adds a grass patch record with occupied cells when grass placement is valid', () => {
+    const patches = placeGrassPatch({
+      id: 'grass-1',
+      shape: grassShapes['three-vertical'],
       anchor: { x: 4, y: 2 },
       grid: { columns: 6, rows: 6 },
-      buildings: [],
+      patches: [],
     });
 
-    expect(buildings).toEqual([
+    expect(patches).toEqual([
       {
-        id: 'building-1',
-        footprintKey: 'three-vertical',
+        id: 'grass-1',
+        shapeKey: 'three-vertical',
         anchor: { x: 4, y: 2 },
         cells: [
           { x: 4, y: 2 },
@@ -110,23 +110,41 @@ describe('building placement model', () => {
     ]);
   });
 
-  it('returns the original building list when placement is invalid', () => {
-    const buildings = [
+  it('returns the original grass patch list when placement is invalid', () => {
+    const patches = [
       {
         id: 'existing',
-        footprintKey: 'one' as const,
+        shapeKey: 'one' as const,
         anchor: { x: 0, y: 0 },
         cells: [{ x: 0, y: 0 }],
       },
     ];
 
-    expect(placeBuilding({
+    expect(placeGrassPatch({
       id: 'blocked',
-      footprint: buildingFootprints.nine,
+      shape: grassShapes.nine,
       anchor: { x: 0, y: 0 },
       grid: { columns: 6, rows: 6 },
-      buildings,
-    })).toBe(buildings);
+      patches,
+    })).toBe(patches);
+  });
+
+  it('allows grass placement without adjacency to existing grass', () => {
+    const patches = placeGrassPatch({
+      id: 'first',
+      shape: grassShapes.one,
+      anchor: { x: 0, y: 0 },
+      grid: { columns: 12, rows: 8 },
+      patches: [],
+    });
+
+    expect(placeGrassPatch({
+      id: 'far-away',
+      shape: grassShapes.one,
+      anchor: { x: 10, y: 7 },
+      grid: { columns: 12, rows: 8 },
+      patches,
+    })).toHaveLength(2);
   });
 
   it('converts world points inside the grass grid to grid cells', () => {
