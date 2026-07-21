@@ -11,6 +11,7 @@ import {
   getGrassShapeForHudSlot,
   getGrassTerrainFrame,
   getGridCellFromWorldPoint,
+  getNearestGrassExpansionCells,
   getToggledGrassSlotIndex,
   placeGrassPatch,
   type GrassShape,
@@ -34,6 +35,7 @@ const WATER_FOAM_FRAMES = 16;
 const WATER_FOAM_FRAME_SIZE = TILE_SIZE * 3;
 const WATER_FOAM_FRAME_RATE = 8;
 const WATER_FOAM_DISPLAY_SIZE = 220;
+const NEAREST_GRASS_EXPANSION_CELLS = 4;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
 const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
@@ -52,6 +54,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   private hudSlotCursor?: Phaser.GameObjects.Image;
   private selectedHudSlotIndex?: number;
   private grassPatches: GrassPatch[] = [];
+  private availableOverlayCells: GridCell[] = [];
   private nextGrassPatchId = 1;
 
   constructor() {
@@ -92,6 +95,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.occupiedCellRoot = undefined;
     this.previewRoot = undefined;
     this.grassPatches = [];
+    this.availableOverlayCells = [];
     this.nextGrassPatchId = 1;
 
     this.createSea();
@@ -235,6 +239,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       anchor,
       grid: seaLevelScenePlan.grid,
       patches: this.grassPatches,
+      availableCells: this.availableOverlayCells,
     });
 
     if (nextPatches === this.grassPatches) return;
@@ -251,18 +256,21 @@ export class FloatingIslandScene extends Phaser.Scene {
     const shape = getGrassShapeForHudSlot(this.selectedHudSlotIndex);
     if (!shape) {
       this.clearPreview();
+      this.renderAvailableCells();
       return;
     }
 
     const canvasPoint = this.getCanvasPoint(pointer);
     if (!canvasPoint) {
       this.clearPreview();
+      this.renderAvailableCells();
       return;
     }
 
     const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, shape);
     if (!anchor) {
       this.clearPreview();
+      this.renderAvailableCells();
       return;
     }
 
@@ -288,6 +296,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.availableCellRoot?.setVisible(hasSelection);
     this.occupiedCellRoot?.setVisible(hasSelection);
     this.clearPreview();
+    this.renderAvailableCells();
     this.layoutHud(this.scale.width || DESIGN_WIDTH, this.scale.height || DESIGN_HEIGHT);
   }
 
@@ -316,6 +325,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       gridTop,
       tileSize: TILE_SIZE,
       grid: seaLevelScenePlan.grid,
+      availableCells: this.availableOverlayCells,
     });
   }
 
@@ -428,7 +438,10 @@ export class FloatingIslandScene extends Phaser.Scene {
       anchor,
       grid: seaLevelScenePlan.grid,
       occupiedCells,
+      availableCells: this.availableOverlayCells,
     });
+
+    this.renderAvailableCells(this.getAvailableOverlayCells(previewCells));
 
     for (const { cell, state } of previewCellStates) {
       const tile = this.createGrassTile(cell, previewOccupiedCells, gridLeft, gridTop, 0.72);
@@ -452,17 +465,43 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.previewRoot?.removeAll(true);
   }
 
-  private renderAvailableCells() {
+  private renderAvailableCells(cells = this.getBaseAvailableCells()) {
     if (!this.availableCellRoot) return;
 
+    this.availableOverlayCells = cells;
+    this.availableCellRoot.removeAll(true);
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
 
-    for (let y = 0; y < seaLevelScenePlan.grid.rows; y += 1) {
-      for (let x = 0; x < seaLevelScenePlan.grid.columns; x += 1) {
-        this.availableCellRoot.add(this.createCellStateRectangle({ x, y }, gridLeft, gridTop, 'available'));
-      }
+    for (const cell of cells) {
+      this.availableCellRoot.add(this.createCellStateRectangle(cell, gridLeft, gridTop, 'available'));
     }
+  }
+
+  private getBaseAvailableCells() {
+    return Array.from({ length: seaLevelScenePlan.grid.rows }, (_rowValue, row) =>
+      Array.from({ length: seaLevelScenePlan.grid.columns }, (_columnValue, column) => ({
+        x: column,
+        y: row,
+      })),
+    ).flat();
+  }
+
+  private getAvailableOverlayCells(previewCells: GridCell[]) {
+    const baseCells = this.getBaseAvailableCells();
+    const expansionCells = getNearestGrassExpansionCells({
+      occupiedCells: this.getOccupiedGrassCells(),
+      previewCells,
+      grid: seaLevelScenePlan.grid,
+      distanceCells: NEAREST_GRASS_EXPANSION_CELLS,
+    });
+    const cellsByKey = new Map(baseCells.map((cell) => [`${cell.x},${cell.y}`, cell]));
+
+    for (const cell of expansionCells) {
+      cellsByKey.set(`${cell.x},${cell.y}`, cell);
+    }
+
+    return [...cellsByKey.values()];
   }
 
   private getOccupiedGrassCells() {

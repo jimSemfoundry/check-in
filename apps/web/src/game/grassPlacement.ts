@@ -96,15 +96,21 @@ export function canPlaceGrassShape(args: {
   anchor: GridCell;
   grid: GridSize;
   occupiedCells: GridCell[];
+  availableCells?: GridCell[];
 }) {
   const cells = getGrassShapeCells(args.shape, args.anchor);
   const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
+  const available = args.availableCells
+    ? new Set(args.availableCells.map((cell) => `${cell.x},${cell.y}`))
+    : undefined;
 
   return cells.every((cell) => (
-    cell.x >= 0
-    && cell.y >= 0
-    && cell.x < args.grid.columns
-    && cell.y < args.grid.rows
+    (available
+      ? available.has(`${cell.x},${cell.y}`)
+      : cell.x >= 0
+        && cell.y >= 0
+        && cell.x < args.grid.columns
+        && cell.y < args.grid.rows)
     && !occupied.has(`${cell.x},${cell.y}`)
   ));
 }
@@ -114,6 +120,7 @@ export function getGrassPlacementPreviewState(args: {
   anchor: GridCell;
   grid: GridSize;
   occupiedCells: GridCell[];
+  availableCells?: GridCell[];
 }) {
   return canPlaceGrassShape(args) ? 'placeable' : 'blocked';
 }
@@ -123,14 +130,20 @@ export function getGrassPlacementPreviewCells(args: {
   anchor: GridCell;
   grid: GridSize;
   occupiedCells: GridCell[];
+  availableCells?: GridCell[];
 }) {
   const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
+  const available = args.availableCells
+    ? new Set(args.availableCells.map((cell) => `${cell.x},${cell.y}`))
+    : undefined;
 
   return getGrassShapeCells(args.shape, args.anchor).map((cell) => {
-    const isInsideGrid = cell.x >= 0
-      && cell.y >= 0
-      && cell.x < args.grid.columns
-      && cell.y < args.grid.rows;
+    const isInsideGrid = available
+      ? available.has(`${cell.x},${cell.y}`)
+      : cell.x >= 0
+        && cell.y >= 0
+        && cell.x < args.grid.columns
+        && cell.y < args.grid.rows;
     const state: GrassPlacementPreviewCellState = (
       isInsideGrid && !occupied.has(`${cell.x},${cell.y}`)
     ) ? 'placeable' : 'blocked';
@@ -174,12 +187,78 @@ export function getGrassFoamCells(cells: GridCell[]) {
   ));
 }
 
+export function getNearestGrassExpansionCells(args: {
+  occupiedCells: GridCell[];
+  previewCells: GridCell[];
+  grid: GridSize;
+  distanceCells: number;
+}) {
+  if (args.occupiedCells.length === 0 || args.previewCells.length === 0) return [];
+
+  const bounds = getCellsBounds(args.occupiedCells);
+  const previewBounds = getCellsBounds(args.previewCells);
+  const previewCenter = {
+    x: (previewBounds.minX + previewBounds.maxX) / 2,
+    y: (previewBounds.minY + previewBounds.maxY) / 2,
+  };
+  const sideDistances = [
+    { side: 'left' as const, distance: Math.abs(previewCenter.x - bounds.minX) },
+    { side: 'right' as const, distance: Math.abs(previewCenter.x - bounds.maxX) },
+    { side: 'top' as const, distance: Math.abs(previewCenter.y - bounds.minY) },
+    { side: 'bottom' as const, distance: Math.abs(previewCenter.y - bounds.maxY) },
+  ];
+  const nearestSide = sideDistances.reduce((nearest, side) => (
+    side.distance < nearest.distance ? side : nearest
+  )).side;
+
+  if (nearestSide === 'left' || nearestSide === 'right') {
+    const startX = nearestSide === 'left'
+      ? bounds.minX - args.distanceCells
+      : bounds.maxX + 1;
+    const endX = nearestSide === 'left'
+      ? bounds.minX - 1
+      : bounds.maxX + args.distanceCells;
+
+    return buildCellsInRange(startX, endX, bounds.minY, bounds.maxY);
+  }
+
+  const startY = nearestSide === 'top'
+    ? bounds.minY - args.distanceCells
+    : bounds.maxY + 1;
+  const endY = nearestSide === 'top'
+    ? bounds.minY - 1
+    : bounds.maxY + args.distanceCells;
+
+  return buildCellsInRange(bounds.minX, bounds.maxX, startY, endY);
+}
+
+function getCellsBounds(cells: GridCell[]) {
+  return {
+    minX: Math.min(...cells.map((cell) => cell.x)),
+    maxX: Math.max(...cells.map((cell) => cell.x)),
+    minY: Math.min(...cells.map((cell) => cell.y)),
+    maxY: Math.max(...cells.map((cell) => cell.y)),
+  };
+}
+
+function buildCellsInRange(startX: number, endX: number, startY: number, endY: number) {
+  if (startX > endX || startY > endY) return [];
+
+  return Array.from({ length: endY - startY + 1 }, (_rowValue, row) =>
+    Array.from({ length: endX - startX + 1 }, (_columnValue, column) => ({
+      x: startX + column,
+      y: startY + row,
+    })),
+  ).flat();
+}
+
 export function placeGrassPatch(args: {
   id: string;
   shape: GrassShape;
   anchor: GridCell;
   grid: GridSize;
   patches: GrassPatch[];
+  availableCells?: GridCell[];
 }) {
   const occupiedCells = args.patches.flatMap((patch) => patch.cells);
 
@@ -188,6 +267,7 @@ export function placeGrassPatch(args: {
     anchor: args.anchor,
     grid: args.grid,
     occupiedCells,
+    availableCells: args.availableCells,
   })) {
     return args.patches;
   }
@@ -226,9 +306,15 @@ export function getGridCellFromWorldPoint(args: {
   gridTop: number;
   tileSize: number;
   grid: GridSize;
+  availableCells?: GridCell[];
 }) {
   const x = Math.floor((args.point.x - args.gridLeft) / args.tileSize);
   const y = Math.floor((args.point.y - args.gridTop) / args.tileSize);
+
+  if (args.availableCells) {
+    const available = new Set(args.availableCells.map((cell) => `${cell.x},${cell.y}`));
+    return available.has(`${x},${y}`) ? { x, y } : undefined;
+  }
 
   if (x < 0 || y < 0 || x >= args.grid.columns || y >= args.grid.rows) {
     return undefined;

@@ -6,6 +6,7 @@ import {
   getCenteredGrassShapeAnchor,
   getGrassCellOverlayFrame,
   getGrassFoamCells,
+  getNearestGrassExpansionCells,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
@@ -175,6 +176,74 @@ describe('grass placement model', () => {
       { x: 2, y: 3 },
       { x: 3, y: 3 },
     ]);
+  });
+
+  it('adds four extra grid cells on the side nearest the selected grass preview', () => {
+    const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 4, y: 2 });
+
+    expect(getNearestGrassExpansionCells({
+      occupiedCells,
+      previewCells: getGrassShapeCells(grassShapes.one, { x: 3, y: 3 }),
+      grid: { columns: 12, rows: 8 },
+      distanceCells: 4,
+    })).toEqual([
+      { x: 0, y: 2 },
+      { x: 1, y: 2 },
+      { x: 2, y: 2 },
+      { x: 3, y: 2 },
+      { x: 0, y: 3 },
+      { x: 1, y: 3 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 0, y: 4 },
+      { x: 1, y: 4 },
+      { x: 2, y: 4 },
+      { x: 3, y: 4 },
+    ]);
+  });
+
+  it('keeps all four extra grid cells even when they extend past the original grid', () => {
+    const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 0, y: 2 });
+
+    expect(getNearestGrassExpansionCells({
+      occupiedCells,
+      previewCells: getGrassShapeCells(grassShapes.one, { x: -1, y: 3 }),
+      grid: { columns: 12, rows: 8 },
+      distanceCells: 4,
+    })).toEqual([
+      { x: -4, y: 2 },
+      { x: -3, y: 2 },
+      { x: -2, y: 2 },
+      { x: -1, y: 2 },
+      { x: -4, y: 3 },
+      { x: -3, y: 3 },
+      { x: -2, y: 3 },
+      { x: -1, y: 3 },
+      { x: -4, y: 4 },
+      { x: -3, y: 4 },
+      { x: -2, y: 4 },
+      { x: -1, y: 4 },
+    ]);
+  });
+
+  it('uses dynamic available cells to accept points and placement outside the original grid', () => {
+    const availableCells = [{ x: -1, y: 0 }];
+
+    expect(getGridCellFromWorldPoint({
+      point: { x: -1, y: 1 },
+      gridLeft: 0,
+      gridTop: 0,
+      tileSize: 64,
+      grid: { columns: 2, rows: 2 },
+      availableCells,
+    })).toEqual({ x: -1, y: 0 });
+    expect(canPlaceGrassShape({
+      shape: grassShapes.one,
+      anchor: { x: -1, y: 0 },
+      grid: { columns: 2, rows: 2 },
+      occupiedCells: [],
+      availableCells,
+    })).toBe(true);
   });
 
   it('adds a grass patch record with occupied cells when grass placement is valid', () => {
