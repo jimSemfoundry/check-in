@@ -5,6 +5,7 @@ import {
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
   getGrassCellOverlayFrame,
+  getGrassFoamCells,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
@@ -161,6 +162,19 @@ describe('grass placement model', () => {
       width: 64,
       height: 48,
     });
+  });
+
+  it('selects only outer grass cells for water foam sprites', () => {
+    expect(getGrassFoamCells(getGrassShapeCells(grassShapes.nine, { x: 1, y: 1 }))).toEqual([
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 1, y: 2 },
+      { x: 3, y: 2 },
+      { x: 1, y: 3 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+    ]);
   });
 
   it('adds a grass patch record with occupied cells when grass placement is valid', () => {

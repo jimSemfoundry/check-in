@@ -163,6 +163,17 @@ export function getGrassCellOverlayFrame(args: {
   };
 }
 
+export function getGrassFoamCells(cells: GridCell[]) {
+  const occupied = new Set(cells.map((cell) => `${cell.x},${cell.y}`));
+
+  return cells.filter((cell) => (
+    !occupied.has(`${cell.x},${cell.y - 1}`)
+    || !occupied.has(`${cell.x + 1},${cell.y}`)
+    || !occupied.has(`${cell.x},${cell.y + 1}`)
+    || !occupied.has(`${cell.x - 1},${cell.y}`)
+  ));
+}
+
 export function placeGrassPatch(args: {
   id: string;
   shape: GrassShape;

@@ -5,6 +5,7 @@ import {
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
   getGrassCellOverlayFrame,
+  getGrassFoamCells,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
@@ -17,6 +18,7 @@ import {
   type GridCell,
 } from './grassPlacement';
 import { seaLevelScenePlan } from './seaLevelScenePlan';
+import { createWaterFoamAnimation, WATER_FOAM_ANIMATION_KEY } from './waterFoam';
 
 const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
@@ -27,6 +29,11 @@ const BLOCKED_PREVIEW_ALPHA = 0.78;
 const PLACEABLE_PREVIEW_TINT = 0xffd400;
 const PLACEABLE_PREVIEW_ALPHA = 0.7;
 const GRASS_OVERLAY_EDGE_INSET = 8;
+const WATER_FOAM_KEY = 'water-foam';
+const WATER_FOAM_FRAMES = 16;
+const WATER_FOAM_FRAME_SIZE = TILE_SIZE * 3;
+const WATER_FOAM_FRAME_RATE = 8;
+const WATER_FOAM_DISPLAY_SIZE = 220;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
 const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
@@ -34,6 +41,7 @@ const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
 export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
   private availableCellRoot?: Phaser.GameObjects.Container;
+  private waterFoamRoot?: Phaser.GameObjects.Container;
   private grassRoot?: Phaser.GameObjects.Container;
   private occupiedCellRoot?: Phaser.GameObjects.Container;
   private previewRoot?: Phaser.GameObjects.Container;
@@ -56,6 +64,10 @@ export class FloatingIslandScene extends Phaser.Scene {
       frameWidth: TILE_SIZE,
       frameHeight: TILE_SIZE,
     });
+    this.load.spritesheet(WATER_FOAM_KEY, tinySwordsAssets.waterFoam, {
+      frameWidth: WATER_FOAM_FRAME_SIZE,
+      frameHeight: WATER_FOAM_FRAME_SIZE,
+    });
     this.load.image('hud-store-banner', tinySwordsAssets.hud.storeBanner);
     this.load.image('hud-store-banner-slots', tinySwordsAssets.hud.storeBannerSlots);
     this.load.image('hud-slot-cursor', tinySwordsAssets.hud.slotCursor);
@@ -75,6 +87,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.worldRoot?.destroy(true);
     this.worldRoot = this.add.container(0, 0);
     this.availableCellRoot = undefined;
+    this.waterFoamRoot = undefined;
     this.grassRoot = undefined;
     this.occupiedCellRoot = undefined;
     this.previewRoot = undefined;
@@ -82,6 +95,10 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.nextGrassPatchId = 1;
 
     this.createSea();
+    createWaterFoamAnimation(this, WATER_FOAM_KEY, {
+      animationFrames: WATER_FOAM_FRAMES,
+      frameRate: WATER_FOAM_FRAME_RATE,
+    });
     this.createPlacementLayers();
   }
 
@@ -178,10 +195,12 @@ export class FloatingIslandScene extends Phaser.Scene {
 
   private createPlacementLayers() {
     this.availableCellRoot = this.add.container(0, 0);
+    this.waterFoamRoot = this.add.container(0, 0);
     this.grassRoot = this.add.container(0, 0);
     this.occupiedCellRoot = this.add.container(0, 0);
     this.previewRoot = this.add.container(0, 0);
     this.addToWorld(this.availableCellRoot);
+    this.addToWorld(this.waterFoamRoot);
     this.addToWorld(this.grassRoot);
     this.addToWorld(this.previewRoot);
     this.addToWorld(this.occupiedCellRoot);
@@ -336,14 +355,19 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private renderGrassPatches() {
-    if (!this.grassRoot || !this.occupiedCellRoot) return;
+    if (!this.waterFoamRoot || !this.grassRoot || !this.occupiedCellRoot) return;
 
+    this.waterFoamRoot.removeAll(true);
     this.grassRoot.removeAll(true);
     this.occupiedCellRoot.removeAll(true);
 
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
     const occupiedCells = this.getOccupiedGrassCells();
+
+    for (const cell of getGrassFoamCells(occupiedCells)) {
+      this.waterFoamRoot.add(this.createWaterFoamSprite(cell, gridLeft, gridTop));
+    }
 
     for (const cell of occupiedCells) {
       this.grassRoot.add(this.createGrassTile(cell, occupiedCells, gridLeft, gridTop, 1));
@@ -373,6 +397,20 @@ export class FloatingIslandScene extends Phaser.Scene {
     tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
     tile.setAlpha(alpha);
     return tile;
+  }
+
+  private createWaterFoamSprite(cell: GridCell, gridLeft: number, gridTop: number) {
+    const sprite = this.add.sprite(
+      gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
+      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
+      WATER_FOAM_KEY,
+      0,
+    );
+    sprite.setOrigin(0.5);
+    sprite.setDisplaySize(WATER_FOAM_DISPLAY_SIZE, WATER_FOAM_DISPLAY_SIZE);
+    sprite.setAlpha(1);
+    sprite.play(WATER_FOAM_ANIMATION_KEY);
+    return sprite;
   }
 
   private renderPreviewAtAnchor(anchor: { x: number; y: number }, shape: GrassShape) {
