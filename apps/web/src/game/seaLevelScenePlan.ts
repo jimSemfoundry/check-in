@@ -6,7 +6,24 @@ export const seaLevelScenePlan = {
     columns: 12,
     rows: 8,
   },
-  grassFrames: [0, 1, 9, 10],
+  grassShapeFrames: {
+    one: {
+      key: 'grass-shape-one',
+      source: { x: 192, y: 192, width: 64, height: 64 },
+    },
+    'three-horizontal': {
+      key: 'grass-shape-three-horizontal',
+      source: { x: 0, y: 192, width: 192, height: 64 },
+    },
+    'three-vertical': {
+      key: 'grass-shape-three-vertical',
+      source: { x: 192, y: 0, width: 64, height: 192 },
+    },
+    nine: {
+      key: 'grass-shape-nine',
+      source: { x: 0, y: 0, width: 192, height: 192 },
+    },
+  },
   cellStates: {
     available: {
       fillColor: 0x2fca5d,
