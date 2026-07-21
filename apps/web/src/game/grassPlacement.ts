@@ -107,6 +107,15 @@ export function canPlaceGrassShape(args: {
   ));
 }
 
+export function getGrassPlacementPreviewState(args: {
+  shape: GrassShape;
+  anchor: GridCell;
+  grid: GridSize;
+  occupiedCells: GridCell[];
+}) {
+  return canPlaceGrassShape(args) ? 'placeable' : 'blocked';
+}
+
 export function placeGrassPatch(args: {
   id: string;
   shape: GrassShape;

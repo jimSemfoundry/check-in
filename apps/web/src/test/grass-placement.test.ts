@@ -8,6 +8,7 @@ import {
   getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
   getGrassTerrainFrame,
+  getGrassPlacementPreviewState,
   getToggledGrassSlotIndex,
   placeGrassPatch,
 } from '../game/grassPlacement';
@@ -102,6 +103,22 @@ describe('grass placement model', () => {
       grid: { columns: 6, rows: 6 },
       occupiedCells: [{ x: 2, y: 1 }],
     })).toBe(false);
+  });
+
+  it('marks the placement preview as blocked when the selected grass overlaps planted grass', () => {
+    expect(getGrassPlacementPreviewState({
+      shape: grassShapes['three-horizontal'],
+      anchor: { x: 1, y: 1 },
+      grid: { columns: 6, rows: 6 },
+      occupiedCells: [{ x: 2, y: 1 }],
+    })).toBe('blocked');
+
+    expect(getGrassPlacementPreviewState({
+      shape: grassShapes['three-horizontal'],
+      anchor: { x: 1, y: 1 },
+      grid: { columns: 6, rows: 6 },
+      occupiedCells: [{ x: 4, y: 1 }],
+    })).toBe('placeable');
   });
 
   it('adds a grass patch record with occupied cells when grass placement is valid', () => {

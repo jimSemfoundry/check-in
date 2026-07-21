@@ -4,6 +4,7 @@ import { gameHudLayout } from './hudLayout';
 import {
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
+  getGrassPlacementPreviewState,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
   getGrassTerrainFrame,
@@ -20,6 +21,8 @@ const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
 const TILE_SIZE = seaLevelScenePlan.tileSize;
 const SEA_COLOR = 0x4db6b5;
+const BLOCKED_PREVIEW_TINT = 0xff0000;
+const BLOCKED_PREVIEW_ALPHA = 0.78;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
 const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
@@ -370,10 +373,24 @@ export class FloatingIslandScene extends Phaser.Scene {
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
     const previewCells = getGrassShapeCells(shape, anchor);
-    const previewOccupiedCells = [...this.getOccupiedGrassCells(), ...previewCells];
+    const occupiedCells = this.getOccupiedGrassCells();
+    const previewOccupiedCells = [...occupiedCells, ...previewCells];
+    const previewState = getGrassPlacementPreviewState({
+      shape,
+      anchor,
+      grid: seaLevelScenePlan.grid,
+      occupiedCells,
+    });
 
     for (const cell of previewCells) {
-      this.previewRoot.add(this.createGrassTile(cell, previewOccupiedCells, gridLeft, gridTop, 0.72));
+      const tile = this.createGrassTile(cell, previewOccupiedCells, gridLeft, gridTop, 0.72);
+      if (previewState === 'blocked') {
+        tile.setTint(BLOCKED_PREVIEW_TINT);
+      }
+      this.previewRoot.add(tile);
+      if (previewState === 'blocked') {
+        this.previewRoot.add(this.createBlockedPreviewRectangle(cell, gridLeft, gridTop));
+      }
     }
   }
 
@@ -396,6 +413,19 @@ export class FloatingIslandScene extends Phaser.Scene {
 
   private getOccupiedGrassCells() {
     return this.grassPatches.flatMap((patch) => patch.cells);
+  }
+
+  private createBlockedPreviewRectangle(cell: GridCell, gridLeft: number, gridTop: number) {
+    const rect = this.add.rectangle(
+      gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
+      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
+      TILE_SIZE - 8,
+      TILE_SIZE - 8,
+      BLOCKED_PREVIEW_TINT,
+      BLOCKED_PREVIEW_ALPHA,
+    );
+    rect.setStrokeStyle(2, 0xffd2d2, 0.9);
+    return rect;
   }
 
   private createCellStateRectangle(
