@@ -97,3 +97,20 @@ export function placeBuilding(args: {
     },
   ];
 }
+
+export function getGridCellFromWorldPoint(args: {
+  point: { x: number; y: number };
+  gridLeft: number;
+  gridTop: number;
+  tileSize: number;
+  grid: GridSize;
+}) {
+  const x = Math.floor((args.point.x - args.gridLeft) / args.tileSize);
+  const y = Math.floor((args.point.y - args.gridTop) / args.tileSize);
+
+  if (x < 0 || y < 0 || x >= args.grid.columns || y >= args.grid.rows) {
+    return undefined;
+  }
+
+  return { x, y };
+}

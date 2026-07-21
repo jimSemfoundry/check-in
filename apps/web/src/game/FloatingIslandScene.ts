@@ -16,6 +16,12 @@ import {
 } from './natureAssets';
 import { createSheepRouteTarget, getSheepMoveDurationMs } from './sheepMotion';
 import { gameHudLayout } from './hudLayout';
+import {
+  getFootprintForHudSlot,
+  getGridCellFromWorldPoint,
+  placeBuilding,
+  type PlacedBuilding,
+} from './buildingPlacement';
 
 const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
@@ -32,12 +38,15 @@ const platformHeight = grassHeight + rockHeight + foamHeight;
 
 export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
+  private buildingRoot?: Phaser.GameObjects.Container;
   private hudRoot?: Phaser.GameObjects.Container;
   private hudBannerPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotItems: Phaser.GameObjects.Image[] = [];
   private hudSlotCursor?: Phaser.GameObjects.Image;
   private selectedHudSlotIndex = 0;
+  private placedBuildings: PlacedBuilding[] = [];
+  private nextBuildingId = 1;
   private sheep?: Phaser.GameObjects.Sprite;
 
   constructor() {
@@ -69,12 +78,16 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.createSheepAnimations();
     this.buildScene();
     this.createHud();
+    this.input.on('pointerdown', this.handleWorldPointerDown, this);
     this.layout();
   }
 
   private buildScene() {
     this.worldRoot?.destroy(true);
     this.worldRoot = this.add.container(0, 0);
+    this.buildingRoot = undefined;
+    this.placedBuildings = [];
+    this.nextBuildingId = 1;
 
     this.createSea();
     this.createRockIsland();
@@ -98,7 +111,13 @@ export class FloatingIslandScene extends Phaser.Scene {
       const slotPiece = this.add.image(0, 0, 'hud-store-banner-slots', piece.key);
       slotPiece.setOrigin(0.5);
       slotPiece.setInteractive({ useHandCursor: true });
-      slotPiece.on('pointerdown', () => {
+      slotPiece.on('pointerdown', (
+        _pointer: Phaser.Input.Pointer,
+        _localX: number,
+        _localY: number,
+        event: Phaser.Types.Input.EventData,
+      ) => {
+        event.stopPropagation();
         this.selectedHudSlotIndex = piece.slotIndex;
         this.layoutHud(this.scale.width || DESIGN_WIDTH, this.scale.height || DESIGN_HEIGHT);
       });
@@ -172,7 +191,13 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.createBottomFoam(left, top + grassHeight + rockHeight);
     this.createRockBody(left, top + grassHeight);
     this.createGrassCap(left, top);
+    this.createBuildingLayer();
     this.createNature();
+  }
+
+  private createBuildingLayer() {
+    this.buildingRoot = this.add.container(0, 0);
+    this.addToWorld(this.buildingRoot);
   }
 
   private createGrassCap(left: number, top: number) {
@@ -386,6 +411,69 @@ export class FloatingIslandScene extends Phaser.Scene {
   private addToWorld<T extends Phaser.GameObjects.GameObject>(gameObject: T) {
     this.worldRoot?.add(gameObject);
     return gameObject;
+  }
+
+  private handleWorldPointerDown(pointer: Phaser.Input.Pointer) {
+    if (!this.worldRoot || !this.buildingRoot) return;
+
+    const footprint = getFootprintForHudSlot(this.selectedHudSlotIndex);
+    if (!footprint) return;
+
+    const grassLeft = -platformWidth / 2;
+    const grassTop = -platformHeight / 2;
+    const worldPoint = {
+      x: (pointer.x - this.worldRoot.x) / this.worldRoot.scaleX,
+      y: (pointer.y - this.worldRoot.y) / this.worldRoot.scaleY,
+    };
+    const anchor = getGridCellFromWorldPoint({
+      point: worldPoint,
+      gridLeft: grassLeft,
+      gridTop: grassTop,
+      tileSize: TILE_SIZE,
+      grid: {
+        columns: rockIslandScenePlan.platform.widthTiles,
+        rows: rockIslandScenePlan.platform.grassRows,
+      },
+    });
+
+    if (!anchor) return;
+
+    const nextBuildings = placeBuilding({
+      id: `building-${this.nextBuildingId}`,
+      footprint,
+      anchor,
+      grid: {
+        columns: rockIslandScenePlan.platform.widthTiles,
+        rows: rockIslandScenePlan.platform.grassRows,
+      },
+      buildings: this.placedBuildings,
+    });
+
+    if (nextBuildings === this.placedBuildings) return;
+
+    this.nextBuildingId += 1;
+    this.placedBuildings = nextBuildings;
+    this.renderPlacedBuilding(nextBuildings[nextBuildings.length - 1]);
+  }
+
+  private renderPlacedBuilding(building: PlacedBuilding | undefined) {
+    if (!building || !this.buildingRoot) return;
+
+    const grassLeft = -platformWidth / 2;
+    const grassTop = -platformHeight / 2;
+
+    for (const cell of building.cells) {
+      const marker = this.add.rectangle(
+        grassLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
+        grassTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
+        TILE_SIZE - 8,
+        TILE_SIZE - 8,
+        0x6d5a38,
+        0.68,
+      );
+      marker.setStrokeStyle(2, 0xf3d48b, 0.85);
+      this.buildingRoot.add(marker);
+    }
   }
 
   private layout() {

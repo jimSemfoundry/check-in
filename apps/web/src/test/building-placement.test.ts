@@ -4,6 +4,7 @@ import {
   canPlaceFootprint,
   getFootprintCells,
   getFootprintForHudSlot,
+  getGridCellFromWorldPoint,
   placeBuilding,
 } from '../game/buildingPlacement';
 
@@ -125,5 +126,29 @@ describe('building placement model', () => {
       grid: { columns: 6, rows: 6 },
       buildings,
     })).toBe(buildings);
+  });
+
+  it('converts world points inside the grass grid to grid cells', () => {
+    expect(getGridCellFromWorldPoint({
+      point: { x: -191, y: -191 },
+      gridLeft: -192,
+      gridTop: -192,
+      tileSize: 64,
+      grid: { columns: 6, rows: 6 },
+    })).toEqual({ x: 0, y: 0 });
+    expect(getGridCellFromWorldPoint({
+      point: { x: 191, y: 191 },
+      gridLeft: -192,
+      gridTop: -192,
+      tileSize: 64,
+      grid: { columns: 6, rows: 6 },
+    })).toEqual({ x: 5, y: 5 });
+    expect(getGridCellFromWorldPoint({
+      point: { x: 192, y: 0 },
+      gridLeft: -192,
+      gridTop: -192,
+      tileSize: 64,
+      grid: { columns: 6, rows: 6 },
+    })).toBeUndefined();
   });
 });
