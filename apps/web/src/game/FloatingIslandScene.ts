@@ -20,7 +20,9 @@ const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
 
 export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
+  private availableCellRoot?: Phaser.GameObjects.Container;
   private grassRoot?: Phaser.GameObjects.Container;
+  private occupiedCellRoot?: Phaser.GameObjects.Container;
   private hudRoot?: Phaser.GameObjects.Container;
   private hudBannerPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotPieces: Phaser.GameObjects.Image[] = [];
@@ -57,12 +59,14 @@ export class FloatingIslandScene extends Phaser.Scene {
   private buildScene() {
     this.worldRoot?.destroy(true);
     this.worldRoot = this.add.container(0, 0);
+    this.availableCellRoot = undefined;
     this.grassRoot = undefined;
+    this.occupiedCellRoot = undefined;
     this.grassPatches = [];
     this.nextGrassPatchId = 1;
 
     this.createSea();
-    this.createGrassLayer();
+    this.createPlacementLayers();
   }
 
   private createHud() {
@@ -157,9 +161,14 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.addToWorld(sea);
   }
 
-  private createGrassLayer() {
+  private createPlacementLayers() {
+    this.availableCellRoot = this.add.container(0, 0);
     this.grassRoot = this.add.container(0, 0);
+    this.occupiedCellRoot = this.add.container(0, 0);
+    this.addToWorld(this.availableCellRoot);
     this.addToWorld(this.grassRoot);
+    this.addToWorld(this.occupiedCellRoot);
+    this.renderAvailableCells();
   }
 
   private addToWorld<T extends Phaser.GameObjects.GameObject>(gameObject: T) {
@@ -168,7 +177,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private handleWorldPointerDown(pointer: Phaser.Input.Pointer) {
-    if (!this.worldRoot || !this.grassRoot) return;
+    if (!this.worldRoot || !this.grassRoot || !this.occupiedCellRoot) return;
 
     const shape = getGrassShapeForHudSlot(this.selectedHudSlotIndex);
     if (!shape) return;
@@ -243,7 +252,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private renderGrassPatch(patch: GrassPatch | undefined) {
-    if (!patch || !this.grassRoot) return;
+    if (!patch || !this.grassRoot || !this.occupiedCellRoot) return;
 
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
@@ -257,7 +266,40 @@ export class FloatingIslandScene extends Phaser.Scene {
       );
       tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
       this.grassRoot.add(tile);
+      this.occupiedCellRoot.add(this.createCellStateRectangle(cell, gridLeft, gridTop, 'occupied'));
     }
+  }
+
+  private renderAvailableCells() {
+    if (!this.availableCellRoot) return;
+
+    const gridLeft = -placementWidth / 2;
+    const gridTop = -placementHeight / 2;
+
+    for (let y = 0; y < seaLevelScenePlan.grid.rows; y += 1) {
+      for (let x = 0; x < seaLevelScenePlan.grid.columns; x += 1) {
+        this.availableCellRoot.add(this.createCellStateRectangle({ x, y }, gridLeft, gridTop, 'available'));
+      }
+    }
+  }
+
+  private createCellStateRectangle(
+    cell: { x: number; y: number },
+    gridLeft: number,
+    gridTop: number,
+    state: keyof typeof seaLevelScenePlan.cellStates,
+  ) {
+    const style = seaLevelScenePlan.cellStates[state];
+    const rect = this.add.rectangle(
+      gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
+      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
+      TILE_SIZE - 7,
+      TILE_SIZE - 7,
+      style.fillColor,
+      style.fillAlpha,
+    );
+    rect.setStrokeStyle(2, style.strokeColor, style.strokeAlpha);
+    return rect;
   }
 
   private layout() {
