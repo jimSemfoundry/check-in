@@ -425,16 +425,14 @@ export class FloatingIslandScene extends Phaser.Scene {
   ) {
     const fillColor = state === 'blocked' ? BLOCKED_PREVIEW_TINT : PLACEABLE_PREVIEW_TINT;
     const fillAlpha = state === 'blocked' ? BLOCKED_PREVIEW_ALPHA : PLACEABLE_PREVIEW_ALPHA;
-    const strokeColor = state === 'blocked' ? 0xffd2d2 : 0xffef8a;
     const rect = this.add.rectangle(
       gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
       gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
-      TILE_SIZE - 8,
-      TILE_SIZE - 8,
+      TILE_SIZE + 1,
+      TILE_SIZE + 1,
       fillColor,
       fillAlpha,
     );
-    rect.setStrokeStyle(2, strokeColor, 0.9);
     return rect;
   }
 
@@ -445,15 +443,16 @@ export class FloatingIslandScene extends Phaser.Scene {
     state: keyof typeof seaLevelScenePlan.cellStates,
   ) {
     const style = seaLevelScenePlan.cellStates[state];
+    const size = TILE_SIZE - style.inset;
     const rect = this.add.rectangle(
       gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
       gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
-      TILE_SIZE - 7,
-      TILE_SIZE - 7,
+      size,
+      size,
       style.fillColor,
       style.fillAlpha,
     );
-    rect.setStrokeStyle(2, style.strokeColor, style.strokeAlpha);
+    rect.setStrokeStyle(style.strokeWidth, style.strokeColor, style.strokeAlpha);
     return rect;
   }
 

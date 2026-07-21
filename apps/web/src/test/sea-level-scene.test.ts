@@ -31,14 +31,18 @@ describe('sea-level grass placement scene plan', () => {
         available: {
           fillColor: 0x2fca5d,
           fillAlpha: 0.18,
+          inset: 7,
+          strokeWidth: 2,
           strokeColor: 0x86f29c,
           strokeAlpha: 0.55,
         },
         occupied: {
           fillColor: 0xf2d34f,
           fillAlpha: 0.5,
+          inset: 0,
+          strokeWidth: 0,
           strokeColor: 0xffef8a,
-          strokeAlpha: 0.9,
+          strokeAlpha: 0,
         },
       },
     });
