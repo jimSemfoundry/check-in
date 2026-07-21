@@ -1,54 +1,34 @@
 import Phaser from 'phaser';
 import { tinySwordsAssets } from './assets';
-import { rockIslandScenePlan } from './rockIslandScenePlan';
-import {
-  createWaterFoamAnimation,
-  createWaterFoamSprites,
-  getWaterFoamBottomTiles,
-  getWaterFoamFrameSize,
-} from './waterFoam';
-import { tinySwordsTerrainTileset } from './terrainTileset';
-import {
-  sheepAnimationConfig,
-  sheepMotionConfig,
-  treeAnimationConfig,
-  treePlacements,
-} from './natureAssets';
-import { createSheepRouteTarget, getSheepMoveDurationMs } from './sheepMotion';
 import { gameHudLayout } from './hudLayout';
 import {
   getCanvasPointFromPointerEvent,
-  getFootprintForHudSlot,
+  getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
-  placeBuilding,
-  type PlacedBuilding,
-} from './buildingPlacement';
+  placeGrassPatch,
+  type GrassPatch,
+} from './grassPlacement';
+import { seaLevelScenePlan } from './seaLevelScenePlan';
 
 const DESIGN_WIDTH = 1280;
 const DESIGN_HEIGHT = 720;
-const TILE_SIZE = tinySwordsTerrainTileset.tileSize;
+const TILE_SIZE = seaLevelScenePlan.tileSize;
 const SEA_COLOR = 0x4db6b5;
 
-const platformWidth = rockIslandScenePlan.platform.widthTiles * TILE_SIZE;
-const grassHeight = rockIslandScenePlan.platform.grassRows * TILE_SIZE;
-const rockHeight = rockIslandScenePlan.platform.rockRows * TILE_SIZE;
-const foamFrameSize = getWaterFoamFrameSize(rockIslandScenePlan.foam, TILE_SIZE);
-const foamBelowTiles = getWaterFoamBottomTiles(rockIslandScenePlan.foam);
-const foamHeight = foamBelowTiles * TILE_SIZE;
-const platformHeight = grassHeight + rockHeight + foamHeight;
+const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
+const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
 
 export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
-  private buildingRoot?: Phaser.GameObjects.Container;
+  private grassRoot?: Phaser.GameObjects.Container;
   private hudRoot?: Phaser.GameObjects.Container;
   private hudBannerPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotItems: Phaser.GameObjects.Image[] = [];
   private hudSlotCursor?: Phaser.GameObjects.Image;
   private selectedHudSlotIndex = 0;
-  private placedBuildings: PlacedBuilding[] = [];
-  private nextBuildingId = 1;
-  private sheep?: Phaser.GameObjects.Sprite;
+  private grassPatches: GrassPatch[] = [];
+  private nextGrassPatchId = 1;
 
   constructor() {
     super('floating-island');
@@ -60,12 +40,6 @@ export class FloatingIslandScene extends Phaser.Scene {
       frameWidth: TILE_SIZE,
       frameHeight: TILE_SIZE,
     });
-    this.load.spritesheet('water-foam', tinySwordsAssets.waterFoam, {
-      frameWidth: foamFrameSize,
-      frameHeight: foamFrameSize,
-    });
-    this.loadTreeSpritesheets();
-    this.loadSheepSpritesheets();
     this.load.image('hud-store-banner', tinySwordsAssets.hud.storeBanner);
     this.load.image('hud-store-banner-slots', tinySwordsAssets.hud.storeBannerSlots);
     this.load.image('hud-slot-cursor', tinySwordsAssets.hud.slotCursor);
@@ -74,9 +48,6 @@ export class FloatingIslandScene extends Phaser.Scene {
   create() {
     this.scale.on('resize', this.layout, this);
     this.cameras.main.setBackgroundColor(SEA_COLOR);
-    createWaterFoamAnimation(this, 'water-foam', rockIslandScenePlan.foam);
-    this.createNatureAnimations();
-    this.createSheepAnimations();
     this.buildScene();
     this.createHud();
     this.input.on('pointerdown', this.handleWorldPointerDown, this);
@@ -86,12 +57,12 @@ export class FloatingIslandScene extends Phaser.Scene {
   private buildScene() {
     this.worldRoot?.destroy(true);
     this.worldRoot = this.add.container(0, 0);
-    this.buildingRoot = undefined;
-    this.placedBuildings = [];
-    this.nextBuildingId = 1;
+    this.grassRoot = undefined;
+    this.grassPatches = [];
+    this.nextGrassPatchId = 1;
 
     this.createSea();
-    this.createRockIsland();
+    this.createGrassLayer();
   }
 
   private createHud() {
@@ -183,230 +154,12 @@ export class FloatingIslandScene extends Phaser.Scene {
     const sea = this.add.tileSprite(0, 0, DESIGN_WIDTH + 640, DESIGN_HEIGHT + 640, 'sea');
     sea.setOrigin(0.5);
     sea.setAlpha(0.94);
-    this.worldRoot?.add(sea);
+    this.addToWorld(sea);
   }
 
-  private createRockIsland() {
-    const left = -platformWidth / 2;
-    const top = -platformHeight / 2;
-    this.createBottomFoam(left, top + grassHeight + rockHeight);
-    this.createRockBody(left, top + grassHeight);
-    this.createGrassCap(left, top);
-    this.createBuildingLayer();
-    this.createNature();
-  }
-
-  private createBuildingLayer() {
-    this.buildingRoot = this.add.container(0, 0);
-    this.addToWorld(this.buildingRoot);
-  }
-
-  private createGrassCap(left: number, top: number) {
-    for (let y = 0; y < rockIslandScenePlan.platform.grassRows; y += 1) {
-      for (let x = 0; x < rockIslandScenePlan.platform.widthTiles; x += 1) {
-        const px = left + x * TILE_SIZE + TILE_SIZE / 2;
-        const py = top + y * TILE_SIZE + TILE_SIZE / 2;
-        const frame = rockIslandScenePlan.frames.grassRows[y]?.[x] ?? 0;
-        this.addToWorld(this.createTerrainTile(px, py, frame));
-      }
-    }
-  }
-
-  private createRockBody(left: number, top: number) {
-    for (let y = 0; y < rockIslandScenePlan.platform.rockRows; y += 1) {
-      for (let x = 0; x < rockIslandScenePlan.platform.widthTiles; x += 1) {
-        const px = left + x * TILE_SIZE + TILE_SIZE / 2;
-        const py = top + y * TILE_SIZE + TILE_SIZE / 2;
-        const frame = rockIslandScenePlan.frames.rockRows[y]?.[x] ?? 41;
-        this.addToWorld(this.createTerrainTile(px, py, frame));
-      }
-    }
-  }
-
-  private createTerrainTile(x: number, y: number, frame: number) {
-    const tile = this.add.image(x, y, 'terrain-tiles', frame);
-    const overlap = rockIslandScenePlan.platform.tileOverlapPixels;
-    tile.setDisplaySize(TILE_SIZE + overlap, TILE_SIZE + overlap);
-    return tile;
-  }
-
-  private createBottomFoam(left: number, top: number) {
-    const foamSprites = createWaterFoamSprites(this, {
-      left,
-      top,
-      tileSize: TILE_SIZE,
-      textureKey: 'water-foam',
-      foam: rockIslandScenePlan.foam,
-    });
-
-    for (const foam of foamSprites) {
-      this.addToWorld(foam);
-    }
-  }
-
-  private loadTreeSpritesheets() {
-    this.load.spritesheet('tree-1', tinySwordsAssets.trees.tree1, {
-      frameWidth: treeAnimationConfig.frameWidth,
-      frameHeight: treeAnimationConfig.trees.tree1.frameHeight,
-    });
-    this.load.spritesheet('tree-2', tinySwordsAssets.trees.tree2, {
-      frameWidth: treeAnimationConfig.frameWidth,
-      frameHeight: treeAnimationConfig.trees.tree2.frameHeight,
-    });
-    this.load.spritesheet('tree-3', tinySwordsAssets.trees.tree3, {
-      frameWidth: treeAnimationConfig.frameWidth,
-      frameHeight: treeAnimationConfig.trees.tree3.frameHeight,
-    });
-    this.load.spritesheet('tree-4', tinySwordsAssets.trees.tree4, {
-      frameWidth: treeAnimationConfig.frameWidth,
-      frameHeight: treeAnimationConfig.trees.tree4.frameHeight,
-    });
-  }
-
-  private loadSheepSpritesheets() {
-    this.load.spritesheet('sheep-idle-texture', tinySwordsAssets.sheep.idle, {
-      frameWidth: sheepAnimationConfig.frameSize,
-      frameHeight: sheepAnimationConfig.frameSize,
-    });
-    this.load.spritesheet('sheep-move-texture', tinySwordsAssets.sheep.move, {
-      frameWidth: sheepAnimationConfig.frameSize,
-      frameHeight: sheepAnimationConfig.frameSize,
-    });
-    this.load.spritesheet('sheep-grass-texture', tinySwordsAssets.sheep.grass, {
-      frameWidth: sheepAnimationConfig.frameSize,
-      frameHeight: sheepAnimationConfig.frameSize,
-    });
-  }
-
-  private createNatureAnimations() {
-    for (const config of Object.values(treeAnimationConfig.trees)) {
-      if (this.anims.exists(config.animationKey)) continue;
-
-      this.anims.create({
-        key: config.animationKey,
-        frames: this.anims.generateFrameNumbers(config.textureKey, {
-          start: 0,
-          end: config.frames - 1,
-        }),
-        frameRate: config.frameRate,
-        repeat: -1,
-      });
-    }
-  }
-
-  private createSheepAnimations() {
-    this.createSheepAnimation(
-      sheepAnimationConfig.animations.idle.key,
-      'sheep-idle-texture',
-      sheepAnimationConfig.animations.idle.frames,
-      sheepAnimationConfig.animations.idle.frameRate,
-      -1,
-    );
-    this.createSheepAnimation(
-      sheepAnimationConfig.animations.move.key,
-      'sheep-move-texture',
-      sheepAnimationConfig.animations.move.frames,
-      sheepAnimationConfig.animations.move.frameRate,
-      -1,
-    );
-    this.createSheepAnimation(
-      sheepAnimationConfig.animations.grass.key,
-      'sheep-grass-texture',
-      sheepAnimationConfig.animations.grass.frames,
-      sheepAnimationConfig.animations.grass.frameRate,
-      0,
-    );
-  }
-
-  private createSheepAnimation(
-    animationKey: string,
-    textureKey: string,
-    frames: number,
-    frameRate: number,
-    repeat: number,
-  ) {
-    if (this.anims.exists(animationKey)) return;
-
-    this.anims.create({
-      key: animationKey,
-      frames: this.anims.generateFrameNumbers(textureKey, {
-        start: 0,
-        end: frames - 1,
-      }),
-      frameRate,
-      repeat,
-    });
-  }
-
-  private createNature() {
-    const natureObjects: Phaser.GameObjects.Sprite[] = [];
-
-    for (const placement of treePlacements) {
-      const tree = this.add.sprite(placement.x, placement.y, placement.textureKey, 0);
-      tree.setOrigin(0.5, 0.82);
-      tree.setScale(placement.scale);
-      tree.play(placement.animationKey);
-      natureObjects.push(tree);
-    }
-
-    const sheep = this.add.sprite(
-      sheepMotionConfig.start.x,
-      sheepMotionConfig.start.y,
-      'sheep-idle-texture',
-      0,
-    );
-    sheep.setOrigin(0.5, 0.74);
-    sheep.setScale(sheepMotionConfig.scale);
-    sheep.play(sheepAnimationConfig.animations.idle.key);
-    this.sheep = sheep;
-    natureObjects.push(sheep);
-
-    for (const gameObject of natureObjects.sort((a, b) => a.y - b.y)) {
-      this.addToWorld(gameObject);
-    }
-
-    this.queueSheepMove();
-  }
-
-  private queueSheepMove() {
-    if (!this.sheep) return;
-
-    this.time.delayedCall(sheepMotionConfig.idleMs, () => {
-      this.moveSheepToNextTarget();
-    });
-  }
-
-  private moveSheepToNextTarget() {
-    if (!this.sheep) return;
-
-    const target = createSheepRouteTarget(Math.random, sheepMotionConfig.bounds);
-    const duration = getSheepMoveDurationMs(this.sheep, target, sheepMotionConfig.movePixelsPerSecond);
-
-    this.sheep.setFlipX(target.x < this.sheep.x);
-    this.sheep.play(sheepAnimationConfig.animations.move.key, true);
-
-    this.tweens.add({
-      targets: this.sheep,
-      x: target.x,
-      y: target.y,
-      duration,
-      ease: 'Sine.easeInOut',
-      onComplete: () => {
-        this.playSheepGrass();
-      },
-    });
-  }
-
-  private playSheepGrass() {
-    if (!this.sheep) return;
-
-    this.sheep.play(sheepAnimationConfig.animations.grass.key, true);
-    this.time.delayedCall(sheepMotionConfig.grassMs, () => {
-      if (!this.sheep) return;
-
-      this.sheep.play(sheepAnimationConfig.animations.idle.key, true);
-      this.queueSheepMove();
-    });
+  private createGrassLayer() {
+    this.grassRoot = this.add.container(0, 0);
+    this.addToWorld(this.grassRoot);
   }
 
   private addToWorld<T extends Phaser.GameObjects.GameObject>(gameObject: T) {
@@ -415,49 +168,43 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private handleWorldPointerDown(pointer: Phaser.Input.Pointer) {
-    if (!this.worldRoot || !this.buildingRoot) return;
+    if (!this.worldRoot || !this.grassRoot) return;
 
-    const footprint = getFootprintForHudSlot(this.selectedHudSlotIndex);
-    if (!footprint) return;
+    const shape = getGrassShapeForHudSlot(this.selectedHudSlotIndex);
+    if (!shape) return;
 
-    const grassLeft = -platformWidth / 2;
-    const grassTop = -platformHeight / 2;
     const canvasPoint = this.getCanvasPoint(pointer);
     if (!canvasPoint) return;
 
+    const gridLeft = -placementWidth / 2;
+    const gridTop = -placementHeight / 2;
     const worldPoint = {
       x: (canvasPoint.x - this.worldRoot.x) / this.worldRoot.scaleX,
       y: (canvasPoint.y - this.worldRoot.y) / this.worldRoot.scaleY,
     };
     const anchor = getGridCellFromWorldPoint({
       point: worldPoint,
-      gridLeft: grassLeft,
-      gridTop: grassTop,
+      gridLeft,
+      gridTop,
       tileSize: TILE_SIZE,
-      grid: {
-        columns: rockIslandScenePlan.platform.widthTiles,
-        rows: rockIslandScenePlan.platform.grassRows,
-      },
+      grid: seaLevelScenePlan.grid,
     });
 
     if (!anchor) return;
 
-    const nextBuildings = placeBuilding({
-      id: `building-${this.nextBuildingId}`,
-      footprint,
+    const nextPatches = placeGrassPatch({
+      id: `grass-${this.nextGrassPatchId}`,
+      shape,
       anchor,
-      grid: {
-        columns: rockIslandScenePlan.platform.widthTiles,
-        rows: rockIslandScenePlan.platform.grassRows,
-      },
-      buildings: this.placedBuildings,
+      grid: seaLevelScenePlan.grid,
+      patches: this.grassPatches,
     });
 
-    if (nextBuildings === this.placedBuildings) return;
+    if (nextPatches === this.grassPatches) return;
 
-    this.nextBuildingId += 1;
-    this.placedBuildings = nextBuildings;
-    this.renderPlacedBuilding(nextBuildings[nextBuildings.length - 1]);
+    this.nextGrassPatchId += 1;
+    this.grassPatches = nextPatches;
+    this.renderGrassPatch(nextPatches[nextPatches.length - 1]);
   }
 
   private getCanvasPoint(pointer: Phaser.Input.Pointer) {
@@ -495,23 +242,21 @@ export class FloatingIslandScene extends Phaser.Scene {
     return { x: touch.clientX, y: touch.clientY };
   }
 
-  private renderPlacedBuilding(building: PlacedBuilding | undefined) {
-    if (!building || !this.buildingRoot) return;
+  private renderGrassPatch(patch: GrassPatch | undefined) {
+    if (!patch || !this.grassRoot) return;
 
-    const grassLeft = -platformWidth / 2;
-    const grassTop = -platformHeight / 2;
+    const gridLeft = -placementWidth / 2;
+    const gridTop = -placementHeight / 2;
 
-    for (const cell of building.cells) {
-      const marker = this.add.rectangle(
-        grassLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
-        grassTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
-        TILE_SIZE - 8,
-        TILE_SIZE - 8,
-        0x6d5a38,
-        0.68,
+    for (const cell of patch.cells) {
+      const tile = this.add.image(
+        gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
+        gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
+        'terrain-tiles',
+        seaLevelScenePlan.grassFrame,
       );
-      marker.setStrokeStyle(2, 0xf3d48b, 0.85);
-      this.buildingRoot.add(marker);
+      tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
+      this.grassRoot.add(tile);
     }
   }
 
@@ -522,9 +267,9 @@ export class FloatingIslandScene extends Phaser.Scene {
     const height = this.scale.height || DESIGN_HEIGHT;
     const margin = Math.min(width, height) < 620 ? 34 : 80;
     const zoom = Math.min(
-      width / (platformWidth + margin * 2),
-      height / (platformHeight + margin * 2),
-      1.75,
+      width / (placementWidth + margin * 2),
+      height / (placementHeight + margin * 2),
+      1.35,
     );
 
     this.worldRoot.setPosition(width / 2, height / 2);
