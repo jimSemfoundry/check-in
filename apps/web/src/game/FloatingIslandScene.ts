@@ -4,6 +4,7 @@ import { gameHudLayout } from './hudLayout';
 import {
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
+  getGrassCellOverlayFrame,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
@@ -25,6 +26,7 @@ const BLOCKED_PREVIEW_TINT = 0xff0000;
 const BLOCKED_PREVIEW_ALPHA = 0.78;
 const PLACEABLE_PREVIEW_TINT = 0xffd400;
 const PLACEABLE_PREVIEW_ALPHA = 0.7;
+const GRASS_OVERLAY_EDGE_INSET = 8;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
 const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
@@ -345,7 +347,13 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     for (const cell of occupiedCells) {
       this.grassRoot.add(this.createGrassTile(cell, occupiedCells, gridLeft, gridTop, 1));
-      this.occupiedCellRoot.add(this.createCellStateRectangle(cell, gridLeft, gridTop, 'occupied'));
+      this.occupiedCellRoot.add(this.createCellStateRectangle(
+        cell,
+        gridLeft,
+        gridTop,
+        'occupied',
+        occupiedCells,
+      ));
     }
   }
 
@@ -392,7 +400,13 @@ export class FloatingIslandScene extends Phaser.Scene {
         tile.setTint(PLACEABLE_PREVIEW_TINT);
       }
       this.previewRoot.add(tile);
-      this.previewRoot.add(this.createPreviewStateRectangle(cell, gridLeft, gridTop, state));
+      this.previewRoot.add(this.createPreviewStateRectangle(
+        cell,
+        gridLeft,
+        gridTop,
+        state,
+        previewCells,
+      ));
     }
   }
 
@@ -422,14 +436,21 @@ export class FloatingIslandScene extends Phaser.Scene {
     gridLeft: number,
     gridTop: number,
     state: 'placeable' | 'blocked',
+    overlayCells: GridCell[],
   ) {
     const fillColor = state === 'blocked' ? BLOCKED_PREVIEW_TINT : PLACEABLE_PREVIEW_TINT;
     const fillAlpha = state === 'blocked' ? BLOCKED_PREVIEW_ALPHA : PLACEABLE_PREVIEW_ALPHA;
+    const frame = getGrassCellOverlayFrame({
+      cell,
+      cells: overlayCells,
+      tileSize: TILE_SIZE,
+      edgeInset: GRASS_OVERLAY_EDGE_INSET,
+    });
     const rect = this.add.rectangle(
-      gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
-      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
-      TILE_SIZE + 1,
-      TILE_SIZE + 1,
+      gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2 + frame.offsetX,
+      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2 + frame.offsetY,
+      frame.width + 1,
+      frame.height + 1,
       fillColor,
       fillAlpha,
     );
@@ -441,14 +462,27 @@ export class FloatingIslandScene extends Phaser.Scene {
     gridLeft: number,
     gridTop: number,
     state: keyof typeof seaLevelScenePlan.cellStates,
+    overlayCells?: GridCell[],
   ) {
     const style = seaLevelScenePlan.cellStates[state];
-    const size = TILE_SIZE - style.inset;
+    const frame = overlayCells
+      ? getGrassCellOverlayFrame({
+        cell,
+        cells: overlayCells,
+        tileSize: TILE_SIZE,
+        edgeInset: GRASS_OVERLAY_EDGE_INSET,
+      })
+      : {
+        offsetX: 0,
+        offsetY: 0,
+        width: TILE_SIZE - style.inset,
+        height: TILE_SIZE - style.inset,
+      };
     const rect = this.add.rectangle(
-      gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
-      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
-      size,
-      size,
+      gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2 + frame.offsetX,
+      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2 + frame.offsetY,
+      frame.width,
+      frame.height,
       style.fillColor,
       style.fillAlpha,
     );

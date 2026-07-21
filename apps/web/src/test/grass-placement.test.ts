@@ -4,6 +4,7 @@ import {
   canPlaceGrassShape,
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
+  getGrassCellOverlayFrame,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
@@ -133,6 +134,33 @@ describe('grass placement model', () => {
       { cell: { x: 2, y: 1 }, state: 'blocked' },
       { cell: { x: 3, y: 1 }, state: 'placeable' },
     ]);
+  });
+
+  it('insets placement overlays only on outer grass edges so waves remain visible', () => {
+    const cells = getGrassShapeCells(grassShapes['three-horizontal'], { x: 1, y: 1 });
+
+    expect(getGrassCellOverlayFrame({
+      cell: { x: 1, y: 1 },
+      cells,
+      tileSize: 64,
+      edgeInset: 8,
+    })).toEqual({
+      offsetX: 4,
+      offsetY: 0,
+      width: 56,
+      height: 48,
+    });
+    expect(getGrassCellOverlayFrame({
+      cell: { x: 2, y: 1 },
+      cells,
+      tileSize: 64,
+      edgeInset: 8,
+    })).toEqual({
+      offsetX: 0,
+      offsetY: 0,
+      width: 64,
+      height: 48,
+    });
   });
 
   it('adds a grass patch record with occupied cells when grass placement is valid', () => {

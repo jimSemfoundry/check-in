@@ -139,6 +139,30 @@ export function getGrassPlacementPreviewCells(args: {
   });
 }
 
+export function getGrassCellOverlayFrame(args: {
+  cell: GridCell;
+  cells: GridCell[];
+  tileSize: number;
+  edgeInset: number;
+}) {
+  const cells = new Set(args.cells.map((cell) => `${cell.x},${cell.y}`));
+  const hasTop = cells.has(`${args.cell.x},${args.cell.y - 1}`);
+  const hasRight = cells.has(`${args.cell.x + 1},${args.cell.y}`);
+  const hasBottom = cells.has(`${args.cell.x},${args.cell.y + 1}`);
+  const hasLeft = cells.has(`${args.cell.x - 1},${args.cell.y}`);
+  const leftInset = hasLeft ? 0 : args.edgeInset;
+  const rightInset = hasRight ? 0 : args.edgeInset;
+  const topInset = hasTop ? 0 : args.edgeInset;
+  const bottomInset = hasBottom ? 0 : args.edgeInset;
+
+  return {
+    offsetX: (leftInset - rightInset) / 2,
+    offsetY: (topInset - bottomInset) / 2,
+    width: args.tileSize - leftInset - rightInset,
+    height: args.tileSize - topInset - bottomInset,
+  };
+}
+
 export function placeGrassPatch(args: {
   id: string;
   shape: GrassShape;
