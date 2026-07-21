@@ -187,8 +187,19 @@ export function getGrassFoamCells(cells: GridCell[]) {
   ));
 }
 
+export function getGrassMapCells(args: {
+  grid: GridSize;
+  occupiedCells: GridCell[];
+}) {
+  const baseCells = buildCellsInRange(0, args.grid.columns - 1, 0, args.grid.rows - 1);
+  const bounds = getCellsBounds([...baseCells, ...args.occupiedCells]);
+
+  return buildCellsInRange(bounds.minX, bounds.maxX, bounds.minY, bounds.maxY);
+}
+
 export function getNearestGrassExpansionCells(args: {
   occupiedCells: GridCell[];
+  mapCells: GridCell[];
   previewCells: GridCell[];
   grid: GridSize;
   distanceCells: number;
@@ -196,6 +207,7 @@ export function getNearestGrassExpansionCells(args: {
   if (args.occupiedCells.length === 0 || args.previewCells.length === 0) return [];
 
   const bounds = getCellsBounds(args.occupiedCells);
+  const mapBounds = getCellsBounds(args.mapCells);
   const previewBounds = getCellsBounds(args.previewCells);
   const previewCenter = {
     x: (previewBounds.minX + previewBounds.maxX) / 2,
@@ -219,7 +231,7 @@ export function getNearestGrassExpansionCells(args: {
       ? bounds.minX - 1
       : bounds.maxX + args.distanceCells;
 
-    return buildCellsInRange(startX, endX, bounds.minY, bounds.maxY);
+    return buildCellsInRange(startX, endX, mapBounds.minY, mapBounds.maxY);
   }
 
   const startY = nearestSide === 'top'
@@ -229,7 +241,7 @@ export function getNearestGrassExpansionCells(args: {
     ? bounds.minY - 1
     : bounds.maxY + args.distanceCells;
 
-  return buildCellsInRange(bounds.minX, bounds.maxX, startY, endY);
+  return buildCellsInRange(mapBounds.minX, mapBounds.maxX, startY, endY);
 }
 
 function getCellsBounds(cells: GridCell[]) {

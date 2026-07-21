@@ -6,6 +6,7 @@ import {
   getCenteredGrassShapeAnchor,
   getGrassCellOverlayFrame,
   getGrassFoamCells,
+  getGrassMapCells,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
@@ -479,18 +480,17 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private getBaseAvailableCells() {
-    return Array.from({ length: seaLevelScenePlan.grid.rows }, (_rowValue, row) =>
-      Array.from({ length: seaLevelScenePlan.grid.columns }, (_columnValue, column) => ({
-        x: column,
-        y: row,
-      })),
-    ).flat();
+    return getGrassMapCells({
+      grid: seaLevelScenePlan.grid,
+      occupiedCells: this.getOccupiedGrassCells(),
+    });
   }
 
   private getAvailableOverlayCells(previewCells: GridCell[]) {
     const baseCells = this.getBaseAvailableCells();
     const expansionCells = getNearestGrassExpansionCells({
       occupiedCells: this.getOccupiedGrassCells(),
+      mapCells: baseCells,
       previewCells,
       grid: seaLevelScenePlan.grid,
       distanceCells: NEAREST_GRASS_EXPANSION_CELLS,

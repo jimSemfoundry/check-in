@@ -6,6 +6,7 @@ import {
   getCenteredGrassShapeAnchor,
   getGrassCellOverlayFrame,
   getGrassFoamCells,
+  getGrassMapCells,
   getNearestGrassExpansionCells,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
@@ -178,28 +179,19 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('adds four extra grid cells on the side nearest the selected grass preview', () => {
+  it('adds four extra grid columns on the side nearest the selected grass preview', () => {
     const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 4, y: 2 });
 
     expect(getNearestGrassExpansionCells({
       occupiedCells,
+      mapCells: getGrassMapCells({
+        grid: { columns: 12, rows: 8 },
+        occupiedCells,
+      }),
       previewCells: getGrassShapeCells(grassShapes.one, { x: 3, y: 3 }),
       grid: { columns: 12, rows: 8 },
       distanceCells: 4,
-    })).toEqual([
-      { x: 0, y: 2 },
-      { x: 1, y: 2 },
-      { x: 2, y: 2 },
-      { x: 3, y: 2 },
-      { x: 0, y: 3 },
-      { x: 1, y: 3 },
-      { x: 2, y: 3 },
-      { x: 3, y: 3 },
-      { x: 0, y: 4 },
-      { x: 1, y: 4 },
-      { x: 2, y: 4 },
-      { x: 3, y: 4 },
-    ]);
+    })).toEqual(buildTestCells(0, 3, 0, 7));
   });
 
   it('keeps all four extra grid cells even when they extend past the original grid', () => {
@@ -207,23 +199,21 @@ describe('grass placement model', () => {
 
     expect(getNearestGrassExpansionCells({
       occupiedCells,
+      mapCells: getGrassMapCells({
+        grid: { columns: 12, rows: 8 },
+        occupiedCells,
+      }),
       previewCells: getGrassShapeCells(grassShapes.one, { x: -1, y: 3 }),
       grid: { columns: 12, rows: 8 },
       distanceCells: 4,
-    })).toEqual([
-      { x: -4, y: 2 },
-      { x: -3, y: 2 },
-      { x: -2, y: 2 },
-      { x: -1, y: 2 },
-      { x: -4, y: 3 },
-      { x: -3, y: 3 },
-      { x: -2, y: 3 },
-      { x: -1, y: 3 },
-      { x: -4, y: 4 },
-      { x: -3, y: 4 },
-      { x: -2, y: 4 },
-      { x: -1, y: 4 },
-    ]);
+    })).toEqual(buildTestCells(-4, -1, 0, 7));
+  });
+
+  it('expands the base map rectangle to include planted grass outside the original grid', () => {
+    expect(getGrassMapCells({
+      grid: { columns: 3, rows: 2 },
+      occupiedCells: [{ x: -1, y: 0 }],
+    })).toEqual(buildTestCells(-1, 2, 0, 1));
   });
 
   it('uses dynamic available cells to accept points and placement outside the original grid', () => {
@@ -373,3 +363,12 @@ describe('grass placement model', () => {
     })).toEqual({ x: 1080, y: 200 });
   });
 });
+
+function buildTestCells(startX: number, endX: number, startY: number, endY: number) {
+  return Array.from({ length: endY - startY + 1 }, (_rowValue, row) =>
+    Array.from({ length: endX - startX + 1 }, (_columnValue, column) => ({
+      x: startX + column,
+      y: startY + row,
+    })),
+  ).flat();
+}
