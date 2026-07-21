@@ -190,9 +190,19 @@ export function getGrassFoamCells(cells: GridCell[]) {
 export function getGrassMapCells(args: {
   grid: GridSize;
   occupiedCells: GridCell[];
+  marginCells?: number;
 }) {
   const baseCells = buildCellsInRange(0, args.grid.columns - 1, 0, args.grid.rows - 1);
-  const bounds = getCellsBounds([...baseCells, ...args.occupiedCells]);
+  const margin = args.marginCells ?? 0;
+  const occupiedMarginCells = args.occupiedCells.flatMap((cell) => (
+    buildCellsInRange(
+      cell.x - margin,
+      cell.x + margin,
+      cell.y - margin,
+      cell.y + margin,
+    )
+  ));
+  const bounds = getCellsBounds([...baseCells, ...args.occupiedCells, ...occupiedMarginCells]);
 
   return buildCellsInRange(bounds.minX, bounds.maxX, bounds.minY, bounds.maxY);
 }

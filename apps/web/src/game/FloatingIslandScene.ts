@@ -12,7 +12,6 @@ import {
   getGrassShapeForHudSlot,
   getGrassTerrainFrame,
   getGridCellFromWorldPoint,
-  getNearestGrassExpansionCells,
   getToggledGrassSlotIndex,
   placeGrassPatch,
   type GrassShape,
@@ -36,7 +35,7 @@ const WATER_FOAM_FRAMES = 16;
 const WATER_FOAM_FRAME_SIZE = TILE_SIZE * 3;
 const WATER_FOAM_FRAME_RATE = 8;
 const WATER_FOAM_DISPLAY_SIZE = 220;
-const NEAREST_GRASS_EXPANSION_CELLS = 4;
+const GRASS_MAP_MARGIN_CELLS = 4;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
 const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
@@ -442,7 +441,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       availableCells: this.availableOverlayCells,
     });
 
-    this.renderAvailableCells(this.getAvailableOverlayCells(previewCells));
+    this.renderAvailableCells(this.getAvailableOverlayCells());
 
     for (const { cell, state } of previewCellStates) {
       const tile = this.createGrassTile(cell, previewOccupiedCells, gridLeft, gridTop, 0.72);
@@ -483,25 +482,12 @@ export class FloatingIslandScene extends Phaser.Scene {
     return getGrassMapCells({
       grid: seaLevelScenePlan.grid,
       occupiedCells: this.getOccupiedGrassCells(),
+      marginCells: GRASS_MAP_MARGIN_CELLS,
     });
   }
 
-  private getAvailableOverlayCells(previewCells: GridCell[]) {
-    const baseCells = this.getBaseAvailableCells();
-    const expansionCells = getNearestGrassExpansionCells({
-      occupiedCells: this.getOccupiedGrassCells(),
-      mapCells: baseCells,
-      previewCells,
-      grid: seaLevelScenePlan.grid,
-      distanceCells: NEAREST_GRASS_EXPANSION_CELLS,
-    });
-    const cellsByKey = new Map(baseCells.map((cell) => [`${cell.x},${cell.y}`, cell]));
-
-    for (const cell of expansionCells) {
-      cellsByKey.set(`${cell.x},${cell.y}`, cell);
-    }
-
-    return [...cellsByKey.values()];
+  private getAvailableOverlayCells() {
+    return this.getBaseAvailableCells();
   }
 
   private getOccupiedGrassCells() {

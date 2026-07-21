@@ -7,7 +7,6 @@ import {
   getGrassCellOverlayFrame,
   getGrassFoamCells,
   getGrassMapCells,
-  getNearestGrassExpansionCells,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
@@ -179,41 +178,22 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('adds four extra grid columns on the side nearest the selected grass preview', () => {
-    const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 4, y: 2 });
-
-    expect(getNearestGrassExpansionCells({
-      occupiedCells,
-      mapCells: getGrassMapCells({
-        grid: { columns: 12, rows: 8 },
-        occupiedCells,
-      }),
-      previewCells: getGrassShapeCells(grassShapes.one, { x: 3, y: 3 }),
-      grid: { columns: 12, rows: 8 },
-      distanceCells: 4,
-    })).toEqual(buildTestCells(0, 3, 0, 7));
-  });
-
-  it('keeps all four extra grid cells even when they extend past the original grid', () => {
+  it('keeps a four cell full-row and full-column map margin around planted grass', () => {
     const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 0, y: 2 });
 
-    expect(getNearestGrassExpansionCells({
-      occupiedCells,
-      mapCells: getGrassMapCells({
-        grid: { columns: 12, rows: 8 },
-        occupiedCells,
-      }),
-      previewCells: getGrassShapeCells(grassShapes.one, { x: -1, y: 3 }),
+    expect(getGrassMapCells({
       grid: { columns: 12, rows: 8 },
-      distanceCells: 4,
-    })).toEqual(buildTestCells(-4, -1, 0, 7));
+      occupiedCells,
+      marginCells: 4,
+    })).toEqual(buildTestCells(-4, 11, -2, 8));
   });
 
-  it('expands the base map rectangle to include planted grass outside the original grid', () => {
+  it('expands the base map rectangle with the same margin after planting outside the original grid', () => {
     expect(getGrassMapCells({
       grid: { columns: 3, rows: 2 },
       occupiedCells: [{ x: -1, y: 0 }],
-    })).toEqual(buildTestCells(-1, 2, 0, 1));
+      marginCells: 4,
+    })).toEqual(buildTestCells(-5, 3, -4, 4));
   });
 
   it('uses dynamic available cells to accept points and placement outside the original grid', () => {
