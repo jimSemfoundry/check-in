@@ -44,6 +44,16 @@ export function getGrassShapeForHudSlot(slotIndex: number | undefined) {
   return hudSlotGrassShapes[slotIndex];
 }
 
+export function getToggledGrassSlotIndex(
+  currentSlotIndex: number | undefined,
+  nextSlotIndex: number,
+) {
+  if (!getGrassShapeForHudSlot(nextSlotIndex)) return undefined;
+  if (currentSlotIndex === nextSlotIndex) return undefined;
+
+  return nextSlotIndex;
+}
+
 export function getGrassShapeCells(shape: GrassShape, anchor: GridCell) {
   return Array.from({ length: shape.height }, (_rowValue, row) =>
     Array.from({ length: shape.width }, (_columnValue, column) => ({

@@ -7,6 +7,7 @@ import {
   getGrassShapeCells,
   getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
+  getToggledGrassSlotIndex,
   placeGrassPatch,
 } from '../game/grassPlacement';
 
@@ -17,6 +18,13 @@ describe('grass placement model', () => {
     expect(getGrassShapeForHudSlot(2)).toEqual({ key: 'three-vertical', width: 1, height: 3 });
     expect(getGrassShapeForHudSlot(3)).toEqual({ key: 'nine', width: 3, height: 3 });
     expect(getGrassShapeForHudSlot(4)).toBeUndefined();
+  });
+
+  it('toggles grass slot selection off when selecting the active slot again', () => {
+    expect(getToggledGrassSlotIndex(undefined, 0)).toBe(0);
+    expect(getToggledGrassSlotIndex(1, 0)).toBe(0);
+    expect(getToggledGrassSlotIndex(0, 0)).toBeUndefined();
+    expect(getToggledGrassSlotIndex(0, 4)).toBeUndefined();
   });
 
   it('derives occupied cells for each rectangular grass shape from the anchor', () => {

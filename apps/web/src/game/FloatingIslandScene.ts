@@ -6,6 +6,7 @@ import {
   getCenteredGrassShapeAnchor,
   getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
+  getToggledGrassSlotIndex,
   placeGrassPatch,
   type GrassShape,
   type GrassPatch,
@@ -100,10 +101,7 @@ export class FloatingIslandScene extends Phaser.Scene {
         event: Phaser.Types.Input.EventData,
       ) => {
         event.stopPropagation();
-        this.selectedHudSlotIndex = getGrassShapeForHudSlot(piece.slotIndex) ? piece.slotIndex : undefined;
-        this.availableCellRoot?.setVisible(this.selectedHudSlotIndex !== undefined);
-        this.clearPreview();
-        this.layoutHud(this.scale.width || DESIGN_WIDTH, this.scale.height || DESIGN_HEIGHT);
+        this.setSelectedHudSlotIndex(getToggledGrassSlotIndex(this.selectedHudSlotIndex, piece.slotIndex));
       });
       return slotPiece;
     });
@@ -197,6 +195,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.addToWorld(this.occupiedCellRoot);
     this.renderAvailableCells();
     this.availableCellRoot.setVisible(false);
+    this.occupiedCellRoot.setVisible(false);
   }
 
   private addToWorld<T extends Phaser.GameObjects.GameObject>(gameObject: T) {
@@ -268,11 +267,17 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     if (slotIndex === undefined) return false;
 
-    this.selectedHudSlotIndex = getGrassShapeForHudSlot(slotIndex) ? slotIndex : undefined;
-    this.availableCellRoot?.setVisible(this.selectedHudSlotIndex !== undefined);
+    this.setSelectedHudSlotIndex(getToggledGrassSlotIndex(this.selectedHudSlotIndex, slotIndex));
+    return true;
+  }
+
+  private setSelectedHudSlotIndex(slotIndex: number | undefined) {
+    this.selectedHudSlotIndex = slotIndex;
+    const hasSelection = this.selectedHudSlotIndex !== undefined;
+    this.availableCellRoot?.setVisible(hasSelection);
+    this.occupiedCellRoot?.setVisible(hasSelection);
     this.clearPreview();
     this.layoutHud(this.scale.width || DESIGN_WIDTH, this.scale.height || DESIGN_HEIGHT);
-    return true;
   }
 
   private getCenteredAnchorFromCanvasPoint(canvasPoint: { x: number; y: number }, shape: GrassShape) {
