@@ -300,6 +300,39 @@ function getHudTransform(viewportWidth: number, viewportHeight: number) {
   };
 }
 
+function getSlotIndexAtPoint(
+  viewportWidth: number,
+  viewportHeight: number,
+  point: { x: number; y: number },
+) {
+  const hudTransform = getHudTransform(viewportWidth, viewportHeight);
+  const localPoint = {
+    x: (point.x - hudTransform.x) / hudTransform.scale,
+    y: (point.y - hudTransform.y) / hudTransform.scale,
+  };
+  const slotStep = getSlotStep(viewportWidth);
+  const hitSize = Math.max(getSlotSize(viewportWidth), slotStep * 0.78);
+
+  for (let slotIndex = 0; slotIndex < SLOT_COUNT; slotIndex += 1) {
+    const slotX = getSlotCenterX(viewportWidth, slotIndex);
+    const left = slotX - hitSize / 2;
+    const right = slotX + hitSize / 2;
+    const top = SLOT_CENTER_Y - hitSize / 2;
+    const bottom = SLOT_CENTER_Y + hitSize / 2;
+
+    if (
+      localPoint.x >= left
+      && localPoint.x <= right
+      && localPoint.y >= top
+      && localPoint.y <= bottom
+    ) {
+      return slotIndex;
+    }
+  }
+
+  return undefined;
+}
+
 export const gameHudLayout = {
   bannerPieces,
   slotPieces,
@@ -310,4 +343,5 @@ export const gameHudLayout = {
   getSlotCursorTarget,
   getSlotItemTargets,
   getHudTransform,
+  getSlotIndexAtPoint,
 };

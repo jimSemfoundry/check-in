@@ -38,7 +38,9 @@ const hudSlotGrassShapes: Array<GrassShape | undefined> = [
   undefined,
 ];
 
-export function getGrassShapeForHudSlot(slotIndex: number) {
+export function getGrassShapeForHudSlot(slotIndex: number | undefined) {
+  if (slotIndex === undefined) return undefined;
+
   return hudSlotGrassShapes[slotIndex];
 }
 
@@ -49,6 +51,13 @@ export function getGrassShapeCells(shape: GrassShape, anchor: GridCell) {
       y: anchor.y + row,
     })),
   ).flat();
+}
+
+export function getCenteredGrassShapeAnchor(shape: GrassShape, center: GridCell) {
+  return {
+    x: center.x - Math.floor(shape.width / 2),
+    y: center.y - Math.floor(shape.height / 2),
+  };
 }
 
 export function canPlaceGrassShape(args: {

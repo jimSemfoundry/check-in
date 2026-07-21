@@ -165,4 +165,11 @@ describe('game HUD layout', () => {
       scale: 1,
     });
   });
+
+  it('finds the selected slot from canvas coordinates', () => {
+    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 508, y: 637 })).toBe(0);
+    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 640, y: 637 })).toBe(2);
+    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 772, y: 637 })).toBe(4);
+    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 640, y: 300 })).toBeUndefined();
+  });
 });

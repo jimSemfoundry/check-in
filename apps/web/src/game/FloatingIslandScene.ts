@@ -3,9 +3,12 @@ import { tinySwordsAssets } from './assets';
 import { gameHudLayout } from './hudLayout';
 import {
   getCanvasPointFromPointerEvent,
+  getCenteredGrassShapeAnchor,
+  getGrassShapeCells,
   getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
   placeGrassPatch,
+  type GrassShape,
   type GrassPatch,
 } from './grassPlacement';
 import { seaLevelScenePlan } from './seaLevelScenePlan';
@@ -23,12 +26,13 @@ export class FloatingIslandScene extends Phaser.Scene {
   private availableCellRoot?: Phaser.GameObjects.Container;
   private grassRoot?: Phaser.GameObjects.Container;
   private occupiedCellRoot?: Phaser.GameObjects.Container;
+  private previewRoot?: Phaser.GameObjects.Container;
   private hudRoot?: Phaser.GameObjects.Container;
   private hudBannerPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotItems: Phaser.GameObjects.Image[] = [];
   private hudSlotCursor?: Phaser.GameObjects.Image;
-  private selectedHudSlotIndex = 0;
+  private selectedHudSlotIndex?: number;
   private grassPatches: GrassPatch[] = [];
   private nextGrassPatchId = 1;
 
@@ -53,6 +57,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.buildScene();
     this.createHud();
     this.input.on('pointerdown', this.handleWorldPointerDown, this);
+    this.input.on('pointermove', this.handleWorldPointerMove, this);
     this.layout();
   }
 
@@ -62,6 +67,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.availableCellRoot = undefined;
     this.grassRoot = undefined;
     this.occupiedCellRoot = undefined;
+    this.previewRoot = undefined;
     this.grassPatches = [];
     this.nextGrassPatchId = 1;
 
@@ -94,7 +100,9 @@ export class FloatingIslandScene extends Phaser.Scene {
         event: Phaser.Types.Input.EventData,
       ) => {
         event.stopPropagation();
-        this.selectedHudSlotIndex = piece.slotIndex;
+        this.selectedHudSlotIndex = getGrassShapeForHudSlot(piece.slotIndex) ? piece.slotIndex : undefined;
+        this.availableCellRoot?.setVisible(this.selectedHudSlotIndex !== undefined);
+        this.clearPreview();
         this.layoutHud(this.scale.width || DESIGN_WIDTH, this.scale.height || DESIGN_HEIGHT);
       });
       return slotPiece;
@@ -165,10 +173,13 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.availableCellRoot = this.add.container(0, 0);
     this.grassRoot = this.add.container(0, 0);
     this.occupiedCellRoot = this.add.container(0, 0);
+    this.previewRoot = this.add.container(0, 0);
     this.addToWorld(this.availableCellRoot);
     this.addToWorld(this.grassRoot);
+    this.addToWorld(this.previewRoot);
     this.addToWorld(this.occupiedCellRoot);
     this.renderAvailableCells();
+    this.availableCellRoot.setVisible(false);
   }
 
   private addToWorld<T extends Phaser.GameObjects.GameObject>(gameObject: T) {
@@ -179,25 +190,15 @@ export class FloatingIslandScene extends Phaser.Scene {
   private handleWorldPointerDown(pointer: Phaser.Input.Pointer) {
     if (!this.worldRoot || !this.grassRoot || !this.occupiedCellRoot) return;
 
-    const shape = getGrassShapeForHudSlot(this.selectedHudSlotIndex);
-    if (!shape) return;
-
     const canvasPoint = this.getCanvasPoint(pointer);
     if (!canvasPoint) return;
 
-    const gridLeft = -placementWidth / 2;
-    const gridTop = -placementHeight / 2;
-    const worldPoint = {
-      x: (canvasPoint.x - this.worldRoot.x) / this.worldRoot.scaleX,
-      y: (canvasPoint.y - this.worldRoot.y) / this.worldRoot.scaleY,
-    };
-    const anchor = getGridCellFromWorldPoint({
-      point: worldPoint,
-      gridLeft,
-      gridTop,
-      tileSize: TILE_SIZE,
-      grid: seaLevelScenePlan.grid,
-    });
+    if (this.handleHudPoint(canvasPoint)) return;
+
+    const shape = getGrassShapeForHudSlot(this.selectedHudSlotIndex);
+    if (!shape) return;
+
+    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, shape);
 
     if (!anchor) return;
 
@@ -214,6 +215,75 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.nextGrassPatchId += 1;
     this.grassPatches = nextPatches;
     this.renderGrassPatch(nextPatches[nextPatches.length - 1]);
+    this.renderPreviewAtAnchor(anchor, shape);
+  }
+
+  private handleWorldPointerMove(pointer: Phaser.Input.Pointer) {
+    if (!this.worldRoot || !this.previewRoot) return;
+
+    const shape = getGrassShapeForHudSlot(this.selectedHudSlotIndex);
+    if (!shape) {
+      this.clearPreview();
+      return;
+    }
+
+    const canvasPoint = this.getCanvasPoint(pointer);
+    if (!canvasPoint) {
+      this.clearPreview();
+      return;
+    }
+
+    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, shape);
+    if (!anchor) {
+      this.clearPreview();
+      return;
+    }
+
+    this.renderPreviewAtAnchor(anchor, shape);
+  }
+
+  private handleHudPoint(canvasPoint: { x: number; y: number }) {
+    const slotIndex = gameHudLayout.getSlotIndexAtPoint(
+      this.scale.width || DESIGN_WIDTH,
+      this.scale.height || DESIGN_HEIGHT,
+      canvasPoint,
+    );
+
+    if (slotIndex === undefined) return false;
+
+    this.selectedHudSlotIndex = getGrassShapeForHudSlot(slotIndex) ? slotIndex : undefined;
+    this.availableCellRoot?.setVisible(this.selectedHudSlotIndex !== undefined);
+    this.clearPreview();
+    this.layoutHud(this.scale.width || DESIGN_WIDTH, this.scale.height || DESIGN_HEIGHT);
+    return true;
+  }
+
+  private getCenteredAnchorFromCanvasPoint(canvasPoint: { x: number; y: number }, shape: GrassShape) {
+    if (!this.worldRoot) return undefined;
+
+    const center = this.getGridCellFromCanvasPoint(canvasPoint);
+    if (!center) return undefined;
+
+    return getCenteredGrassShapeAnchor(shape, center);
+  }
+
+  private getGridCellFromCanvasPoint(canvasPoint: { x: number; y: number }) {
+    if (!this.worldRoot) return undefined;
+
+    const gridLeft = -placementWidth / 2;
+    const gridTop = -placementHeight / 2;
+    const worldPoint = {
+      x: (canvasPoint.x - this.worldRoot.x) / this.worldRoot.scaleX,
+      y: (canvasPoint.y - this.worldRoot.y) / this.worldRoot.scaleY,
+    };
+
+    return getGridCellFromWorldPoint({
+      point: worldPoint,
+      gridLeft,
+      gridTop,
+      tileSize: TILE_SIZE,
+      grid: seaLevelScenePlan.grid,
+    });
   }
 
   private getCanvasPoint(pointer: Phaser.Input.Pointer) {
@@ -262,12 +332,44 @@ export class FloatingIslandScene extends Phaser.Scene {
         gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
         gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
         'terrain-tiles',
-        seaLevelScenePlan.grassFrame,
+        this.getGrassFrameForCell(cell),
       );
       tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
       this.grassRoot.add(tile);
       this.occupiedCellRoot.add(this.createCellStateRectangle(cell, gridLeft, gridTop, 'occupied'));
     }
+  }
+
+  private renderPreviewAtAnchor(anchor: { x: number; y: number }, shape: GrassShape) {
+    if (!this.previewRoot) return;
+
+    this.clearPreview();
+
+    const gridLeft = -placementWidth / 2;
+    const gridTop = -placementHeight / 2;
+
+    for (const cell of getGrassShapeCells(shape, anchor)) {
+      const tile = this.add.image(
+        gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
+        gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
+        'terrain-tiles',
+        this.getGrassFrameForCell(cell),
+      );
+      tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
+      tile.setAlpha(0.72);
+      this.previewRoot.add(tile);
+    }
+  }
+
+  private clearPreview() {
+    this.previewRoot?.removeAll(true);
+  }
+
+  private getGrassFrameForCell(cell: { x: number; y: number }) {
+    const frames = seaLevelScenePlan.grassFrames;
+    const column = Math.abs(cell.x) % 2;
+    const row = Math.abs(cell.y) % 2;
+    return frames[row * 2 + column];
   }
 
   private renderAvailableCells() {
@@ -326,7 +428,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     const bannerPieces = gameHudLayout.getBannerPieceTargets(width);
     const slotPieces = gameHudLayout.getSlotTargets(width);
     const slotItems = gameHudLayout.getSlotItemTargets(width);
-    const slotCursor = gameHudLayout.getSlotCursorTarget(width, this.selectedHudSlotIndex);
+    const slotCursor = gameHudLayout.getSlotCursorTarget(width, this.selectedHudSlotIndex ?? 0);
 
     for (const [index, piece] of bannerPieces.entries()) {
       const bannerPiece = this.hudBannerPieces[index];
@@ -352,6 +454,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       slotItem.setDisplaySize(item.target.width, item.target.height);
     }
 
+    this.hudSlotCursor?.setVisible(this.selectedHudSlotIndex !== undefined);
     this.hudSlotCursor?.setPosition(slotCursor.x, slotCursor.y);
     this.hudSlotCursor?.setDisplaySize(slotCursor.width, slotCursor.height);
 

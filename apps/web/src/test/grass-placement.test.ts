@@ -3,6 +3,7 @@ import {
   grassShapes,
   canPlaceGrassShape,
   getCanvasPointFromPointerEvent,
+  getCenteredGrassShapeAnchor,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
   getGridCellFromWorldPoint,
@@ -41,6 +42,13 @@ describe('grass placement model', () => {
       { x: 2, y: 4 },
       { x: 3, y: 4 },
     ]);
+  });
+
+  it('uses the hovered grid cell as the center of the selected grass shape', () => {
+    expect(getCenteredGrassShapeAnchor(grassShapes.one, { x: 5, y: 4 })).toEqual({ x: 5, y: 4 });
+    expect(getCenteredGrassShapeAnchor(grassShapes['three-horizontal'], { x: 5, y: 4 })).toEqual({ x: 4, y: 4 });
+    expect(getCenteredGrassShapeAnchor(grassShapes['three-vertical'], { x: 5, y: 4 })).toEqual({ x: 5, y: 3 });
+    expect(getCenteredGrassShapeAnchor(grassShapes.nine, { x: 5, y: 4 })).toEqual({ x: 4, y: 3 });
   });
 
   it('allows placement only when the full grass shape fits inside the grid', () => {

@@ -6,7 +6,7 @@ export const seaLevelScenePlan = {
     columns: 12,
     rows: 8,
   },
-  grassFrame: 24,
+  grassFrames: [0, 1, 9, 10],
   cellStates: {
     available: {
       fillColor: 0x2fca5d,
