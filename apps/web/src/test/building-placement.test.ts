@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildingFootprints,
   canPlaceFootprint,
+  getCanvasPointFromPointerEvent,
   getFootprintCells,
   getFootprintForHudSlot,
   getGridCellFromWorldPoint,
@@ -150,5 +151,19 @@ describe('building placement model', () => {
       tileSize: 64,
       grid: { columns: 6, rows: 6 },
     })).toBeUndefined();
+  });
+
+  it('uses DOM event coordinates to derive canvas points instead of stale Phaser pointer coordinates', () => {
+    expect(getCanvasPointFromPointerEvent({
+      clientPoint: { x: 640, y: 300 },
+      canvasRect: { left: 0, top: 0, width: 1280, height: 720 },
+      canvasSize: { width: 1280, height: 720 },
+    })).toEqual({ x: 640, y: 300 });
+
+    expect(getCanvasPointFromPointerEvent({
+      clientPoint: { x: 640, y: 300 },
+      canvasRect: { left: 100, top: 200, width: 640, height: 360 },
+      canvasSize: { width: 1280, height: 720 },
+    })).toEqual({ x: 1080, y: 200 });
   });
 });

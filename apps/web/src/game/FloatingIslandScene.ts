@@ -17,6 +17,7 @@ import {
 import { createSheepRouteTarget, getSheepMoveDurationMs } from './sheepMotion';
 import { gameHudLayout } from './hudLayout';
 import {
+  getCanvasPointFromPointerEvent,
   getFootprintForHudSlot,
   getGridCellFromWorldPoint,
   placeBuilding,
@@ -421,9 +422,12 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     const grassLeft = -platformWidth / 2;
     const grassTop = -platformHeight / 2;
+    const canvasPoint = this.getCanvasPoint(pointer);
+    if (!canvasPoint) return;
+
     const worldPoint = {
-      x: (pointer.x - this.worldRoot.x) / this.worldRoot.scaleX,
-      y: (pointer.y - this.worldRoot.y) / this.worldRoot.scaleY,
+      x: (canvasPoint.x - this.worldRoot.x) / this.worldRoot.scaleX,
+      y: (canvasPoint.y - this.worldRoot.y) / this.worldRoot.scaleY,
     };
     const anchor = getGridCellFromWorldPoint({
       point: worldPoint,
@@ -454,6 +458,41 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.nextBuildingId += 1;
     this.placedBuildings = nextBuildings;
     this.renderPlacedBuilding(nextBuildings[nextBuildings.length - 1]);
+  }
+
+  private getCanvasPoint(pointer: Phaser.Input.Pointer) {
+    const event = pointer.event;
+    const clientPoint = this.getClientPoint(event);
+    if (!clientPoint) return undefined;
+
+    const rect = this.scale.canvas.getBoundingClientRect();
+
+    return getCanvasPointFromPointerEvent({
+      clientPoint,
+      canvasRect: {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+      },
+      canvasSize: {
+        width: this.scale.canvas.width,
+        height: this.scale.canvas.height,
+      },
+    });
+  }
+
+  private getClientPoint(event: MouseEvent | TouchEvent | WheelEvent | undefined) {
+    if (!event) return undefined;
+
+    if ('clientX' in event && 'clientY' in event) {
+      return { x: event.clientX, y: event.clientY };
+    }
+
+    const touch = event.changedTouches[0] ?? event.touches[0];
+    if (!touch) return undefined;
+
+    return { x: touch.clientX, y: touch.clientY };
   }
 
   private renderPlacedBuilding(building: PlacedBuilding | undefined) {

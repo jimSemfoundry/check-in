@@ -114,3 +114,18 @@ export function getGridCellFromWorldPoint(args: {
 
   return { x, y };
 }
+
+export function getCanvasPointFromPointerEvent(args: {
+  clientPoint: { x: number; y: number };
+  canvasRect: { left: number; top: number; width: number; height: number };
+  canvasSize: { width: number; height: number };
+}) {
+  if (args.canvasRect.width <= 0 || args.canvasRect.height <= 0) {
+    return undefined;
+  }
+
+  return {
+    x: ((args.clientPoint.x - args.canvasRect.left) / args.canvasRect.width) * args.canvasSize.width,
+    y: ((args.clientPoint.y - args.canvasRect.top) / args.canvasRect.height) * args.canvasSize.height,
+  };
+}
