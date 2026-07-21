@@ -9,7 +9,7 @@ export const rockIslandScenePlan = {
     animationFrames: 16,
     frameRate: 8,
     grid: {
-      columns: 3,
+      columns: 6,
       rows: 2,
       originGridX: -1,
       originGridY: -3,

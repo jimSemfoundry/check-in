@@ -4,11 +4,13 @@ import { rockIslandScenePlan } from '../game/rockIslandScenePlan';
 describe('compact rock island scene plan', () => {
   it('uses one small grass-and-rock platform with foam below the rock', () => {
     expect(rockIslandScenePlan.platform).toMatchObject({
-      widthTiles: 3,
-      grassRows: 2,
+      widthTiles: 6,
+      grassRows: 6,
       rockRows: 1,
       tileOverlapPixels: 1,
     });
+    expect(rockIslandScenePlan.frames.grassRows).toHaveLength(6);
+    expect(rockIslandScenePlan.frames.grassRows.every((row) => row.length === 6)).toBe(true);
     expect(rockIslandScenePlan.decorations).toEqual([]);
     expect(rockIslandScenePlan.foam).toMatchObject({
       placement: 'below-rock',
@@ -17,7 +19,7 @@ describe('compact rock island scene plan', () => {
       animationFrames: 16,
       frameRate: 8,
       grid: {
-        columns: 3,
+        columns: 6,
         rows: 2,
         originGridX: -1,
         originGridY: -3,
@@ -26,11 +28,15 @@ describe('compact rock island scene plan', () => {
     });
     expect(rockIslandScenePlan.frames).toEqual({
       grassRows: [
-        [5, 6, 7],
-        [23, 24, 25],
+        [5, 6, 6, 6, 6, 7],
+        [23, 24, 24, 24, 24, 25],
+        [23, 24, 24, 24, 24, 25],
+        [23, 24, 24, 24, 24, 25],
+        [23, 24, 24, 24, 24, 25],
+        [41, 42, 42, 42, 42, 43],
       ],
       rockRows: [
-        [50, 51, 52],
+        [50, 51, 51, 51, 51, 52],
       ],
     });
   });
