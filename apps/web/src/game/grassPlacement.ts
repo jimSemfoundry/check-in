@@ -363,14 +363,23 @@ export function placeSecondLayerPatch(args: {
   patches: GrassPatch[];
   baseCells: GridCell[];
 }) {
-  return placeGrassPatch({
-    id: args.id,
-    shape: args.shape,
-    anchor: args.anchor,
-    grid: args.grid,
-    patches: args.patches,
-    availableCells: args.baseCells,
-  });
+  const cells = getGrassShapeCells(args.shape, args.anchor);
+  const baseCellKeys = new Set(args.baseCells.map(getCellKey));
+  const occupiedCellKeys = new Set(args.patches.flatMap((patch) => patch.cells).map(getCellKey));
+  const isInsideBaseGrass = cells.every((cell) => baseCellKeys.has(getCellKey(cell)));
+  const newCells = cells.filter((cell) => !occupiedCellKeys.has(getCellKey(cell)));
+
+  if (!isInsideBaseGrass || newCells.length === 0) return args.patches;
+
+  return [
+    ...args.patches,
+    {
+      id: args.id,
+      shapeKey: args.shape.key,
+      anchor: args.anchor,
+      cells: newCells,
+    },
+  ];
 }
 
 export function getGrassTerrainFrame(args: {
@@ -383,8 +392,9 @@ export function getGrassTerrainFrame(args: {
 export function getSecondLayerTerrainPieces(args: {
   occupiedCells: GridCell[];
 }) {
-  const occupiedCellKeys = new Set(args.occupiedCells.map(getCellKey));
-  const grassPieces = [...args.occupiedCells]
+  const occupiedCells = getUniqueCells(args.occupiedCells);
+  const occupiedCellKeys = new Set(occupiedCells.map(getCellKey));
+  const grassPieces = [...occupiedCells]
     .sort(compareCells)
     .map((cell) => ({
       cell,
@@ -393,7 +403,7 @@ export function getSecondLayerTerrainPieces(args: {
       ],
       surface: 'grass' as const,
     }));
-  const bottomEdgeCells = [...args.occupiedCells]
+  const bottomEdgeCells = [...occupiedCells]
     .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
     .sort(compareCells);
   const generatedFrontCells = bottomEdgeCells
@@ -412,6 +422,17 @@ export function getSecondLayerTerrainPieces(args: {
     ...topPieces,
     ...getSecondLayerFrontPieces(generatedFrontCells),
   ];
+}
+
+function getUniqueCells(cells: GridCell[]) {
+  const seenCellKeys = new Set<string>();
+
+  return cells.filter((cell) => {
+    const key = getCellKey(cell);
+    if (seenCellKeys.has(key)) return false;
+    seenCellKeys.add(key);
+    return true;
+  });
 }
 
 function getSecondLayerFrontPieces(frontCells: GridCell[]): TerrainPiece[] {

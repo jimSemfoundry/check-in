@@ -294,7 +294,7 @@ describe('grass placement model', () => {
     })).toHaveLength(2);
   });
 
-  it('places second-layer patches only on existing base grass and without overlap', () => {
+  it('places second-layer patches only on existing base grass', () => {
     const baseCells = getGrassShapeCells(grassShapes.nine, { x: 1, y: 1 });
     const patches = placeSecondLayerPatch({
       id: 'second-1',
@@ -325,14 +325,46 @@ describe('grass placement model', () => {
       patches,
       baseCells,
     })).toBe(patches);
+  });
+
+  it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {
+    const baseCells = buildTestCells(1, 3, 1, 4);
+    const patches = placeSecondLayerPatch({
+      id: 'second-1',
+      shape: grassShapes['three-vertical'],
+      anchor: { x: 2, y: 1 },
+      grid: { columns: 6, rows: 6 },
+      patches: [],
+      baseCells,
+    });
+
     expect(placeSecondLayerPatch({
-      id: 'overlap',
-      shape: grassShapes.one,
+      id: 'second-2',
+      shape: grassShapes['three-vertical'],
       anchor: { x: 2, y: 2 },
       grid: { columns: 6, rows: 6 },
       patches,
       baseCells,
-    })).toBe(patches);
+    })).toEqual([
+      {
+        id: 'second-1',
+        shapeKey: 'three-vertical',
+        anchor: { x: 2, y: 1 },
+        cells: [
+          { x: 2, y: 1 },
+          { x: 2, y: 2 },
+          { x: 2, y: 3 },
+        ],
+      },
+      {
+        id: 'second-2',
+        shapeKey: 'three-vertical',
+        anchor: { x: 2, y: 2 },
+        cells: [
+          { x: 2, y: 4 },
+        ],
+      },
+    ]);
   });
 
   it('selects terrain frames from neighboring occupied grass cells', () => {
@@ -467,6 +499,22 @@ describe('grass placement model', () => {
       occupiedCells: [
         ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
         { x: 2, y: 6 },
+      ],
+    })).toEqual([
+      { cell: { x: 2, y: 8 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 26, surface: 'grass' },
+      { cell: { x: 2, y: 7 }, frame: 35, surface: 'grass' },
+    ]);
+  });
+
+  it('deduplicates overlapping second-layer brush cells before choosing merged frames', () => {
+    expect(getSecondLayerTerrainPieces({
+      occupiedCells: [
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 4 }),
       ],
     })).toEqual([
       { cell: { x: 2, y: 8 }, frame: 44, surface: 'rock' },

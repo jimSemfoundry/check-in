@@ -506,7 +506,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       shape: tool.shape,
       anchor,
       grid: seaLevelScenePlan.grid,
-      occupiedCells,
+      occupiedCells: tool.layer === 'second' ? [] : occupiedCells,
       availableCells: this.availableOverlayCells,
     });
 
