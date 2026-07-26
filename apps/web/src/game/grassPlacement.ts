@@ -397,8 +397,8 @@ export function getSecondLayerTerrainPieces(args: {
     .sort(compareCells);
 
   return [
-    ...grassPieces,
     ...getSecondLayerRockPieces(bottomEdgeCells),
+    ...grassPieces,
   ];
 }
 
