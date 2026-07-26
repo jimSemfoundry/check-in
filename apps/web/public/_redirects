@@ -1,13 +1,13 @@
 # Cloudflare Pages: keep direct browser navigation working for app routes.
 # Do not add a catch-all rule here; missing /assets/*.js must stay 404 instead of
 # returning index.html as a JavaScript module.
-/w/* /index.html 200
-/welcome /index.html 200
-/game /index.html 200
-/today /index.html 200
-/history /index.html 200
-/pet /index.html 200
-/habits /index.html 200
-/habits/new /index.html 200
-/habits/* /index.html 200
-/settings /index.html 200
+/w/* / 200
+/welcome / 200
+/game / 200
+/today / 200
+/history / 200
+/pet / 200
+/habits / 200
+/habits/new / 200
+/habits/* / 200
+/settings / 200

@@ -33,9 +33,9 @@ function findRedirect(path: string) {
 
 describe('Cloudflare Pages routing', () => {
   it('rewrites browser app routes to the SPA entry only for known app paths', () => {
-    expect(findRedirect('/game')).toEqual({ source: '/game', destination: '/index.html', status: 200 });
-    expect(findRedirect('/today')).toEqual({ source: '/today', destination: '/index.html', status: 200 });
-    expect(findRedirect('/w/demo/join')).toEqual({ source: '/w/*', destination: '/index.html', status: 200 });
+    expect(findRedirect('/game')).toEqual({ source: '/game', destination: '/', status: 200 });
+    expect(findRedirect('/today')).toEqual({ source: '/today', destination: '/', status: 200 });
+    expect(findRedirect('/w/demo/join')).toEqual({ source: '/w/*', destination: '/', status: 200 });
   });
 
   it('leaves asset URLs unmatched so missing JavaScript returns 404 instead of index HTML', () => {
