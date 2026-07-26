@@ -416,13 +416,19 @@ function getRaisedTerrainPieces(terrainCells: GridCell[], rockProfile: 'bottom-o
   const bottomEdgeCells = [...occupiedCells]
     .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
     .sort(compareCells);
-  const generatedFrontCells = bottomEdgeCells
-    .filter((cell) => occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 })))
-    .map((cell) => ({ x: cell.x, y: cell.y + 1 }))
-    .sort(compareCells);
+  const shouldGenerateFrontCells = rockProfile !== 'full-island';
+  const generatedFrontCells = shouldGenerateFrontCells
+    ? bottomEdgeCells
+      .filter((cell) => occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 })))
+      .map((cell) => ({ x: cell.x, y: cell.y + 1 }))
+      .sort(compareCells)
+    : [];
   const directRockSourceCells = bottomEdgeCells
     .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 })));
-  const rockSourceCells = [...directRockSourceCells, ...generatedFrontCells].sort(compareCells);
+  const rockSourceCells = (rockProfile === 'full-island'
+    ? bottomEdgeCells
+    : [...directRockSourceCells, ...generatedFrontCells]
+  ).sort(compareCells);
   const frontPieces = grassPieces.filter((piece) => secondLayerFrontGrassFrames.has(piece.frame));
   const topPieces = grassPieces.filter((piece) => !secondLayerFrontGrassFrames.has(piece.frame));
 
@@ -430,7 +436,7 @@ function getRaisedTerrainPieces(terrainCells: GridCell[], rockProfile: 'bottom-o
     ...getSecondLayerRockPieces(rockSourceCells, rockProfile),
     ...frontPieces,
     ...topPieces,
-    ...getSecondLayerFrontPieces(generatedFrontCells),
+    ...(shouldGenerateFrontCells ? getSecondLayerFrontPieces(generatedFrontCells) : []),
   ];
 }
 

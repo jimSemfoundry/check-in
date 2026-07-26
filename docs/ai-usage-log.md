@@ -254,3 +254,12 @@
 - 测试过程：先把第一层 3x3 岛测试改为期望 `41/42/43` 与 `50/51/52` 两行岩石，观察到旧实现缺中间岩壁的失败，再实现完整 profile 并调整默认岛位置。
 - 验证：`pnpm --filter web test` 72/72 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均渲染完整两行岩石海岛，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-26：去掉第一层海岛中间草前脸
+
+- 问题：用户截图指出完整海岛中间多出一条草前脸，要求“去掉中间的然后组合”。
+- 根因：第一层 `full-island` profile 继续复用了第二层高地的 generated front grass 逻辑，导致 3x3 草地底边下方额外生成一行 `32/33/34` 草前脸，岩壁因此整体下移一格。
+- AI 贡献：将 `getIslandTerrainPieces()` 的 `full-island` profile 改为直接使用草地底边作为岩石来源；第一层海岛现在输出 3 行草地本体、紧贴其下的 `41/42/43` 岩壁、再下方 `50/51/52` 底部岩石。第二层高地仍保留原来的草前脸生成逻辑。
+- 测试过程：先把第一层 3x3 岛测试改为期望岩石上移且不包含 generated front grass，观察到旧实现多出 `32/33/34` 并且岩石 y 坐标下移的失败，再修改生产逻辑使测试通过。
+- 验证：目标测试和相关场景测试已通过；本地 Playwright 桌面 1280x720 与移动 390x844 均渲染无中间草前脸的海岛，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Tilemap_color4.png` 或 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
