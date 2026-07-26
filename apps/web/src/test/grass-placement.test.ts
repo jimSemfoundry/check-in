@@ -451,34 +451,37 @@ describe('grass placement model', () => {
     ]));
   });
 
-  it('lets base grass cover the right side of a second-layer vertical strip', () => {
-    expect(getSecondLayerTerrainPieces({
+  it('keeps second-layer vertical strip edges independent from base grass beside it', () => {
+    const placement = {
       occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
       baseCells: [
         ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
         ...getGrassShapeCells(grassShapes['three-vertical'], { x: 3, y: 3 }),
       ],
-    })).toEqual([
+    } as Parameters<typeof getSecondLayerTerrainPieces>[0] & { baseCells: Array<{ x: number; y: number }> };
+
+    expect(getSecondLayerTerrainPieces(placement)).toEqual([
       { cell: { x: 2, y: 6 }, frame: 44, surface: 'rock' },
-      { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
-      { cell: { x: 2, y: 4 }, frame: 14, surface: 'grass' },
-      { cell: { x: 2, y: 5 }, frame: 32, surface: 'grass' },
+      { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 35, surface: 'grass' },
     ]);
   });
 
-  it('lets base grass cover the right side of a second-layer 3x3 block', () => {
-    const pieces = getSecondLayerTerrainPieces({
+  it('keeps second-layer 3x3 edges independent from base grass beside it', () => {
+    const placement = {
       occupiedCells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
       baseCells: [
         ...getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
         ...getGrassShapeCells(grassShapes['three-vertical'], { x: 5, y: 3 }),
       ],
-    });
+    } as Parameters<typeof getSecondLayerTerrainPieces>[0] & { baseCells: Array<{ x: number; y: number }> };
+    const pieces = getSecondLayerTerrainPieces(placement);
 
     expect(pieces).toEqual(expect.arrayContaining([
-      { cell: { x: 4, y: 3 }, frame: 6, surface: 'grass' },
-      { cell: { x: 4, y: 4 }, frame: 15, surface: 'grass' },
-      { cell: { x: 4, y: 5 }, frame: 33, surface: 'grass' },
+      { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 34, surface: 'grass' },
     ]));
   });
 
