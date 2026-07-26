@@ -6,6 +6,7 @@ export type Capability =
   | 'habit:read'
   | 'habit:manage'
   | 'checkin:manage'
+  | 'checkin:backfill'
   | 'history:read'
   | 'pet:read'
   | 'pet:interact'
@@ -16,6 +17,7 @@ export const capabilityMatrix: Readonly<Record<Role, ReadonlySet<Capability>>> =
     'habit:read',
     'habit:manage',
     'checkin:manage',
+    'checkin:backfill',
     'history:read',
     'pet:read',
     'pet:interact',

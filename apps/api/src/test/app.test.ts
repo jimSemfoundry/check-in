@@ -31,6 +31,7 @@ const unavailableHabitService: HabitService = {
   today: pending,
   checkin: pending,
   cancelCheckin: pending,
+  backfillCheckin: pending,
 };
 
 const habitFixture: Habit = {
@@ -89,6 +90,16 @@ const workingHabitService: HabitService = {
       cancelledAt: '2026-07-12T04:00:00.000Z',
     },
     foodBalance: 0,
+  }),
+  backfillCheckin: async (_session, input) => ({
+    checkin: {
+      id: '10000000-0000-4000-8000-000000000004',
+      habitId: input.habitId,
+      checkinDate: input.date,
+      completedAt: '2026-07-12T03:00:00.000Z',
+      cancelledAt: null,
+    },
+    foodBalance: 2,
   }),
 };
 
@@ -274,6 +285,18 @@ describe('permission boundaries', () => {
     }
   });
 
+  it('does not allow a participant to backfill check-ins', async () => {
+    const { app, cookie } = await authenticated('participant', workingHabitService);
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/history/checkins/backfill',
+      headers: { cookie },
+      payload: { habitId: habitFixture.id, date: '2026-08-01' },
+    });
+    expect(response.statusCode).toBe(403);
+    expect(response.json().error.code).toBe('FORBIDDEN');
+  });
+
   it('rejects protected APIs without a session', async () => {
     const app = await buildApp({
       config,
@@ -353,5 +376,20 @@ describe('habit and check-in routes', () => {
     });
     expect(cancelled.statusCode).toBe(200);
     expect(cancelled.json().data.foodBalance).toBe(0);
+  });
+
+  it('maps owner backfill check-ins to the service', async () => {
+    const { app, cookie } = await authenticated('owner', workingHabitService);
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/history/checkins/backfill',
+      headers: { cookie },
+      payload: { habitId: habitFixture.id, date: '2026-08-01' },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().data).toMatchObject({
+      foodBalance: 2,
+      checkin: { habitId: habitFixture.id, checkinDate: '2026-08-01' },
+    });
   });
 });

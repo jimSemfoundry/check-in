@@ -1,4 +1,5 @@
 import {
+  backfillCheckinRequestSchema,
   createCheckinRequestSchema,
   createHabitRequestSchema,
   isoDateSchema,
@@ -52,6 +53,16 @@ export const habitRoutes: FastifyPluginAsync<{ habitService: HabitService }> = a
       const { date } = createCheckinRequestSchema.parse(request.body ?? {});
       return { data: await habitService.checkin(request.session!, id, date) };
     },
+  );
+  app.post(
+    '/history/checkins/backfill',
+    { preHandler: requireCapability('checkin:backfill') },
+    async (request) => ({
+      data: await habitService.backfillCheckin(
+        request.session!,
+        backfillCheckinRequestSchema.parse(request.body),
+      ),
+    }),
   );
   app.delete(
     '/habits/:id/checkins/:date',

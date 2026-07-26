@@ -1,25 +1,35 @@
-import { historyDayResponseSchema, historyMonthResponseSchema } from '@soft-habit/contracts';
+import {
+  backfillCheckinRequestSchema,
+  checkinResponseSchema,
+  historyDayResponseSchema,
+  historyMonthResponseSchema,
+} from '@soft-habit/contracts';
 import { apiRequest } from '../../lib/api';
 import { localDate, useMockApi } from '../../lib/config';
-import { completed, delay, mockHabits } from '../mock/store';
+import { completed, delay, mockHabits, mockPet, uuid } from '../mock/store';
 
-const mockDay = (date: string) => ({
-  date,
-  plannedCount: mockHabits.length,
-  completedCount:
+const backfilled = new Map<string, Set<string>>();
+
+const mockDay = (date: string) => {
+  const count =
     date === localDate()
       ? completed.size
-      : Math.abs(Number(date.slice(-2)) * 3) % (mockHabits.length + 1),
-  habits: mockHabits.map((h, i) => ({
+      : Math.abs(Number(date.slice(-2)) * 3) % (mockHabits.length + 1);
+  const habits = mockHabits.map((h, i) => ({
     habitId: h.id,
     name: h.name,
     icon: h.icon,
     completed:
-      date === localDate()
-        ? completed.has(h.id)
-        : i < Math.abs(Number(date.slice(-2)) * 3) % (mockHabits.length + 1),
-  })),
-});
+      (date === localDate() ? completed.has(h.id) : i < count) ||
+      Boolean(backfilled.get(date)?.has(h.id)),
+  }));
+  return {
+    date,
+    plannedCount: mockHabits.length,
+    completedCount: habits.filter((habit) => habit.completed).length,
+    habits,
+  };
+};
 export async function getHistoryMonth(month: string) {
   if (!useMockApi)
     return apiRequest(`/history/month?month=${month}`, historyMonthResponseSchema).then(
@@ -42,4 +52,30 @@ export async function getHistoryDay(date: string) {
     return apiRequest(`/history/day?date=${date}`, historyDayResponseSchema).then((r) => r.data);
   await delay();
   return historyDayResponseSchema.parse({ data: mockDay(date) }).data;
+}
+export async function backfillHistoryCheckin(habitId: string, date: string) {
+  const body = backfillCheckinRequestSchema.parse({ habitId, date });
+  if (!useMockApi)
+    return apiRequest('/history/checkins/backfill', checkinResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  await delay();
+  if (date === localDate()) completed.add(habitId);
+  const set = backfilled.get(date) ?? new Set<string>();
+  set.add(habitId);
+  backfilled.set(date, set);
+  mockPet.foodBalance += 1;
+  return checkinResponseSchema.parse({
+    data: {
+      checkin: {
+        id: uuid(),
+        habitId,
+        checkinDate: date,
+        completedAt: new Date().toISOString(),
+        cancelledAt: null,
+      },
+      foodBalance: mockPet.foodBalance,
+    },
+  });
 }

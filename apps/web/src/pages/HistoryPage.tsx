@@ -1,9 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { getHistoryDay, getHistoryMonth } from '../features/history/api';
+import { useSession } from '../features/access/SessionProvider';
+import { backfillHistoryCheckin, getHistoryDay, getHistoryMonth } from '../features/history/api';
+import { friendlyError } from '../lib/api';
 import { localDate } from '../lib/config';
 
 export function HistoryPage() {
+  const client = useQueryClient();
+  const { session } = useSession();
   const [month, setMonth] = useState(localDate().slice(0, 7));
   const [selected, setSelected] = useState(localDate());
   const monthly = useQuery({
@@ -20,8 +24,22 @@ export function HistoryPage() {
     const next = new Date(y!, m! - 1 + offset, 1);
     setMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`);
   };
+  const backfill = useMutation({
+    mutationFn: ({ habitId, date }: { habitId: string; date: string }) =>
+      backfillHistoryCheckin(habitId, date),
+    onSuccess: async (_result, variables) => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ['history', 'day', variables.date] }),
+        client.invalidateQueries({ queryKey: ['history', 'month', variables.date.slice(0, 7)] }),
+        client.invalidateQueries({ queryKey: ['today'] }),
+        client.invalidateQueries({ queryKey: ['pet'] }),
+      ]);
+    },
+    onError: (error) => alert(friendlyError(error)),
+  });
   const total = monthly.data?.days.reduce((sum, d) => sum + d.completedCount, 0) ?? 0;
   const planned = monthly.data?.days.reduce((sum, d) => sum + d.plannedCount, 0) ?? 0;
+  const isOwner = session?.role === 'owner';
   return (
     <section className="page">
       <div className="page-heading">
@@ -75,9 +93,23 @@ export function HistoryPage() {
           <div key={h.habitId}>
             <span className="material-symbols-rounded">{h.icon}</span>
             <span>{h.name}</span>
-            <span className="material-symbols-rounded">
-              {h.completed ? 'check_circle' : 'radio_button_unchecked'}
-            </span>
+            {isOwner && !h.completed ? (
+              <button
+                className="backfill-button"
+                aria-label={`补签${h.name}`}
+                disabled={backfill.isPending || !navigator.onLine}
+                onClick={() => backfill.mutate({ habitId: h.habitId, date: selected })}
+              >
+                <span className="material-symbols-rounded">add_task</span>
+              </button>
+            ) : (
+              <span
+                className="material-symbols-rounded"
+                aria-label={`${h.completed ? '已完成' : '未完成'}${h.name}`}
+              >
+                {h.completed ? 'check_circle' : 'radio_button_unchecked'}
+              </span>
+            )}
           </div>
         ))}
       </div>

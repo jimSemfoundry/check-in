@@ -27,6 +27,12 @@ export function startOfIsoWeek(date: string): string {
   return value.toISOString().slice(0, 10);
 }
 
+export function endOfIsoWeek(date: string): string {
+  const value = asUtcDate(startOfIsoWeek(date));
+  value.setUTCDate(value.getUTCDate() + 6);
+  return value.toISOString().slice(0, 10);
+}
+
 function lastDayOfMonth(date: string): number {
   const value = asUtcDate(date);
   return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth() + 1, 0)).getUTCDate();

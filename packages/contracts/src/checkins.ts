@@ -9,6 +9,10 @@ export const checkinSchema = z.object({
   cancelledAt: z.iso.datetime().nullable(),
 });
 export const createCheckinRequestSchema = z.object({ date: isoDateSchema.optional() });
+export const backfillCheckinRequestSchema = z.object({
+  habitId: uuidSchema,
+  date: isoDateSchema,
+});
 export const cancelCheckinParamsSchema = z.object({ id: uuidSchema, date: isoDateSchema });
 export const checkinResultSchema = z.object({
   checkin: checkinSchema,
@@ -20,3 +24,4 @@ export const cancelCheckinResponseSchema = dataResponse(
 );
 
 export type Checkin = z.infer<typeof checkinSchema>;
+export type BackfillCheckinRequest = z.infer<typeof backfillCheckinRequestSchema>;

@@ -79,10 +79,11 @@
 
 - `POST /habits/:id/checkins`，请求 `{ "date"?: "YYYY-MM-DD" }`，owner 和 participant 均可调用。
 - `DELETE /habits/:id/checkins/:date`，owner 和 participant 均可调用。
+- `POST /history/checkins/backfill`，请求 `{ "habitId": "uuid", "date": "YYYY-MM-DD" }`，仅 owner 可调用，用于管理员补签过去、今天或未来的计划内习惯。
 
 响应 `data`：`{ "checkin": Checkin, "foodBalance": integer }`。`Checkin` 包含 `id`、`habitId`、`checkinDate`、`completedAt`、`cancelledAt|null`。
 
-打卡和撤销仅接受工作空间时区的今天。同一习惯同一天只能存在一条有效打卡；成功打卡按 `CHECKIN_FOOD_REWARD` 发放食物。奖励已被消费时，撤销返回 `409 CHECKIN_REWARD_ALREADY_SPENT`。
+普通打卡和撤销仅接受工作空间时区的今天。管理员补签不限制日期相对今天的先后，但仍必须符合该习惯在目标日期的重复计划。同一习惯同一天只能存在一条有效打卡；成功打卡或补签按 `CHECKIN_FOOD_REWARD` 发放食物。奖励已被消费时，撤销返回 `409 CHECKIN_REWARD_ALREADY_SPENT`。
 
 ## 历史
 

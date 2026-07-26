@@ -526,6 +526,23 @@ h1 {
 .day-detail > div span:nth-child(2) {
   flex: 1;
 }
+.backfill-button {
+  border: 1px solid var(--green);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--green-soft);
+  color: var(--green);
+  display: grid;
+  place-items: center;
+}
+.backfill-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.backfill-button .material-symbols-rounded {
+  font-size: 20px;
+}
 .pet-stage {
   min-height: 260px;
   border-radius: 30px;

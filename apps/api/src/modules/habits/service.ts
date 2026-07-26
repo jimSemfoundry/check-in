@@ -1,4 +1,5 @@
 import type {
+  BackfillCheckinRequest,
   Checkin,
   CreateHabitRequest,
   Habit,
@@ -6,7 +7,7 @@ import type {
   UpdateHabitRequest,
 } from '@soft-habit/contracts';
 import { createHabitRequestSchema } from '@soft-habit/contracts';
-import { and, asc, eq, gte, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm';
 import type { AppConfig } from '../../config/env.js';
 import type { Database } from '../../db/client.js';
 import {
@@ -22,7 +23,7 @@ import {
   petSpecies,
   rewardLedger,
 } from '../../db/schema/index.js';
-import { dateInTimeZone, isHabitDue, startOfIsoWeek } from '../../lib/dates.js';
+import { dateInTimeZone, endOfIsoWeek, isHabitDue, startOfIsoWeek } from '../../lib/dates.js';
 import { ApiError } from '../../lib/errors.js';
 import type { SessionRecord } from '../access/types.js';
 
@@ -51,6 +52,11 @@ export interface HabitService {
     session: SessionRecord,
     habitId: string,
     date: string,
+    now?: Date,
+  ): Promise<{ checkin: Checkin; foodBalance: number }>;
+  backfillCheckin(
+    session: SessionRecord,
+    input: BackfillCheckinRequest,
     now?: Date,
   ): Promise<{ checkin: Checkin; foodBalance: number }>;
 }
@@ -566,6 +572,101 @@ export class DrizzleHabitService implements HabitService {
         .from(rewardLedger)
         .where(eq(rewardLedger.workspaceId, session.workspace.id));
       return { checkin: toCheckin(cancelled!), foodBalance: Number(balance?.total ?? 0) };
+    });
+  }
+
+  async backfillCheckin(
+    session: SessionRecord,
+    input: BackfillCheckinRequest,
+    now = new Date(),
+  ): Promise<{ checkin: Checkin; foodBalance: number }> {
+    return this.db.transaction(async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(habits)
+        .where(and(eq(habits.id, input.habitId), eq(habits.workspaceId, session.workspace.id)))
+        .limit(1);
+      if (!row) throw new ApiError(404, 'HABIT_NOT_FOUND', '习惯不存在');
+      const [existing] = await tx
+        .select({ id: habitCheckins.id })
+        .from(habitCheckins)
+        .where(
+          and(
+            eq(habitCheckins.workspaceId, session.workspace.id),
+            eq(habitCheckins.habitId, input.habitId),
+            eq(habitCheckins.checkinDate, input.date),
+            isNull(habitCheckins.cancelledAt),
+          ),
+        )
+        .limit(1);
+      if (existing) throw new ApiError(409, 'CHECKIN_ALREADY_EXISTS', '该日期已经完成过该习惯');
+      const schedules = await tx
+        .select()
+        .from(habitSchedules)
+        .where(eq(habitSchedules.habitId, input.habitId));
+      const habit = toHabit(row, schedules, null);
+      const weekStart = startOfIsoWeek(input.date);
+      const weekEnd = endOfIsoWeek(input.date);
+      const [weekly] = await tx
+        .select({ count: sql<string>`count(*)` })
+        .from(habitCheckins)
+        .where(
+          and(
+            eq(habitCheckins.workspaceId, session.workspace.id),
+            eq(habitCheckins.habitId, input.habitId),
+            gte(habitCheckins.checkinDate, weekStart),
+            lte(habitCheckins.checkinDate, weekEnd),
+            isNull(habitCheckins.cancelledAt),
+          ),
+        );
+      if (!isHabitDue(habit, input.date, session.workspace.timezone, Number(weekly?.count ?? 0))) {
+        throw new ApiError(409, 'CHECKIN_NOT_DUE', '该习惯在所选日期不在计划中');
+      }
+      const [created] = await tx
+        .insert(habitCheckins)
+        .values({
+          workspaceId: session.workspace.id,
+          habitId: input.habitId,
+          checkinDate: input.date,
+          completedBySessionId: session.id,
+          completedAt: now,
+        })
+        .onConflictDoNothing()
+        .returning();
+      if (!created) throw new ApiError(409, 'CHECKIN_ALREADY_EXISTS', '该日期已经完成过该习惯');
+      await tx
+        .insert(dailyHabitPlans)
+        .values({
+          workspaceId: session.workspace.id,
+          habitId: input.habitId,
+          planDate: input.date,
+          habitNameSnapshot: habit.name,
+          iconSnapshot: habit.icon,
+          targetCountSnapshot: habit.targetCount,
+          targetUnitSnapshot: habit.targetUnit,
+        })
+        .onConflictDoNothing();
+      await tx.insert(rewardLedger).values({
+        workspaceId: session.workspace.id,
+        sourceType: 'checkin',
+        sourceId: created.id,
+        amount: this.config.CHECKIN_FOOD_REWARD,
+        remainingAmount: this.config.CHECKIN_FOOD_REWARD,
+        actorSessionId: session.id,
+      });
+      await tx.insert(auditEvents).values({
+        workspaceId: session.workspace.id,
+        actorSessionId: session.id,
+        eventType: 'checkin.backfilled',
+        entityType: 'habit_checkin',
+        entityId: created.id,
+        payload: { habitId: input.habitId, date: input.date },
+      });
+      const [balance] = await tx
+        .select({ total: sql<string>`coalesce(sum(${rewardLedger.amount}), 0)` })
+        .from(rewardLedger)
+        .where(eq(rewardLedger.workspaceId, session.workspace.id));
+      return { checkin: toCheckin(created), foodBalance: Number(balance?.total ?? 0) };
     });
   }
 }

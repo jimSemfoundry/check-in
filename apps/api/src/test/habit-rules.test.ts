@@ -1,6 +1,6 @@
 import type { Habit } from '@soft-habit/contracts';
 import { describe, expect, it } from 'vitest';
-import { dateInTimeZone, isHabitDue, startOfIsoWeek } from '../lib/dates.js';
+import { dateInTimeZone, endOfIsoWeek, isHabitDue, startOfIsoWeek } from '../lib/dates.js';
 
 const base: Habit = {
   id: '10000000-0000-4000-8000-000000000001',
@@ -26,6 +26,11 @@ describe('workspace dates', () => {
   it('finds the ISO week start across month and year boundaries', () => {
     expect(startOfIsoWeek('2026-01-01')).toBe('2025-12-29');
     expect(startOfIsoWeek('2026-07-12')).toBe('2026-07-06');
+  });
+
+  it('finds the ISO week end across month and year boundaries', () => {
+    expect(endOfIsoWeek('2026-01-01')).toBe('2026-01-04');
+    expect(endOfIsoWeek('2026-07-12')).toBe('2026-07-12');
   });
 });
 
