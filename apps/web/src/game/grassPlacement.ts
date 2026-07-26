@@ -382,6 +382,25 @@ export function getSecondLayerTerrainPieces(args: {
   occupiedCells: GridCell[];
 }) {
   const occupiedCellKeys = new Set(args.occupiedCells.map(getCellKey));
+  const bottomEdgeCells = [...args.occupiedCells]
+    .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
+    .sort(compareCells);
+  const firstPassHeightCells = getSecondLayerHeightCells({
+    bottomEdgeCells,
+    topConnectionCellKeys: occupiedCellKeys,
+  });
+  const generatedHeightCellKeys = new Set([
+    ...firstPassHeightCells.frontEdgeCells,
+    ...firstPassHeightCells.rockCells,
+  ].map(getCellKey));
+  const topConnectionCellKeys = new Set([
+    ...occupiedCellKeys,
+    ...generatedHeightCellKeys,
+  ]);
+  const { frontEdgeCells, rockCells } = getSecondLayerHeightCells({
+    bottomEdgeCells,
+    topConnectionCellKeys,
+  });
   const grassPieces = [...args.occupiedCells]
     .sort(compareCells)
     .map((cell) => ({
@@ -389,19 +408,29 @@ export function getSecondLayerTerrainPieces(args: {
       frame: secondLayerGrassFramesByOpenEdgeMask[getOpenEdgeMask({
         cell,
         occupiedCells: args.occupiedCells,
+        topConnectionCellKeys: generatedHeightCellKeys,
       })],
       surface: 'grass' as const,
     }));
-  const bottomEdgeCells = [...args.occupiedCells]
-    .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
-    .sort(compareCells);
+
+  return [
+    ...getSecondLayerRockPieces(rockCells),
+    ...grassPieces,
+    ...getSecondLayerFrontPieces(frontEdgeCells),
+  ];
+}
+
+function getSecondLayerHeightCells(args: {
+  bottomEdgeCells: GridCell[];
+  topConnectionCellKeys: Set<string>;
+}) {
   const frontEdgeCells: GridCell[] = [];
   const rockCells: GridCell[] = [];
 
-  for (const cell of bottomEdgeCells) {
-    const hasTopCell = occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 }));
+  for (const cell of args.bottomEdgeCells) {
+    const hasTopConnection = args.topConnectionCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 }));
 
-    if (hasTopCell) {
+    if (hasTopConnection) {
       frontEdgeCells.push({ x: cell.x, y: cell.y + 1 });
       rockCells.push({ x: cell.x, y: cell.y + 2 });
     } else {
@@ -409,11 +438,7 @@ export function getSecondLayerTerrainPieces(args: {
     }
   }
 
-  return [
-    ...getSecondLayerRockPieces(rockCells),
-    ...grassPieces,
-    ...getSecondLayerFrontPieces(frontEdgeCells),
-  ];
+  return { frontEdgeCells, rockCells };
 }
 
 function getSecondLayerFrontPieces(frontEdgeCells: GridCell[]): TerrainPiece[] {
@@ -523,9 +548,11 @@ function getCellKey(cell: GridCell) {
 function getOpenEdgeMask(args: {
   cell: GridCell;
   occupiedCells: GridCell[];
+  topConnectionCellKeys?: Set<string>;
 }) {
   const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
-  const top = !occupied.has(`${args.cell.x},${args.cell.y - 1}`);
+  const topCellKey = `${args.cell.x},${args.cell.y - 1}`;
+  const top = !occupied.has(topCellKey) && !args.topConnectionCellKeys?.has(topCellKey);
   const right = !occupied.has(`${args.cell.x + 1},${args.cell.y}`);
   const bottom = !occupied.has(`${args.cell.x},${args.cell.y + 1}`);
   const left = !occupied.has(`${args.cell.x - 1},${args.cell.y}`);
