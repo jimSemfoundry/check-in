@@ -451,6 +451,37 @@ describe('grass placement model', () => {
     ]));
   });
 
+  it('lets base grass cover the right side of a second-layer vertical strip', () => {
+    expect(getSecondLayerTerrainPieces({
+      occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+      baseCells: [
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 3, y: 3 }),
+      ],
+    })).toEqual([
+      { cell: { x: 2, y: 6 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 14, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 32, surface: 'grass' },
+    ]);
+  });
+
+  it('lets base grass cover the right side of a second-layer 3x3 block', () => {
+    const pieces = getSecondLayerTerrainPieces({
+      occupiedCells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
+      baseCells: [
+        ...getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 5, y: 3 }),
+      ],
+    });
+
+    expect(pieces).toEqual(expect.arrayContaining([
+      { cell: { x: 4, y: 3 }, frame: 6, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 15, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 33, surface: 'grass' },
+    ]));
+  });
+
   it('does not render rock under second-layer cells that have second-layer cells below them', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: [

@@ -427,7 +427,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       this.grassRoot.add(this.createGrassTile(cell, baseCells, gridLeft, gridTop, 1));
     }
 
-    for (const piece of getSecondLayerTerrainPieces({ occupiedCells: secondLayerCells })) {
+    for (const piece of getSecondLayerTerrainPieces({ occupiedCells: secondLayerCells, baseCells })) {
       this.secondLayerRoot.add(this.createTerrainPiece(piece, gridLeft, gridTop, 1));
     }
 
@@ -513,7 +513,10 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.renderAvailableCells(this.getAvailableOverlayCells());
 
     const previewTerrainPieces = tool.layer === 'second'
-      ? getSecondLayerTerrainPieces({ occupiedCells: [...occupiedCells, ...previewCells] })
+      ? getSecondLayerTerrainPieces({
+        occupiedCells: [...occupiedCells, ...previewCells],
+        baseCells: this.getOccupiedGrassCells(),
+      })
       : [];
 
     if (tool.layer === 'second') {
