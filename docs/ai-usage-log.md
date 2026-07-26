@@ -219,3 +219,11 @@
 - AI 贡献：在 `docs/frontend-development.md` 更新当前 slots 规则：5 个 slot 仍由 `Slots.png` 的 `1..9` 九张合成；桌面中心为 `[-132,-66,0,66,132]`，移动端中心为 `[-92,-46,0,46,92]`；选中态使用 `UI Elements/UI Elements/Cursors/Cursor_04.png`，默认选中第一个 slot，点击任意 slot 后 cursor 移动到对应 slot。
 - 验证：实现阶段已通过 `pnpm --filter web typecheck`、`pnpm --filter web lint`、`pnpm --filter web test`，并用 Playwright 确认默认选中与点击后移动；本次文档更新已通过 `git diff --check`。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-26：默认放置 3x3 第一层海岛
+
+- 任务摘要：用户要求在第一层海面格子上直接“放个海岛”，不再让 `/game` 初始状态只有空海面。
+- AI 贡献：将 `seaLevelScenePlan.initialGrassPatches` 从空数组改为一个居中的 `nine` 形状第一层草地 patch，anchor 为 `{ x: 4, y: 2 }`，覆盖 3x3 格子；保留 HUD 后续继续扩建、二层放置和 Water Foam 边缘动画逻辑。
+- 测试过程：先把 `sea-level-scene` 测试改为期望默认 3x3 海岛，观察到旧空数组失败，再修改场景计划配置使测试通过。
+- 验证：`pnpm --filter web test` 71/71 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均渲染默认 3x3 海岛，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

@@ -2,14 +2,31 @@ import { describe, expect, it } from 'vitest';
 import { seaLevelScenePlan } from '../game/seaLevelScenePlan';
 
 describe('sea-level grass placement scene plan', () => {
-  it('uses a centered sea-level placement grid without prebuilt islands', () => {
+  it('uses a centered sea-level placement grid with one prebuilt island', () => {
     expect(seaLevelScenePlan).toEqual({
       tileSize: 64,
       grid: {
         columns: 12,
         rows: 8,
       },
-      initialGrassPatches: [],
+      initialGrassPatches: [
+        {
+          id: 'initial-island',
+          shapeKey: 'nine',
+          anchor: { x: 4, y: 2 },
+          cells: [
+            { x: 4, y: 2 },
+            { x: 5, y: 2 },
+            { x: 6, y: 2 },
+            { x: 4, y: 3 },
+            { x: 5, y: 3 },
+            { x: 6, y: 3 },
+            { x: 4, y: 4 },
+            { x: 5, y: 4 },
+            { x: 6, y: 4 },
+          ],
+        },
+      ],
       grassTerrainFrames: {
         none: 10,
         top: 1,
