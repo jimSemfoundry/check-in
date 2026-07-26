@@ -390,11 +390,10 @@ describe('grass placement model', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
     })).toEqual([
-      { cell: { x: 2, y: 7 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 6 }, frame: 44, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
-      { cell: { x: 2, y: 5 }, frame: 26, surface: 'grass' },
-      { cell: { x: 2, y: 6 }, frame: 35, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 35, surface: 'grass' },
     ]);
   });
 
@@ -402,21 +401,18 @@ describe('grass placement model', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
     })).toEqual([
-      { cell: { x: 2, y: 7 }, frame: 41, surface: 'rock' },
-      { cell: { x: 3, y: 7 }, frame: 42, surface: 'rock' },
-      { cell: { x: 4, y: 7 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 6 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 6 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 6 }, frame: 43, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
       { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
       { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 14, surface: 'grass' },
       { cell: { x: 3, y: 4 }, frame: 15, surface: 'grass' },
       { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
-      { cell: { x: 2, y: 5 }, frame: 23, surface: 'grass' },
-      { cell: { x: 3, y: 5 }, frame: 24, surface: 'grass' },
-      { cell: { x: 4, y: 5 }, frame: 25, surface: 'grass' },
-      { cell: { x: 2, y: 6 }, frame: 32, surface: 'grass' },
-      { cell: { x: 3, y: 6 }, frame: 33, surface: 'grass' },
-      { cell: { x: 4, y: 6 }, frame: 34, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 32, surface: 'grass' },
+      { cell: { x: 3, y: 5 }, frame: 33, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 34, surface: 'grass' },
     ]);
   });
 
@@ -434,7 +430,7 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('keeps a second-layer top edge when generated height is directly above it', () => {
+  it('keeps separate second-layer placements independent across generated rock height', () => {
     const pieces = getSecondLayerTerrainPieces({
       occupiedCells: [
         ...getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 1 }),
@@ -449,24 +445,10 @@ describe('grass placement model', () => {
       { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
       { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
       { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 6 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 6 }, frame: 43, surface: 'rock' },
     ]));
-  });
-
-  it('adds a front face when a one-cell second layer continues generated height above it', () => {
-    const pieces = getSecondLayerTerrainPieces({
-      occupiedCells: [
-        { x: 2, y: 1 },
-        { x: 2, y: 3 },
-      ],
-    });
-
-    expect(pieces).toEqual([
-      { cell: { x: 2, y: 2 }, frame: 44, surface: 'rock' },
-      { cell: { x: 2, y: 5 }, frame: 44, surface: 'rock' },
-      { cell: { x: 2, y: 1 }, frame: 35, surface: 'grass' },
-      { cell: { x: 2, y: 3 }, frame: 35, surface: 'grass' },
-      { cell: { x: 2, y: 4 }, frame: 35, surface: 'grass' },
-    ]);
   });
 
   it('does not render rock under second-layer cells that have second-layer cells below them', () => {
@@ -476,10 +458,9 @@ describe('grass placement model', () => {
         { x: 2, y: 4 },
       ],
     })).toEqual([
-      { cell: { x: 2, y: 6 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 5 }, frame: 44, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
-      { cell: { x: 2, y: 4 }, frame: 26, surface: 'grass' },
-      { cell: { x: 2, y: 5 }, frame: 35, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 35, surface: 'grass' },
     ]);
   });
 

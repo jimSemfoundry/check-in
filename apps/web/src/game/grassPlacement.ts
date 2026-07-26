@@ -63,17 +63,17 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
   1: 6,
   2: 16,
   3: 7,
-  4: 24,
+  4: 33,
   5: 33,
-  6: 25,
+  6: 34,
   7: 34,
   8: 14,
   9: 5,
   10: 17,
   11: 8,
-  12: 23,
+  12: 32,
   13: 32,
-  14: 26,
+  14: 35,
   15: 35,
 };
 
@@ -382,25 +382,6 @@ export function getSecondLayerTerrainPieces(args: {
   occupiedCells: GridCell[];
 }) {
   const occupiedCellKeys = new Set(args.occupiedCells.map(getCellKey));
-  const bottomEdgeCells = [...args.occupiedCells]
-    .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
-    .sort(compareCells);
-  const firstPassHeightCells = getSecondLayerHeightCells({
-    bottomEdgeCells,
-    topConnectionCellKeys: occupiedCellKeys,
-  });
-  const generatedHeightCellKeys = new Set([
-    ...firstPassHeightCells.frontEdgeCells,
-    ...firstPassHeightCells.rockCells,
-  ].map(getCellKey));
-  const topConnectionCellKeys = new Set([
-    ...occupiedCellKeys,
-    ...generatedHeightCellKeys,
-  ]);
-  const { frontEdgeCells, rockCells } = getSecondLayerHeightCells({
-    bottomEdgeCells,
-    topConnectionCellKeys,
-  });
   const grassPieces = [...args.occupiedCells]
     .sort(compareCells)
     .map((cell) => ({
@@ -411,88 +392,22 @@ export function getSecondLayerTerrainPieces(args: {
       })],
       surface: 'grass' as const,
     }));
+  const bottomEdgeCells = [...args.occupiedCells]
+    .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
+    .sort(compareCells);
 
   return [
-    ...getSecondLayerRockPieces(rockCells),
+    ...getSecondLayerRockPieces(bottomEdgeCells),
     ...grassPieces,
-    ...getSecondLayerFrontPieces(frontEdgeCells),
   ];
 }
 
-function getSecondLayerHeightCells(args: {
-  bottomEdgeCells: GridCell[];
-  topConnectionCellKeys: Set<string>;
-}) {
-  const frontEdgeCells: GridCell[] = [];
-  const rockCells: GridCell[] = [];
-
-  for (const cell of args.bottomEdgeCells) {
-    const hasTopConnection = args.topConnectionCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 }));
-
-    if (hasTopConnection) {
-      frontEdgeCells.push({ x: cell.x, y: cell.y + 1 });
-      rockCells.push({ x: cell.x, y: cell.y + 2 });
-    } else {
-      rockCells.push({ x: cell.x, y: cell.y + 1 });
-    }
-  }
-
-  return { frontEdgeCells, rockCells };
-}
-
-function getSecondLayerFrontPieces(frontEdgeCells: GridCell[]): TerrainPiece[] {
+function getSecondLayerRockPieces(bottomEdgeCells: GridCell[]): TerrainPiece[] {
   const rows = new Map<number, GridCell[]>();
 
-  for (const cell of frontEdgeCells) {
-    rows.set(cell.y, [...(rows.get(cell.y) ?? []), cell]);
-  }
-
-  return [...rows.entries()]
-    .sort(([leftY], [rightY]) => leftY - rightY)
-    .flatMap((entry) => getSecondLayerFrontRowPieces(entry[1].sort(compareCells)));
-}
-
-function getSecondLayerFrontRowPieces(rowCells: GridCell[]): TerrainPiece[] {
-  const pieces: TerrainPiece[] = [];
-  let segment: GridCell[] = [];
-
-  for (const cell of rowCells) {
-    const previousCell = segment[segment.length - 1];
-    if (previousCell && cell.x !== previousCell.x + 1) {
-      pieces.push(...getSecondLayerFrontSegmentPieces(segment));
-      segment = [];
-    }
-    segment.push(cell);
-  }
-
-  return [...pieces, ...getSecondLayerFrontSegmentPieces(segment)];
-}
-
-function getSecondLayerFrontSegmentPieces(segment: GridCell[]): TerrainPiece[] {
-  if (segment.length === 0) return [];
-
-  return segment.map((cell, index) => {
-    const frame = segment.length === 1
-      ? 35
-      : index === 0
-        ? 32
-        : index === segment.length - 1
-          ? 34
-          : 33;
-
-    return {
-      cell,
-      frame,
-      surface: 'grass' as const,
-    };
-  });
-}
-
-function getSecondLayerRockPieces(rockCells: GridCell[]): TerrainPiece[] {
-  const rows = new Map<number, GridCell[]>();
-
-  for (const cell of rockCells) {
-    rows.set(cell.y, [...(rows.get(cell.y) ?? []), cell]);
+  for (const cell of bottomEdgeCells) {
+    const rockY = cell.y + 1;
+    rows.set(rockY, [...(rows.get(rockY) ?? []), { x: cell.x, y: rockY }]);
   }
 
   return [...rows.entries()]
