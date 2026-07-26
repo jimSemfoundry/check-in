@@ -434,7 +434,7 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('connects second-layer grass to the generated height directly above it', () => {
+  it('keeps a second-layer top edge when generated height is directly above it', () => {
     const pieces = getSecondLayerTerrainPieces({
       occupiedCells: [
         ...getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 1 }),
@@ -446,9 +446,9 @@ describe('grass placement model', () => {
       { cell: { x: 2, y: 2 }, frame: 41, surface: 'rock' },
       { cell: { x: 3, y: 2 }, frame: 42, surface: 'rock' },
       { cell: { x: 4, y: 2 }, frame: 43, surface: 'rock' },
-      { cell: { x: 2, y: 3 }, frame: 14, surface: 'grass' },
-      { cell: { x: 3, y: 3 }, frame: 15, surface: 'grass' },
-      { cell: { x: 4, y: 3 }, frame: 16, surface: 'grass' },
+      { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
+      { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
+      { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
     ]));
   });
 
@@ -464,7 +464,7 @@ describe('grass placement model', () => {
       { cell: { x: 2, y: 2 }, frame: 44, surface: 'rock' },
       { cell: { x: 2, y: 5 }, frame: 44, surface: 'rock' },
       { cell: { x: 2, y: 1 }, frame: 35, surface: 'grass' },
-      { cell: { x: 2, y: 3 }, frame: 26, surface: 'grass' },
+      { cell: { x: 2, y: 3 }, frame: 35, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 35, surface: 'grass' },
     ]);
   });

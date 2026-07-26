@@ -408,7 +408,6 @@ export function getSecondLayerTerrainPieces(args: {
       frame: secondLayerGrassFramesByOpenEdgeMask[getOpenEdgeMask({
         cell,
         occupiedCells: args.occupiedCells,
-        topConnectionCellKeys: generatedHeightCellKeys,
       })],
       surface: 'grass' as const,
     }));
@@ -548,11 +547,9 @@ function getCellKey(cell: GridCell) {
 function getOpenEdgeMask(args: {
   cell: GridCell;
   occupiedCells: GridCell[];
-  topConnectionCellKeys?: Set<string>;
 }) {
   const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
-  const topCellKey = `${args.cell.x},${args.cell.y - 1}`;
-  const top = !occupied.has(topCellKey) && !args.topConnectionCellKeys?.has(topCellKey);
+  const top = !occupied.has(`${args.cell.x},${args.cell.y - 1}`);
   const right = !occupied.has(`${args.cell.x + 1},${args.cell.y}`);
   const bottom = !occupied.has(`${args.cell.x},${args.cell.y + 1}`);
   const left = !occupied.has(`${args.cell.x - 1},${args.cell.y}`);
