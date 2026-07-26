@@ -8,6 +8,7 @@ export const tinySwordsAssets = {
   sea: `${tinySwordsBase}/Water Background color.png`,
   terrainTiles: tinySwordsTerrainTileset.image,
   waterFoam: `${tinySwordsBase}/Water Foam.png`,
+  shadow: `${tinySwordsBase}/Shadow.png`,
   trees: tinySwordsNatureAssets.trees,
   sheep: tinySwordsNatureAssets.sheep,
   hud: {

@@ -5,24 +5,26 @@ import {
   getCanvasPointFromPointerEvent,
   getCenteredGrassShapeAnchor,
   getGrassCellOverlayFrame,
-  getGrassFoamCells,
   getGrassMapCells,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassTerrainFrame,
-  getIslandTerrainPieces,
   getSecondLayerTerrainPieces,
+  getSecondLayerShadowPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
+  getVisibleGrassFoamCells,
   getToggledGrassSlotIndex,
   placeGrassPatch,
   placeSecondLayerPatch,
   type GrassShape,
   type GrassPatch,
   type GridCell,
+  type TerrainShadowPiece,
   type TerrainPiece,
   type TerrainTool,
 } from './grassPlacement';
+import { getPrebuiltIslandTerrainPieces } from './prebuiltIsland';
 import { seaLevelScenePlan } from './seaLevelScenePlan';
 import { createWaterFoamAnimation, WATER_FOAM_ANIMATION_KEY } from './waterFoam';
 
@@ -40,6 +42,9 @@ const WATER_FOAM_FRAMES = 16;
 const WATER_FOAM_FRAME_SIZE = TILE_SIZE * 3;
 const WATER_FOAM_FRAME_RATE = 8;
 const WATER_FOAM_DISPLAY_SIZE = 220;
+const SECOND_LAYER_SHADOW_KEY = 'terrain-shadow';
+const SECOND_LAYER_SHADOW_ALPHA = 0.44;
+const SECOND_LAYER_SHADOW_HEIGHT = TILE_SIZE;
 const GRASS_MAP_MARGIN_CELLS = 4;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
@@ -50,6 +55,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   private availableCellRoot?: Phaser.GameObjects.Container;
   private waterFoamRoot?: Phaser.GameObjects.Container;
   private grassRoot?: Phaser.GameObjects.Container;
+  private secondLayerShadowRoot?: Phaser.GameObjects.Container;
   private secondLayerRoot?: Phaser.GameObjects.Container;
   private occupiedCellRoot?: Phaser.GameObjects.Container;
   private previewRoot?: Phaser.GameObjects.Container;
@@ -80,6 +86,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       frameWidth: WATER_FOAM_FRAME_SIZE,
       frameHeight: WATER_FOAM_FRAME_SIZE,
     });
+    this.load.image(SECOND_LAYER_SHADOW_KEY, tinySwordsAssets.shadow);
     this.load.image('hud-store-banner', tinySwordsAssets.hud.storeBanner);
     this.load.image('hud-store-banner-slots', tinySwordsAssets.hud.storeBannerSlots);
     this.load.image('hud-slot-cursor', tinySwordsAssets.hud.slotCursor);
@@ -101,6 +108,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.availableCellRoot = undefined;
     this.waterFoamRoot = undefined;
     this.grassRoot = undefined;
+    this.secondLayerShadowRoot = undefined;
     this.secondLayerRoot = undefined;
     this.occupiedCellRoot = undefined;
     this.previewRoot = undefined;
@@ -215,12 +223,14 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.availableCellRoot = this.add.container(0, 0);
     this.waterFoamRoot = this.add.container(0, 0);
     this.grassRoot = this.add.container(0, 0);
+    this.secondLayerShadowRoot = this.add.container(0, 0);
     this.secondLayerRoot = this.add.container(0, 0);
     this.occupiedCellRoot = this.add.container(0, 0);
     this.previewRoot = this.add.container(0, 0);
     this.addToWorld(this.availableCellRoot);
     this.addToWorld(this.waterFoamRoot);
     this.addToWorld(this.grassRoot);
+    this.addToWorld(this.secondLayerShadowRoot);
     this.addToWorld(this.secondLayerRoot);
     this.addToWorld(this.previewRoot);
     this.addToWorld(this.occupiedCellRoot);
@@ -409,10 +419,17 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private renderTerrainPatches() {
-    if (!this.waterFoamRoot || !this.grassRoot || !this.secondLayerRoot || !this.occupiedCellRoot) return;
+    if (
+      !this.waterFoamRoot
+      || !this.grassRoot
+      || !this.secondLayerShadowRoot
+      || !this.secondLayerRoot
+      || !this.occupiedCellRoot
+    ) return;
 
     this.waterFoamRoot.removeAll(true);
     this.grassRoot.removeAll(true);
+    this.secondLayerShadowRoot.removeAll(true);
     this.secondLayerRoot.removeAll(true);
     this.occupiedCellRoot.removeAll(true);
 
@@ -426,16 +443,20 @@ export class FloatingIslandScene extends Phaser.Scene {
       ? secondLayerCells
       : occupiedBaseCells;
 
-    for (const cell of getGrassFoamCells(occupiedBaseCells)) {
+    for (const cell of getVisibleGrassFoamCells({ baseCells: occupiedBaseCells, coveredCells: secondLayerCells })) {
       this.waterFoamRoot.add(this.createWaterFoamSprite(cell, gridLeft, gridTop));
     }
 
-    for (const piece of getIslandTerrainPieces({ occupiedCells: islandCells })) {
+    for (const piece of getPrebuiltIslandTerrainPieces({ occupiedCells: islandCells })) {
       this.grassRoot.add(this.createTerrainPiece(piece, gridLeft, gridTop, 1));
     }
 
     for (const cell of baseCells) {
       this.grassRoot.add(this.createGrassTile(cell, baseCells, gridLeft, gridTop, 1));
+    }
+
+    for (const piece of getSecondLayerShadowPieces({ occupiedCells: secondLayerCells })) {
+      this.secondLayerShadowRoot.add(this.createSecondLayerShadow(piece, gridLeft, gridTop));
     }
 
     for (const piece of getSecondLayerTerrainPieces({ occupiedCells: secondLayerCells })) {
@@ -468,6 +489,21 @@ export class FloatingIslandScene extends Phaser.Scene {
     tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
     tile.setAlpha(alpha);
     return tile;
+  }
+
+  private createSecondLayerShadow(
+    piece: TerrainShadowPiece,
+    gridLeft: number,
+    gridTop: number,
+  ) {
+    const shadow = this.add.image(
+      gridLeft + piece.cell.x * TILE_SIZE + TILE_SIZE / 2,
+      gridTop + piece.cell.y * TILE_SIZE + TILE_SIZE / 2,
+      SECOND_LAYER_SHADOW_KEY,
+    );
+    shadow.setDisplaySize(piece.widthCells * TILE_SIZE, SECOND_LAYER_SHADOW_HEIGHT);
+    shadow.setAlpha(SECOND_LAYER_SHADOW_ALPHA);
+    return shadow;
   }
 
   private createGrassTile(

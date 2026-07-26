@@ -272,3 +272,12 @@
 - 测试过程：先把场景计划测试改为要求海岛与普通草地分离，并新增普通草地不能覆盖独立海岛格的失败测试；观察到旧实现仍把海岛放在 `initialGrassPatches` 且允许覆盖，再修改生产逻辑使测试通过。
 - 验证：目标测试与 typecheck 已通过；Playwright 本地桌面和移动截图均渲染独立带岩石海岛，加载 `Tilemap_color1.png` 与 `Water Foam.png`，未请求 `Tilemap_color4.png` 或 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-26：新增第一层预制海岛合并绘制
+
+- 问题：用户用箭头图说明第一层海岛是新的预制东西，应直接按素材合并画出，且不能改下面的 HUD banner。
+- 根因：默认海岛虽然已从普通草地工具中拆出，但仍复用 `grassPlacement` 的旧第一层岛逻辑，缺少箭头图中草面、草前脸、岩壁、底岩四段直接合并的独立表达。
+- AI 贡献：新增 `prebuiltIsland.ts`，专门输出第一层预制海岛的合并 terrain pieces：3x3 草面、下方 `32/33/34` 草前脸、`41/42/43` 岩壁和 `50/51/52` 底部岩石；`FloatingIslandScene` 仅对 `initialIslandPatches` 使用该新模块。HUD banner/slots 布局未修改。
+- 测试过程：新增 `prebuilt-island` 测试覆盖箭头图对应的四段合并输出；保留现有普通草地和二层地形测试边界。
+- 验证：`pnpm --filter web test` 75/75 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面与移动截图均渲染新的第一层合并海岛，`Tilemap_color1.png`、`Water Foam.png` 正常加载，底部 banner 视觉保持原状，水浪动画继续播放。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

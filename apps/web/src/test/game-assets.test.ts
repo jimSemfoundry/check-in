@@ -7,6 +7,7 @@ describe('tiny swords asset manifest', () => {
       sea: '/game/tiny-swords/Terrain/Tileset/Water Background color.png',
       terrainTiles: '/game/tiny-swords/Terrain/Tileset/Tilemap_color1.png',
       waterFoam: '/game/tiny-swords/Terrain/Tileset/Water Foam.png',
+      shadow: '/game/tiny-swords/Terrain/Tileset/Shadow.png',
       trees: {
         tree1: '/game/tiny-swords/Terrain/Resources/Wood/Trees/Tree1.png',
         tree2: '/game/tiny-swords/Terrain/Resources/Wood/Trees/Tree2.png',
