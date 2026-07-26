@@ -10,7 +10,7 @@ import {
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassTerrainFrame,
-  getSecondLayerPatchTerrainPieces,
+  getSecondLayerTerrainPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
   getToggledGrassSlotIndex,
@@ -427,10 +427,8 @@ export class FloatingIslandScene extends Phaser.Scene {
       this.grassRoot.add(this.createGrassTile(cell, baseCells, gridLeft, gridTop, 1));
     }
 
-    for (const patch of this.secondLayerPatches) {
-      for (const piece of getSecondLayerPatchTerrainPieces(patch)) {
-        this.secondLayerRoot.add(this.createTerrainPiece(piece, gridLeft, gridTop, 1));
-      }
+    for (const piece of getSecondLayerTerrainPieces({ occupiedCells: secondLayerCells })) {
+      this.secondLayerRoot.add(this.createTerrainPiece(piece, gridLeft, gridTop, 1));
     }
 
     for (const cell of selectedLayerCells) {
@@ -515,22 +513,14 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.renderAvailableCells(this.getAvailableOverlayCells());
 
     const previewTerrainPieces = tool.layer === 'second'
-      ? getSecondLayerPatchTerrainPieces({
-        id: 'preview',
-        shapeKey: tool.shape.key,
-        anchor,
-        cells: previewCells,
-      })
+      ? getSecondLayerTerrainPieces({ occupiedCells: [...occupiedCells, ...previewCells] })
       : [];
 
     if (tool.layer === 'second') {
+      const hasBlockedPreviewCell = previewCellStates.some((previewCell) => previewCell.state === 'blocked');
       for (const piece of previewTerrainPieces) {
         const tile = this.createTerrainPiece(piece, gridLeft, gridTop, 0.72);
-        const state = previewCellStates.some((previewCell) => (
-          previewCell.cell.x === piece.cell.x
-          && previewCell.cell.y === piece.cell.y
-          && previewCell.state === 'blocked'
-        )) ? 'blocked' : 'placeable';
+        const state = hasBlockedPreviewCell ? 'blocked' : 'placeable';
         tile.setTint(state === 'blocked' ? BLOCKED_PREVIEW_TINT : PLACEABLE_PREVIEW_TINT);
         this.previewRoot.add(tile);
       }

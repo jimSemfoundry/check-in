@@ -58,6 +58,25 @@ const grassTerrainFramesByOpenEdgeMask: Record<number, number> = {
   15: 30,
 };
 
+const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
+  0: 15,
+  1: 6,
+  2: 16,
+  3: 7,
+  4: 33,
+  5: 33,
+  6: 34,
+  7: 34,
+  8: 14,
+  9: 5,
+  10: 17,
+  11: 8,
+  12: 32,
+  13: 32,
+  14: 35,
+  15: 35,
+};
+
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
   'three-horizontal': { key: 'three-horizontal', width: 3, height: 1 },
@@ -359,60 +378,85 @@ export function getGrassTerrainFrame(args: {
   return grassTerrainFramesByOpenEdgeMask[getOpenEdgeMask(args)];
 }
 
-export function getSecondLayerPatchTerrainPieces(patch: GrassPatch): TerrainPiece[] {
-  const { x, y } = patch.anchor;
+export function getSecondLayerTerrainPieces(args: {
+  occupiedCells: GridCell[];
+}) {
+  const occupiedCellKeys = new Set(args.occupiedCells.map(getCellKey));
+  const grassPieces = [...args.occupiedCells]
+    .sort(compareCells)
+    .map((cell) => ({
+      cell,
+      frame: secondLayerGrassFramesByOpenEdgeMask[getOpenEdgeMask({
+        cell,
+        occupiedCells: args.occupiedCells,
+      })],
+      surface: 'grass' as const,
+    }));
+  const bottomEdgeCells = [...args.occupiedCells]
+    .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
+    .sort(compareCells);
 
-  if (patch.shapeKey === 'one') {
-    return buildTerrainPieces(x, y, 1, [
-      { frames: [35], surface: 'grass' },
-      { frames: [44], surface: 'rock' },
-      { frames: [53], surface: 'rock' },
-    ]);
-  }
-
-  if (patch.shapeKey === 'three-horizontal') {
-    return buildTerrainPieces(x, y, 3, [
-      { frames: [32, 33, 34], surface: 'grass' },
-      { frames: [41, 42, 43], surface: 'rock' },
-      { frames: [50, 51, 52], surface: 'rock' },
-    ]);
-  }
-
-  if (patch.shapeKey === 'three-vertical') {
-    return buildTerrainPieces(x, y, 1, [
-      { frames: [8], surface: 'grass' },
-      { frames: [17], surface: 'grass' },
-      { frames: [35], surface: 'grass' },
-      { frames: [44], surface: 'rock' },
-      { frames: [53], surface: 'rock' },
-    ]);
-  }
-
-  return buildTerrainPieces(x, y, 3, [
-    { frames: [5, 6, 7], surface: 'grass' },
-    { frames: [14, 15, 16], surface: 'grass' },
-    { frames: [32, 33, 34], surface: 'grass' },
-    { frames: [41, 42, 43], surface: 'rock' },
-    { frames: [50, 51, 52], surface: 'rock' },
-  ]);
+  return [
+    ...grassPieces,
+    ...getSecondLayerRockPieces(bottomEdgeCells),
+  ];
 }
 
-function buildTerrainPieces(
-  startX: number,
-  startY: number,
-  width: number,
-  rows: Array<{ frames: number[]; surface: TerrainPieceSurface }>,
-) {
-  return rows.flatMap((row, rowIndex) =>
-    row.frames.map((frame, column) => ({
-      cell: {
-        x: startX + column,
-        y: startY + rowIndex,
-      },
+function getSecondLayerRockPieces(bottomEdgeCells: GridCell[]): TerrainPiece[] {
+  const rows = new Map<number, GridCell[]>();
+
+  for (const cell of bottomEdgeCells) {
+    const rockY = cell.y + 1;
+    rows.set(rockY, [...(rows.get(rockY) ?? []), { x: cell.x, y: rockY }]);
+  }
+
+  return [...rows.entries()]
+    .sort(([leftY], [rightY]) => leftY - rightY)
+    .flatMap((entry) => getSecondLayerRockRowPieces(entry[1].sort(compareCells)));
+}
+
+function getSecondLayerRockRowPieces(rowCells: GridCell[]): TerrainPiece[] {
+  const pieces: TerrainPiece[] = [];
+  let segment: GridCell[] = [];
+
+  for (const cell of rowCells) {
+    const previousCell = segment[segment.length - 1];
+    if (previousCell && cell.x !== previousCell.x + 1) {
+      pieces.push(...getSecondLayerRockSegmentPieces(segment));
+      segment = [];
+    }
+    segment.push(cell);
+  }
+
+  return [...pieces, ...getSecondLayerRockSegmentPieces(segment)];
+}
+
+function getSecondLayerRockSegmentPieces(segment: GridCell[]): TerrainPiece[] {
+  if (segment.length === 0) return [];
+
+  return segment.map((cell, index) => {
+    const frame = segment.length === 1
+      ? 44
+      : index === 0
+        ? 41
+        : index === segment.length - 1
+          ? 43
+          : 42;
+
+    return {
+      cell,
       frame,
-      surface: row.surface,
-    })),
-  ).filter((piece) => piece.cell.x < startX + width);
+      surface: 'rock' as const,
+    };
+  });
+}
+
+function compareCells(left: GridCell, right: GridCell) {
+  return left.y - right.y || left.x - right.x;
+}
+
+function getCellKey(cell: GridCell) {
+  return `${cell.x},${cell.y}`;
 }
 
 function getOpenEdgeMask(args: {
