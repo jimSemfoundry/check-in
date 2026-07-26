@@ -1,12 +1,19 @@
-import type { HistoryDay, HistoryMonth } from '@soft-habit/contracts';
-import { and, eq, gte, isNull, lte } from 'drizzle-orm';
+import type { HistoryBackfillCandidate, HistoryDay, HistoryMonth } from '@soft-habit/contracts';
+import { and, eq, gte, isNull, lte, sql } from 'drizzle-orm';
 import type { Database } from '../../db/client.js';
-import { dailyHabitPlans, habitCheckins } from '../../db/schema/index.js';
+import {
+  dailyHabitPlans,
+  habitCheckins,
+  habits,
+  habitSchedules,
+} from '../../db/schema/index.js';
+import { endOfIsoWeek, isHabitDue, startOfIsoWeek } from '../../lib/dates.js';
 import type { SessionRecord } from '../access/types.js';
 
 export interface HistoryService {
   month(session: SessionRecord, month: string): Promise<HistoryMonth>;
   day(session: SessionRecord, date: string): Promise<HistoryDay>;
+  backfillCandidates(session: SessionRecord, date: string): Promise<HistoryBackfillCandidate[]>;
 }
 
 function monthBounds(month: string): { first: string; last: string; dayCount: number } {
@@ -83,5 +90,66 @@ export class DrizzleHistoryService implements HistoryService {
       };
     });
     return { month, days };
+  }
+
+  async backfillCandidates(
+    session: SessionRecord,
+    date: string,
+  ): Promise<HistoryBackfillCandidate[]> {
+    const rows = await this.db
+      .select()
+      .from(habits)
+      .where(eq(habits.workspaceId, session.workspace.id));
+    if (!rows.length) return [];
+    const [schedules, checkins, weeklyRows] = await Promise.all([
+      this.db.select().from(habitSchedules),
+      this.db
+        .select({ habitId: habitCheckins.habitId })
+        .from(habitCheckins)
+        .where(
+          and(
+            eq(habitCheckins.workspaceId, session.workspace.id),
+            eq(habitCheckins.checkinDate, date),
+            isNull(habitCheckins.cancelledAt),
+          ),
+        ),
+      this.db
+        .select({ habitId: habitCheckins.habitId, count: sql<string>`count(*)` })
+        .from(habitCheckins)
+        .where(
+          and(
+            eq(habitCheckins.workspaceId, session.workspace.id),
+            gte(habitCheckins.checkinDate, startOfIsoWeek(date)),
+            lte(habitCheckins.checkinDate, endOfIsoWeek(date)),
+            isNull(habitCheckins.cancelledAt),
+          ),
+        )
+        .groupBy(habitCheckins.habitId),
+    ]);
+    const completed = new Set(checkins.map((checkin) => checkin.habitId));
+    const weeklyCounts = new Map(weeklyRows.map((row) => [row.habitId, Number(row.count)]));
+    return rows
+      .filter(
+        (row) =>
+          !completed.has(row.id) &&
+          isHabitDue(
+            {
+              frequencyType: row.frequencyType,
+              startDate: row.startDate,
+              archivedAt: row.archivedAt?.toISOString() ?? null,
+              schedules: schedules
+                .filter((schedule) => schedule.habitId === row.id)
+                .map((schedule) => ({
+                  weekday: schedule.weekday,
+                  timesPerWeek: schedule.timesPerWeek,
+                  monthDay: schedule.monthDay,
+                })),
+            },
+            date,
+            session.workspace.timezone,
+            weeklyCounts.get(row.id) ?? 0,
+          ),
+      )
+      .map((row) => ({ habitId: row.id, name: row.name, icon: row.icon }));
   }
 }

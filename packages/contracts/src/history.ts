@@ -16,10 +16,19 @@ export const historyDaySchema = z.object({
     }),
   ),
 });
+export const historyBackfillCandidateSchema = z.object({
+  habitId: uuidSchema,
+  name: z.string(),
+  icon: z.string(),
+});
 export const historyMonthResponseSchema = dataResponse(
   z.object({ month: yearMonthSchema, days: z.array(historyDaySchema) }),
 );
 export const historyDayResponseSchema = dataResponse(historyDaySchema);
+export const historyBackfillCandidatesResponseSchema = dataResponse(
+  z.array(historyBackfillCandidateSchema),
+);
 
 export type HistoryDay = z.infer<typeof historyDaySchema>;
 export type HistoryMonth = z.infer<typeof historyMonthResponseSchema>['data'];
+export type HistoryBackfillCandidate = z.infer<typeof historyBackfillCandidateSchema>;

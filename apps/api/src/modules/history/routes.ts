@@ -15,4 +15,12 @@ export const historyRoutes: FastifyPluginAsync<{ historyService: HistoryService 
     const { date } = historyDayQuerySchema.parse(request.query);
     return { data: await historyService.day(request.session!, date) };
   });
+  app.get(
+    '/history/backfill-candidates',
+    { preHandler: requireCapability('checkin:backfill') },
+    async (request) => {
+      const { date } = historyDayQuerySchema.parse(request.query);
+      return { data: await historyService.backfillCandidates(request.session!, date) };
+    },
+  );
 };

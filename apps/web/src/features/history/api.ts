@@ -1,6 +1,7 @@
 import {
   backfillCheckinRequestSchema,
   checkinResponseSchema,
+  historyBackfillCandidatesResponseSchema,
   historyDayResponseSchema,
   historyMonthResponseSchema,
 } from '@soft-habit/contracts';
@@ -52,6 +53,21 @@ export async function getHistoryDay(date: string) {
     return apiRequest(`/history/day?date=${date}`, historyDayResponseSchema).then((r) => r.data);
   await delay();
   return historyDayResponseSchema.parse({ data: mockDay(date) }).data;
+}
+export async function getHistoryBackfillCandidates(date: string) {
+  if (!useMockApi)
+    return apiRequest(
+      `/history/backfill-candidates?date=${date}`,
+      historyBackfillCandidatesResponseSchema,
+    ).then((r) => r.data);
+  await delay();
+  const day = mockDay(date);
+  const completedIds = new Set(day.habits.filter((habit) => habit.completed).map((habit) => habit.habitId));
+  return historyBackfillCandidatesResponseSchema.parse({
+    data: mockHabits
+      .filter((habit) => !completedIds.has(habit.id))
+      .map((habit) => ({ habitId: habit.id, name: habit.name, icon: habit.icon })),
+  }).data;
 }
 export async function backfillHistoryCheckin(habitId: string, date: string) {
   const body = backfillCheckinRequestSchema.parse({ habitId, date });

@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useSession } from '../features/access/SessionProvider';
-import { backfillHistoryCheckin, getHistoryDay, getHistoryMonth } from '../features/history/api';
+import {
+  backfillHistoryCheckin,
+  getHistoryBackfillCandidates,
+  getHistoryDay,
+  getHistoryMonth,
+} from '../features/history/api';
 import { friendlyError } from '../lib/api';
 import { localDate } from '../lib/config';
 
@@ -19,6 +24,12 @@ export function HistoryPage() {
     queryKey: ['history', 'day', selected],
     queryFn: () => getHistoryDay(selected),
   });
+  const isOwner = session?.role === 'owner';
+  const candidates = useQuery({
+    queryKey: ['history', 'backfill-candidates', selected],
+    queryFn: () => getHistoryBackfillCandidates(selected),
+    enabled: isOwner,
+  });
   const move = (offset: number) => {
     const [y, m] = month.split('-').map(Number);
     const next = new Date(y!, m! - 1 + offset, 1);
@@ -31,6 +42,7 @@ export function HistoryPage() {
       await Promise.all([
         client.invalidateQueries({ queryKey: ['history', 'day', variables.date] }),
         client.invalidateQueries({ queryKey: ['history', 'month', variables.date.slice(0, 7)] }),
+        client.invalidateQueries({ queryKey: ['history', 'backfill-candidates', variables.date] }),
         client.invalidateQueries({ queryKey: ['today'] }),
         client.invalidateQueries({ queryKey: ['pet'] }),
       ]);
@@ -39,7 +51,13 @@ export function HistoryPage() {
   });
   const total = monthly.data?.days.reduce((sum, d) => sum + d.completedCount, 0) ?? 0;
   const planned = monthly.data?.days.reduce((sum, d) => sum + d.plannedCount, 0) ?? 0;
-  const isOwner = session?.role === 'owner';
+  const historyHabitIds = new Set(daily.data?.habits.map((habit) => habit.habitId) ?? []);
+  const displayHabits = [
+    ...(daily.data?.habits ?? []),
+    ...((isOwner ? candidates.data : []) ?? [])
+      .filter((candidate) => !historyHabitIds.has(candidate.habitId))
+      .map((candidate) => ({ ...candidate, completed: false })),
+  ];
   return (
     <section className="page">
       <div className="page-heading">
@@ -89,7 +107,7 @@ export function HistoryPage() {
         <h2>
           {selected} · {daily.data?.completedCount ?? 0}/{daily.data?.plannedCount ?? 0}
         </h2>
-        {daily.data?.habits.map((h) => (
+        {displayHabits.map((h) => (
           <div key={h.habitId}>
             <span className="material-symbols-rounded">{h.icon}</span>
             <span>{h.name}</span>

@@ -89,6 +89,7 @@
 
 - `GET /history/month?month=YYYY-MM`
 - `GET /history/day?date=YYYY-MM-DD`
+- `GET /history/backfill-candidates?date=YYYY-MM-DD`，仅 owner，返回目标日期按习惯规则可补签且尚未完成的候选习惯。
 
 每日对象包含 `date`、`plannedCount`、`completedCount` 和 `habits[]`；习惯项包含 `habitId`、`name`、`icon`、`completed`。历史采用 `daily_habit_plans` 每日计划快照策略。
 

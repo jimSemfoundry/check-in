@@ -5,6 +5,8 @@ import type { AppConfig } from '../config/env.js';
 import { hashSecret } from '../lib/crypto.js';
 import { ApiError } from '../lib/errors.js';
 import type { HabitService } from '../modules/habits/service.js';
+import type { HistoryService } from '../modules/history/service.js';
+import type { PetService } from '../modules/pets/service.js';
 import { MemoryAuthStore } from './memory-auth-store.js';
 
 const config: AppConfig = {
@@ -32,6 +34,17 @@ const unavailableHabitService: HabitService = {
   checkin: pending,
   cancelCheckin: pending,
   backfillCheckin: pending,
+};
+const unavailableHistoryService: HistoryService = {
+  month: pending,
+  day: pending,
+  backfillCandidates: pending,
+};
+const unavailablePetService: PetService = {
+  get: pending,
+  feed: pending,
+  play: pending,
+  rename: pending,
 };
 
 const habitFixture: Habit = {
@@ -103,10 +116,28 @@ const workingHabitService: HabitService = {
   }),
 };
 
+const workingHistoryService: HistoryService = {
+  ...unavailableHistoryService,
+  month: async (_session, month) => ({ month, days: [] }),
+  day: async (_session, date) => ({
+    date,
+    plannedCount: 0,
+    completedCount: 0,
+    habits: [],
+  }),
+  backfillCandidates: async () => [
+    { habitId: habitFixture.id, name: habitFixture.name, icon: habitFixture.icon },
+  ],
+};
+
 const apps: Awaited<ReturnType<typeof buildApp>>[] = [];
 afterEach(async () => Promise.all(apps.splice(0).map((app) => app.close())));
 
-async function authenticated(role: Role, habitService = unavailableHabitService) {
+async function authenticated(
+  role: Role,
+  habitService = unavailableHabitService,
+  services: { historyService?: HistoryService; petService?: PetService } = {},
+) {
   const store = new MemoryAuthStore();
   const accessKey = `${role}-access-key-that-is-definitely-long-enough`;
   store.addAccessKey(hashSecret(accessKey, config.ACCESS_KEY_PEPPER), role);
@@ -114,6 +145,8 @@ async function authenticated(role: Role, habitService = unavailableHabitService)
     config,
     authStore: store,
     habitService,
+    ...(services.historyService ? { historyService: services.historyService } : {}),
+    ...(services.petService ? { petService: services.petService } : {}),
     databaseHealthCheck: async () => {},
     logger: false,
   });
@@ -297,6 +330,20 @@ describe('permission boundaries', () => {
     expect(response.json().error.code).toBe('FORBIDDEN');
   });
 
+  it('does not allow a participant to list backfill candidates', async () => {
+    const { app, cookie } = await authenticated('participant', workingHabitService, {
+      historyService: workingHistoryService,
+      petService: unavailablePetService,
+    });
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/history/backfill-candidates?date=2026-07-25',
+      headers: { cookie },
+    });
+    expect(response.statusCode).toBe(403);
+    expect(response.json().error.code).toBe('FORBIDDEN');
+  });
+
   it('rejects protected APIs without a session', async () => {
     const app = await buildApp({
       config,
@@ -391,5 +438,21 @@ describe('habit and check-in routes', () => {
       foodBalance: 2,
       checkin: { habitId: habitFixture.id, checkinDate: '2026-08-01' },
     });
+  });
+
+  it('maps owner backfill candidate queries to the history service', async () => {
+    const { app, cookie } = await authenticated('owner', workingHabitService, {
+      historyService: workingHistoryService,
+      petService: unavailablePetService,
+    });
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/history/backfill-candidates?date=2026-07-25',
+      headers: { cookie },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().data).toEqual([
+      { habitId: habitFixture.id, name: habitFixture.name, icon: habitFixture.icon },
+    ]);
   });
 });
