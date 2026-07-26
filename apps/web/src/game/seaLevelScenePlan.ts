@@ -1,4 +1,5 @@
 import { tinySwordsTerrainTileset } from './terrainTileset';
+import type { GrassPatch } from './grassPlacement';
 
 export const seaLevelScenePlan = {
   tileSize: tinySwordsTerrainTileset.tileSize,
@@ -6,24 +7,7 @@ export const seaLevelScenePlan = {
     columns: 12,
     rows: 8,
   },
-  initialGrassPatches: [
-    {
-      id: 'initial-east-island',
-      shapeKey: 'nine',
-      anchor: { x: 10, y: 2 },
-      cells: [
-        { x: 10, y: 2 },
-        { x: 11, y: 2 },
-        { x: 12, y: 2 },
-        { x: 10, y: 3 },
-        { x: 11, y: 3 },
-        { x: 12, y: 3 },
-        { x: 10, y: 4 },
-        { x: 11, y: 4 },
-        { x: 12, y: 4 },
-      ],
-    },
-  ],
+  initialGrassPatches: [] as GrassPatch[],
   grassTerrainFrames: {
     none: 10,
     top: 1,
