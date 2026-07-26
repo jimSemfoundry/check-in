@@ -245,3 +245,12 @@
 - 测试过程：先把 `grass-placement` 中所有 rock frame 期望从 `41/42/43/44` 改为 `50/51/52/53`，观察到 12 项失败，再修改生成逻辑使目标测试通过。
 - 验证：`pnpm --filter web test` 72/72 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均渲染底排圆润岩石底座，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-26：按 tileset 示例补完整海岛岩壁
+
+- 问题：用户反馈“没有改”，截图显示海岛仍不像 `Tilemap_color1.png` 右侧示例中的完整岩石岛。
+- 根因：上一轮只把唯一岩石行替换为底排 `50/51/52`，但示例结构实际是草前脸下方先有中间岩壁 `41/42/43`，再接底排岩石 `50/51/52`；同时完整岛体变高后默认 anchor 太低，底部会靠近 HUD。
+- AI 贡献：将第一层 `getIslandTerrainPieces()` 改为完整海岛 profile：草面、草前脸、中间岩壁行、底部圆岩行；第二层仍保持原有底座 profile。默认海岛 anchor 从 `{ x: 4, y: 2 }` 上移到 `{ x: 4, y: 1 }`，让完整岩石岛不被底部 HUD 遮挡。
+- 测试过程：先把第一层 3x3 岛测试改为期望 `41/42/43` 与 `50/51/52` 两行岩石，观察到旧实现缺中间岩壁的失败，再实现完整 profile 并调整默认岛位置。
+- 验证：`pnpm --filter web test` 72/72 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均渲染完整两行岩石海岛，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

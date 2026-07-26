@@ -398,10 +398,10 @@ export function getSecondLayerTerrainPieces(args: {
 export function getIslandTerrainPieces(args: {
   occupiedCells: GridCell[];
 }) {
-  return getRaisedTerrainPieces(args.occupiedCells);
+  return getRaisedTerrainPieces(args.occupiedCells, 'full-island');
 }
 
-function getRaisedTerrainPieces(terrainCells: GridCell[]) {
+function getRaisedTerrainPieces(terrainCells: GridCell[], rockProfile: 'bottom-only' | 'full-island' = 'bottom-only') {
   const occupiedCells = getUniqueCells(terrainCells);
   const occupiedCellKeys = new Set(occupiedCells.map(getCellKey));
   const grassPieces = [...occupiedCells]
@@ -427,7 +427,7 @@ function getRaisedTerrainPieces(terrainCells: GridCell[]) {
   const topPieces = grassPieces.filter((piece) => !secondLayerFrontGrassFrames.has(piece.frame));
 
   return [
-    ...getSecondLayerRockPieces(rockSourceCells),
+    ...getSecondLayerRockPieces(rockSourceCells, rockProfile),
     ...frontPieces,
     ...topPieces,
     ...getSecondLayerFrontPieces(generatedFrontCells),
@@ -493,46 +493,49 @@ function getSecondLayerFrontSegmentPieces(segment: GridCell[]): TerrainPiece[] {
   });
 }
 
-function getSecondLayerRockPieces(bottomEdgeCells: GridCell[]): TerrainPiece[] {
+function getSecondLayerRockPieces(
+  bottomEdgeCells: GridCell[],
+  rockProfile: 'bottom-only' | 'full-island',
+): TerrainPiece[] {
   const rows = new Map<number, GridCell[]>();
 
   for (const cell of bottomEdgeCells) {
     const rockY = cell.y + 1;
     rows.set(rockY, [...(rows.get(rockY) ?? []), { x: cell.x, y: rockY }]);
+    if (rockProfile === 'full-island') {
+      rows.set(rockY + 1, [...(rows.get(rockY + 1) ?? []), { x: cell.x, y: rockY + 1 }]);
+    }
   }
 
   return [...rows.entries()]
     .sort(([leftY], [rightY]) => leftY - rightY)
-    .flatMap((entry) => getSecondLayerRockRowPieces(entry[1].sort(compareCells)));
+    .flatMap((entry, index) => getSecondLayerRockRowPieces(
+      entry[1].sort(compareCells),
+      rockProfile === 'full-island' && index === 0 ? 'wall' : 'bottom',
+    ));
 }
 
-function getSecondLayerRockRowPieces(rowCells: GridCell[]): TerrainPiece[] {
+function getSecondLayerRockRowPieces(rowCells: GridCell[], rowType: 'wall' | 'bottom') {
   const pieces: TerrainPiece[] = [];
   let segment: GridCell[] = [];
 
   for (const cell of rowCells) {
     const previousCell = segment[segment.length - 1];
     if (previousCell && cell.x !== previousCell.x + 1) {
-      pieces.push(...getSecondLayerRockSegmentPieces(segment));
+      pieces.push(...getSecondLayerRockSegmentPieces(segment, rowType));
       segment = [];
     }
     segment.push(cell);
   }
 
-  return [...pieces, ...getSecondLayerRockSegmentPieces(segment)];
+  return [...pieces, ...getSecondLayerRockSegmentPieces(segment, rowType)];
 }
 
-function getSecondLayerRockSegmentPieces(segment: GridCell[]): TerrainPiece[] {
+function getSecondLayerRockSegmentPieces(segment: GridCell[], rowType: 'wall' | 'bottom'): TerrainPiece[] {
   if (segment.length === 0) return [];
 
   return segment.map((cell, index) => {
-    const frame = segment.length === 1
-      ? 53
-      : index === 0
-        ? 50
-        : index === segment.length - 1
-          ? 52
-          : 51;
+    const frame = getRockSegmentFrame(segment.length, index, rowType);
 
     return {
       cell,
@@ -540,6 +543,20 @@ function getSecondLayerRockSegmentPieces(segment: GridCell[]): TerrainPiece[] {
       surface: 'rock' as const,
     };
   });
+}
+
+function getRockSegmentFrame(segmentLength: number, index: number, rowType: 'wall' | 'bottom') {
+  if (rowType === 'wall') {
+    if (segmentLength === 1) return 44;
+    if (index === 0) return 41;
+    if (index === segmentLength - 1) return 43;
+    return 42;
+  }
+
+  if (segmentLength === 1) return 53;
+  if (index === 0) return 50;
+  if (index === segmentLength - 1) return 52;
+  return 51;
 }
 
 function compareCells(left: GridCell, right: GridCell) {
