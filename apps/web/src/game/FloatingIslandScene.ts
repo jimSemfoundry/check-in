@@ -102,7 +102,10 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.secondLayerRoot = undefined;
     this.occupiedCellRoot = undefined;
     this.previewRoot = undefined;
-    this.grassPatches = [];
+    this.grassPatches = seaLevelScenePlan.initialGrassPatches.map((patch) => ({
+      ...patch,
+      cells: patch.cells.map((cell) => ({ ...cell })),
+    }));
     this.secondLayerPatches = [];
     this.availableOverlayCells = [];
     this.nextGrassPatchId = 1;
@@ -114,6 +117,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       frameRate: WATER_FOAM_FRAME_RATE,
     });
     this.createPlacementLayers();
+    this.renderTerrainPatches();
   }
 
   private createHud() {
