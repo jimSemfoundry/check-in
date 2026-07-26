@@ -63,17 +63,17 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
   1: 6,
   2: 16,
   3: 7,
-  4: 33,
+  4: 24,
   5: 33,
-  6: 34,
+  6: 25,
   7: 34,
   8: 14,
   9: 5,
   10: 17,
   11: 8,
-  12: 32,
+  12: 23,
   13: 32,
-  14: 35,
+  14: 26,
   15: 35,
 };
 
@@ -395,19 +395,80 @@ export function getSecondLayerTerrainPieces(args: {
   const bottomEdgeCells = [...args.occupiedCells]
     .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
     .sort(compareCells);
+  const frontEdgeCells: GridCell[] = [];
+  const rockCells: GridCell[] = [];
+
+  for (const cell of bottomEdgeCells) {
+    const hasTopCell = occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 }));
+
+    if (hasTopCell) {
+      frontEdgeCells.push({ x: cell.x, y: cell.y + 1 });
+      rockCells.push({ x: cell.x, y: cell.y + 2 });
+    } else {
+      rockCells.push({ x: cell.x, y: cell.y + 1 });
+    }
+  }
 
   return [
-    ...getSecondLayerRockPieces(bottomEdgeCells),
+    ...getSecondLayerRockPieces(rockCells),
     ...grassPieces,
+    ...getSecondLayerFrontPieces(frontEdgeCells),
   ];
 }
 
-function getSecondLayerRockPieces(bottomEdgeCells: GridCell[]): TerrainPiece[] {
+function getSecondLayerFrontPieces(frontEdgeCells: GridCell[]): TerrainPiece[] {
   const rows = new Map<number, GridCell[]>();
 
-  for (const cell of bottomEdgeCells) {
-    const rockY = cell.y + 1;
-    rows.set(rockY, [...(rows.get(rockY) ?? []), { x: cell.x, y: rockY }]);
+  for (const cell of frontEdgeCells) {
+    rows.set(cell.y, [...(rows.get(cell.y) ?? []), cell]);
+  }
+
+  return [...rows.entries()]
+    .sort(([leftY], [rightY]) => leftY - rightY)
+    .flatMap((entry) => getSecondLayerFrontRowPieces(entry[1].sort(compareCells)));
+}
+
+function getSecondLayerFrontRowPieces(rowCells: GridCell[]): TerrainPiece[] {
+  const pieces: TerrainPiece[] = [];
+  let segment: GridCell[] = [];
+
+  for (const cell of rowCells) {
+    const previousCell = segment[segment.length - 1];
+    if (previousCell && cell.x !== previousCell.x + 1) {
+      pieces.push(...getSecondLayerFrontSegmentPieces(segment));
+      segment = [];
+    }
+    segment.push(cell);
+  }
+
+  return [...pieces, ...getSecondLayerFrontSegmentPieces(segment)];
+}
+
+function getSecondLayerFrontSegmentPieces(segment: GridCell[]): TerrainPiece[] {
+  if (segment.length === 0) return [];
+
+  return segment.map((cell, index) => {
+    const frame = segment.length === 1
+      ? 35
+      : index === 0
+        ? 32
+        : index === segment.length - 1
+          ? 34
+          : 33;
+
+    return {
+      cell,
+      frame,
+      surface: 'grass' as const,
+    };
+  });
+}
+
+function getSecondLayerRockPieces(rockCells: GridCell[]): TerrainPiece[] {
+  const rows = new Map<number, GridCell[]>();
+
+  for (const cell of rockCells) {
+    rows.set(cell.y, [...(rows.get(cell.y) ?? []), cell]);
   }
 
   return [...rows.entries()]

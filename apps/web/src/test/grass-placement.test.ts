@@ -386,33 +386,37 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('renders second-layer vertical 1x3 as the tall grass strip plus single tile and narrow rock height', () => {
+  it('renders second-layer vertical 1x3 as the tall strip, front tile, and narrow rock height', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
     })).toEqual([
-      { cell: { x: 2, y: 6 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 44, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
-      { cell: { x: 2, y: 5 }, frame: 35, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 26, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 35, surface: 'grass' },
     ]);
   });
 
-  it('renders second-layer 3x3 as the large grass block plus front strip and wide rock height', () => {
+  it('renders second-layer 3x3 as the large block, front strip, and wide rock height', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
     })).toEqual([
-      { cell: { x: 2, y: 6 }, frame: 41, surface: 'rock' },
-      { cell: { x: 3, y: 6 }, frame: 42, surface: 'rock' },
-      { cell: { x: 4, y: 6 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 7 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 7 }, frame: 43, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
       { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
       { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 14, surface: 'grass' },
       { cell: { x: 3, y: 4 }, frame: 15, surface: 'grass' },
       { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
-      { cell: { x: 2, y: 5 }, frame: 32, surface: 'grass' },
-      { cell: { x: 3, y: 5 }, frame: 33, surface: 'grass' },
-      { cell: { x: 4, y: 5 }, frame: 34, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 23, surface: 'grass' },
+      { cell: { x: 3, y: 5 }, frame: 24, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 25, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 32, surface: 'grass' },
+      { cell: { x: 3, y: 6 }, frame: 33, surface: 'grass' },
+      { cell: { x: 4, y: 6 }, frame: 34, surface: 'grass' },
     ]);
   });
 
@@ -437,9 +441,10 @@ describe('grass placement model', () => {
         { x: 2, y: 4 },
       ],
     })).toEqual([
-      { cell: { x: 2, y: 5 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 6 }, frame: 44, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
-      { cell: { x: 2, y: 4 }, frame: 35, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 26, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 35, surface: 'grass' },
     ]);
   });
 
