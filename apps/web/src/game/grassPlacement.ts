@@ -51,6 +51,25 @@ const grassTerrainFramesByOpenEdgeMask: Record<number, number> = {
   15: 30,
 };
 
+const secondLayerTerrainFramesByOpenEdgeMask: Record<number, number> = {
+  0: 15,
+  1: 6,
+  2: 16,
+  3: 7,
+  4: 33,
+  5: 33,
+  6: 34,
+  7: 34,
+  8: 14,
+  9: 5,
+  10: 17,
+  11: 8,
+  12: 32,
+  13: 32,
+  14: 35,
+  15: 35,
+};
+
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
   'three-horizontal': { key: 'three-horizontal', width: 3, height: 1 },
@@ -65,7 +84,6 @@ const hudSlotGrassShapes: Array<GrassShape | undefined> = [
   grassShapes.nine,
 ];
 const HUD_TERRAIN_SLOT_COUNT = 8;
-const SECOND_LAYER_FRAME_OFFSET = 5;
 
 export function getGrassShapeForHudSlot(slotIndex: number | undefined) {
   if (slotIndex === undefined) return undefined;
@@ -350,6 +368,20 @@ export function getGrassTerrainFrame(args: {
   cell: GridCell;
   occupiedCells: GridCell[];
 }) {
+  return grassTerrainFramesByOpenEdgeMask[getOpenEdgeMask(args)];
+}
+
+export function getSecondLayerTerrainFrame(args: {
+  cell: GridCell;
+  occupiedCells: GridCell[];
+}) {
+  return secondLayerTerrainFramesByOpenEdgeMask[getOpenEdgeMask(args)];
+}
+
+function getOpenEdgeMask(args: {
+  cell: GridCell;
+  occupiedCells: GridCell[];
+}) {
   const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
   const top = !occupied.has(`${args.cell.x},${args.cell.y - 1}`);
   const right = !occupied.has(`${args.cell.x + 1},${args.cell.y}`);
@@ -360,14 +392,7 @@ export function getGrassTerrainFrame(args: {
     | (bottom ? 4 : 0)
     | (left ? 8 : 0);
 
-  return grassTerrainFramesByOpenEdgeMask[openEdgeMask];
-}
-
-export function getSecondLayerTerrainFrame(args: {
-  cell: GridCell;
-  occupiedCells: GridCell[];
-}) {
-  return getGrassTerrainFrame(args) + SECOND_LAYER_FRAME_OFFSET;
+  return openEdgeMask;
 }
 
 export function getGridCellFromWorldPoint(args: {

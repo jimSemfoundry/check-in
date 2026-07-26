@@ -373,9 +373,13 @@ describe('grass placement model', () => {
     expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 2 }, occupiedCells })).toBe(14);
     expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 2 }, occupiedCells })).toBe(15);
     expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 2 }, occupiedCells })).toBe(16);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 3 }, occupiedCells })).toBe(23);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 3 }, occupiedCells })).toBe(24);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 3 }, occupiedCells })).toBe(25);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 3 }, occupiedCells })).toBe(32);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 3 }, occupiedCells })).toBe(33);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 3 }, occupiedCells })).toBe(34);
+    expect(getSecondLayerTerrainFrame({
+      cell: { x: 0, y: 2 },
+      occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 0, y: 0 }),
+    })).toBe(35);
     expect(getSecondLayerTerrainFrame({
       cell: { x: 0, y: 0 },
       occupiedCells: [{ x: 0, y: 0 }],

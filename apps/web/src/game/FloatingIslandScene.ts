@@ -54,7 +54,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   private hudRoot?: Phaser.GameObjects.Container;
   private hudBannerPieces: Phaser.GameObjects.Image[] = [];
   private hudSlotPieces: Phaser.GameObjects.Image[] = [];
-  private hudSlotItems: Phaser.GameObjects.Image[] = [];
+  private hudSlotItems: Phaser.GameObjects.Container[] = [];
   private hudSlotCursor?: Phaser.GameObjects.Image;
   private selectedHudSlotIndex?: number;
   private grassPatches: GrassPatch[] = [];
@@ -145,11 +145,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       return slotPiece;
     });
 
-    this.hudSlotItems = gameHudLayout.slotItems.map((item) => {
-      const slotItem = this.add.image(0, 0, 'terrain-tiles', item.key);
-      slotItem.setOrigin(0.5);
-      return slotItem;
-    });
+    this.hudSlotItems = gameHudLayout.slotItems.map((item) => this.createHudSlotItem(item));
 
     this.hudSlotCursor = this.add.image(0, 0, 'hud-slot-cursor');
     this.hudSlotCursor.setOrigin(0.5);
@@ -186,17 +182,51 @@ export class FloatingIslandScene extends Phaser.Scene {
     const texture = this.textures.get('terrain-tiles');
 
     for (const item of gameHudLayout.slotItems) {
-      if (texture.has(item.key)) continue;
+      for (const piece of this.getHudSlotItemPieces(item)) {
+        if (texture.has(piece.key)) continue;
 
-      texture.add(
-        item.key,
-        0,
-        item.source.x,
-        item.source.y,
-        item.source.width,
-        item.source.height,
-      );
+        texture.add(
+          piece.key,
+          0,
+          piece.source.x,
+          piece.source.y,
+          piece.source.width,
+          piece.source.height,
+        );
+      }
     }
+  }
+
+  private createHudSlotItem(item: typeof gameHudLayout.slotItems[number]) {
+    const slotItem = this.add.container(0, 0);
+    const pieces = this.getHudSlotItemPieces(item);
+
+    for (const piece of pieces) {
+      const image = this.add.image(
+        piece.target.x + piece.target.width / 2 - item.source.width / 2,
+        piece.target.y + piece.target.height / 2 - item.source.height / 2,
+        'terrain-tiles',
+        piece.key,
+      );
+      image.setOrigin(0.5);
+      image.setDisplaySize(piece.target.width, piece.target.height);
+      slotItem.add(image);
+    }
+
+    return slotItem;
+  }
+
+  private getHudSlotItemPieces(item: typeof gameHudLayout.slotItems[number]) {
+    return item.pieces ?? [{
+      key: item.key,
+      source: item.source,
+      target: {
+        x: 0,
+        y: 0,
+        width: item.source.width,
+        height: item.source.height,
+      },
+    }];
   }
 
   private createSea() {
@@ -663,7 +693,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       if (!slotItem) continue;
 
       slotItem.setPosition(item.target.x, item.target.y);
-      slotItem.setDisplaySize(item.target.width, item.target.height);
+      slotItem.setScale(item.target.width / item.source.width, item.target.height / item.source.height);
     }
 
     this.hudSlotCursor?.setVisible(this.selectedHudSlotIndex !== undefined);

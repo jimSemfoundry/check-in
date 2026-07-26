@@ -51,6 +51,21 @@ type SlotItem = {
     width: number;
     height: number;
   };
+  pieces?: Array<{
+    key: string;
+    source: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    target: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+  }>;
   displayScale: number;
 };
 
@@ -113,8 +128,42 @@ const slotItems: SlotItem[] = [
   { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72 },
   { slotIndex: 4, key: 'hud-second-terrain-1', source: { x: 512, y: 192, width: 64, height: 64 }, displayScale: 0.62 },
   { slotIndex: 5, key: 'hud-second-terrain-2', source: { x: 320, y: 192, width: 192, height: 64 }, displayScale: 0.72 },
-  { slotIndex: 6, key: 'hud-second-terrain-3', source: { x: 512, y: 0, width: 64, height: 192 }, displayScale: 0.72 },
-  { slotIndex: 7, key: 'hud-second-terrain-4', source: { x: 320, y: 0, width: 192, height: 192 }, displayScale: 0.72 },
+  {
+    slotIndex: 6,
+    key: 'hud-second-terrain-3',
+    source: { x: 512, y: 0, width: 64, height: 192 },
+    displayScale: 0.72,
+    pieces: [
+      {
+        key: 'hud-second-terrain-3-top',
+        source: { x: 512, y: 0, width: 64, height: 128 },
+        target: { x: 0, y: 0, width: 64, height: 128 },
+      },
+      {
+        key: 'hud-second-terrain-3-bottom',
+        source: { x: 512, y: 192, width: 64, height: 64 },
+        target: { x: 0, y: 128, width: 64, height: 64 },
+      },
+    ],
+  },
+  {
+    slotIndex: 7,
+    key: 'hud-second-terrain-4',
+    source: { x: 320, y: 0, width: 192, height: 192 },
+    displayScale: 0.72,
+    pieces: [
+      {
+        key: 'hud-second-terrain-4-top',
+        source: { x: 320, y: 0, width: 192, height: 128 },
+        target: { x: 0, y: 0, width: 192, height: 128 },
+      },
+      {
+        key: 'hud-second-terrain-4-bottom',
+        source: { x: 320, y: 192, width: 192, height: 64 },
+        target: { x: 0, y: 128, width: 192, height: 64 },
+      },
+    ],
+  },
 ];
 
 function getBannerWidth(viewportWidth: number) {

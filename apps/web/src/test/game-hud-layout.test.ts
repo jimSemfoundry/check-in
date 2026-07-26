@@ -153,7 +153,31 @@ describe('game HUD layout', () => {
       { x: 512, y: 0, width: 64, height: 192 },
       { x: 320, y: 0, width: 192, height: 192 },
     ]);
-    expect(gameHudLayout.getSlotItemTargets(1280)).toEqual([
+    expect(gameHudLayout.slotItems.find((item) => item.key === 'hud-second-terrain-3')?.pieces).toEqual([
+      {
+        key: 'hud-second-terrain-3-top',
+        source: { x: 512, y: 0, width: 64, height: 128 },
+        target: { x: 0, y: 0, width: 64, height: 128 },
+      },
+      {
+        key: 'hud-second-terrain-3-bottom',
+        source: { x: 512, y: 192, width: 64, height: 64 },
+        target: { x: 0, y: 128, width: 64, height: 64 },
+      },
+    ]);
+    expect(gameHudLayout.slotItems.find((item) => item.key === 'hud-second-terrain-4')?.pieces).toEqual([
+      {
+        key: 'hud-second-terrain-4-top',
+        source: { x: 320, y: 0, width: 192, height: 128 },
+        target: { x: 0, y: 0, width: 192, height: 128 },
+      },
+      {
+        key: 'hud-second-terrain-4-bottom',
+        source: { x: 320, y: 192, width: 192, height: 64 },
+        target: { x: 0, y: 128, width: 192, height: 64 },
+      },
+    ]);
+    expect(stripSlotItemPieces(gameHudLayout.getSlotItemTargets(1280))).toEqual([
       { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: -203, y: -24, width: 31, height: 31 } },
       { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: -145, y: -24, width: 36, height: 12 } },
       { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: -87, y: -24, width: 12, height: 36 } },
@@ -163,7 +187,7 @@ describe('game HUD layout', () => {
       { slotIndex: 6, key: 'hud-second-terrain-3', source: { x: 512, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: 145, y: -24, width: 12, height: 36 } },
       { slotIndex: 7, key: 'hud-second-terrain-4', source: { x: 320, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: 203, y: -24, width: 36, height: 36 } },
     ]);
-    expect(gameHudLayout.getSlotItemTargets(320)).toEqual([
+    expect(stripSlotItemPieces(gameHudLayout.getSlotItemTargets(320))).toEqual([
       { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: -112, y: -24, width: 17, height: 17 } },
       { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: -80, y: -24, width: 20, height: 6 } },
       { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: -48, y: -24, width: 6, height: 20 } },
@@ -196,3 +220,11 @@ describe('game HUD layout', () => {
     expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 640, y: 300 })).toBeUndefined();
   });
 });
+
+function stripSlotItemPieces<T extends { pieces?: unknown }>(items: T[]) {
+  return items.map((item) => {
+    const itemWithoutPieces = { ...item };
+    delete itemWithoutPieces.pieces;
+    return itemWithoutPieces;
+  });
+}
