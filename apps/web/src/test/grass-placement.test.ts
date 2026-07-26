@@ -565,6 +565,45 @@ describe('grass placement model', () => {
     ]);
   });
 
+  it('merges second-layer 3x3 and horizontal 1x3 through the generated front row', () => {
+    expect(getSecondLayerTerrainPieces({
+      occupiedCells: [
+        ...getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
+        ...getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 7 }),
+      ],
+    })).toEqual([
+      { cell: { x: 2, y: 9 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 9 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 9 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
+      { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
+      { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 14, surface: 'grass' },
+      { cell: { x: 3, y: 4 }, frame: 15, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 14, surface: 'grass' },
+      { cell: { x: 3, y: 5 }, frame: 15, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 16, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 14, surface: 'grass' },
+      { cell: { x: 3, y: 6 }, frame: 15, surface: 'grass' },
+      { cell: { x: 4, y: 6 }, frame: 16, surface: 'grass' },
+      { cell: { x: 2, y: 7 }, frame: 23, surface: 'grass' },
+      { cell: { x: 3, y: 7 }, frame: 24, surface: 'grass' },
+      { cell: { x: 4, y: 7 }, frame: 25, surface: 'grass' },
+      { cell: { x: 2, y: 8 }, frame: 32, surface: 'grass' },
+      { cell: { x: 3, y: 8 }, frame: 33, surface: 'grass' },
+      { cell: { x: 4, y: 8 }, frame: 34, surface: 'grass' },
+    ]);
+    expect(getSecondLayerShadowPieces({
+      occupiedCells: [
+        ...getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
+        ...getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 7 }),
+      ],
+    })).toEqual([
+      { cell: { x: 3, y: 10 }, widthCells: 3 },
+    ]);
+  });
+
   it('merges stacked second-layer vertical 1x3 and 1x1 before choosing outer edges', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: [
@@ -578,6 +617,31 @@ describe('grass placement model', () => {
       { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
       { cell: { x: 2, y: 6 }, frame: 26, surface: 'grass' },
       { cell: { x: 2, y: 7 }, frame: 35, surface: 'grass' },
+    ]);
+  });
+
+  it('merges second-layer vertical 1x3 and 1x1 through the generated front cell', () => {
+    expect(getSecondLayerTerrainPieces({
+      occupiedCells: [
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+        { x: 2, y: 7 },
+      ],
+    })).toEqual([
+      { cell: { x: 2, y: 9 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 7 }, frame: 26, surface: 'grass' },
+      { cell: { x: 2, y: 8 }, frame: 35, surface: 'grass' },
+    ]);
+    expect(getSecondLayerShadowPieces({
+      occupiedCells: [
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+        { x: 2, y: 7 },
+      ],
+    })).toEqual([
+      { cell: { x: 2, y: 10 }, widthCells: 1 },
     ]);
   });
 
@@ -611,25 +675,35 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('keeps separate second-layer placements independent across generated rock height', () => {
-    const pieces = getSecondLayerTerrainPieces({
+  it('merges separate second-layer placements across generated rock height', () => {
+    expect(getSecondLayerTerrainPieces({
       occupiedCells: [
         ...getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 1 }),
         ...getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
       ],
-    });
-
-    expect(pieces).toEqual(expect.arrayContaining([
-      { cell: { x: 2, y: 2 }, frame: 41, surface: 'rock' },
-      { cell: { x: 3, y: 2 }, frame: 42, surface: 'rock' },
-      { cell: { x: 4, y: 2 }, frame: 43, surface: 'rock' },
-      { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
-      { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
-      { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
+    })).toEqual([
       { cell: { x: 2, y: 7 }, frame: 41, surface: 'rock' },
       { cell: { x: 3, y: 7 }, frame: 42, surface: 'rock' },
       { cell: { x: 4, y: 7 }, frame: 43, surface: 'rock' },
-    ]));
+      { cell: { x: 2, y: 1 }, frame: 5, surface: 'grass' },
+      { cell: { x: 3, y: 1 }, frame: 6, surface: 'grass' },
+      { cell: { x: 4, y: 1 }, frame: 7, surface: 'grass' },
+      { cell: { x: 2, y: 2 }, frame: 14, surface: 'grass' },
+      { cell: { x: 3, y: 2 }, frame: 15, surface: 'grass' },
+      { cell: { x: 4, y: 2 }, frame: 16, surface: 'grass' },
+      { cell: { x: 2, y: 3 }, frame: 14, surface: 'grass' },
+      { cell: { x: 3, y: 3 }, frame: 15, surface: 'grass' },
+      { cell: { x: 4, y: 3 }, frame: 16, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 14, surface: 'grass' },
+      { cell: { x: 3, y: 4 }, frame: 15, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 23, surface: 'grass' },
+      { cell: { x: 3, y: 5 }, frame: 24, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 25, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 32, surface: 'grass' },
+      { cell: { x: 3, y: 6 }, frame: 33, surface: 'grass' },
+      { cell: { x: 4, y: 6 }, frame: 34, surface: 'grass' },
+    ]);
   });
 
   it('keeps second-layer vertical strip edges independent from base grass beside it', () => {

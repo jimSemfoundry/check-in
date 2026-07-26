@@ -9,6 +9,7 @@ import {
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassTerrainFrame,
+  getSecondLayerMergedCells,
   getSecondLayerTerrainPieces,
   getSecondLayerShadowPieces,
   getTerrainToolForHudSlot,
@@ -439,11 +440,15 @@ export class FloatingIslandScene extends Phaser.Scene {
     const baseCells = this.getOccupiedGrassCells();
     const occupiedBaseCells = this.getOccupiedBaseCells();
     const secondLayerCells = this.getOccupiedSecondLayerCells();
+    const mergedSecondLayerCells = getSecondLayerMergedCells(secondLayerCells);
     const selectedLayerCells = this.getSelectedTerrainTool()?.layer === 'second'
       ? secondLayerCells
       : occupiedBaseCells;
 
-    for (const cell of getVisibleGrassFoamCells({ baseCells: occupiedBaseCells, coveredCells: secondLayerCells })) {
+    for (const cell of getVisibleGrassFoamCells({
+      baseCells: occupiedBaseCells,
+      coveredCells: mergedSecondLayerCells,
+    })) {
       this.waterFoamRoot.add(this.createWaterFoamSprite(cell, gridLeft, gridTop));
     }
 

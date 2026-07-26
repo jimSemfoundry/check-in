@@ -410,13 +410,29 @@ export function getGrassTerrainFrame(args: {
 export function getSecondLayerTerrainPieces(args: {
   occupiedCells: GridCell[];
 }) {
-  return getRaisedTerrainPieces(args.occupiedCells, 'wall-only');
+  return getRaisedTerrainPieces(getSecondLayerMergedCells(args.occupiedCells), 'wall-only');
+}
+
+export function getSecondLayerMergedCells(occupiedCells: GridCell[]) {
+  const uniqueCells = getUniqueCells(occupiedCells);
+  const occupiedCellKeys = new Set(uniqueCells.map(getCellKey));
+  const bridgeCells = uniqueCells
+    .filter((cell) => (
+      !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 }))
+      && occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 2 }))
+    ))
+    .map((cell) => ({ x: cell.x, y: cell.y + 1 }));
+
+  return getUniqueCells([...uniqueCells, ...bridgeCells]).sort(compareCells);
 }
 
 export function getSecondLayerShadowPieces(args: {
   occupiedCells: GridCell[];
 }): TerrainShadowPiece[] {
-  const rockSourceCells = getRaisedTerrainRockSourceCells(args.occupiedCells, 'wall-only');
+  const rockSourceCells = getRaisedTerrainRockSourceCells(
+    getSecondLayerMergedCells(args.occupiedCells),
+    'wall-only',
+  );
   const shadowCells = rockSourceCells
     .map((cell) => ({ x: cell.x, y: cell.y + 2 }))
     .sort(compareCells);
