@@ -236,3 +236,12 @@
 - 测试过程：先新增第一层 3x3 岛应输出草面、前脸和岩石底座的失败测试，再实现 `getIslandTerrainPieces()` 并接入场景。
 - 验证：`pnpm --filter web test` 72/72 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均渲染带岩石底座的默认海岛，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-26：切换海岛岩石到底排素材
+
+- 问题：用户用截图指出海岛底部岩石应使用 `Tilemap_color1.png` 中箭头指向的底排岩石素材。
+- 根因：上一轮第一层岩石底座复用了第二层岩壁的 `41/42/43/44`，这是 tileset 右侧示例的中间岩壁行；用户指向的是最底部岩石底座行，对应 `50/51/52/53`。
+- AI 贡献：将 raised terrain 的岩石段生成统一改为左 `50`、中 `51`、右 `52`、单格 `53`；第一层默认岛和第二层岩石底座都会使用同一套底排岩石素材。
+- 测试过程：先把 `grass-placement` 中所有 rock frame 期望从 `41/42/43/44` 改为 `50/51/52/53`，观察到 12 项失败，再修改生成逻辑使目标测试通过。
+- 验证：`pnpm --filter web test` 72/72 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均渲染底排圆润岩石底座，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

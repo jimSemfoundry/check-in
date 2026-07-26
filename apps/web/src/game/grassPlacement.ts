@@ -527,12 +527,12 @@ function getSecondLayerRockSegmentPieces(segment: GridCell[]): TerrainPiece[] {
 
   return segment.map((cell, index) => {
     const frame = segment.length === 1
-      ? 44
+      ? 53
       : index === 0
-        ? 41
+        ? 50
         : index === segment.length - 1
-          ? 43
-          : 42;
+          ? 52
+          : 51;
 
     return {
       cell,
