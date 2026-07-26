@@ -31,6 +31,13 @@ export type GrassPatch = {
 };
 
 export type GrassPlacementPreviewCellState = 'placeable' | 'blocked';
+export type TerrainPieceSurface = 'grass' | 'rock';
+
+export type TerrainPiece = {
+  cell: GridCell;
+  frame: number;
+  surface: TerrainPieceSurface;
+};
 
 const grassTerrainFramesByOpenEdgeMask: Record<number, number> = {
   0: 10,
@@ -49,25 +56,6 @@ const grassTerrainFramesByOpenEdgeMask: Record<number, number> = {
   13: 27,
   14: 21,
   15: 30,
-};
-
-const secondLayerTerrainFramesByOpenEdgeMask: Record<number, number> = {
-  0: 15,
-  1: 6,
-  2: 16,
-  3: 7,
-  4: 24,
-  5: 33,
-  6: 25,
-  7: 34,
-  8: 14,
-  9: 5,
-  10: 17,
-  11: 8,
-  12: 23,
-  13: 32,
-  14: 26,
-  15: 35,
 };
 
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
@@ -371,11 +359,60 @@ export function getGrassTerrainFrame(args: {
   return grassTerrainFramesByOpenEdgeMask[getOpenEdgeMask(args)];
 }
 
-export function getSecondLayerTerrainFrame(args: {
-  cell: GridCell;
-  occupiedCells: GridCell[];
-}) {
-  return secondLayerTerrainFramesByOpenEdgeMask[getOpenEdgeMask(args)];
+export function getSecondLayerPatchTerrainPieces(patch: GrassPatch): TerrainPiece[] {
+  const { x, y } = patch.anchor;
+
+  if (patch.shapeKey === 'one') {
+    return buildTerrainPieces(x, y, 1, [
+      { frames: [35], surface: 'grass' },
+      { frames: [44], surface: 'rock' },
+      { frames: [53], surface: 'rock' },
+    ]);
+  }
+
+  if (patch.shapeKey === 'three-horizontal') {
+    return buildTerrainPieces(x, y, 3, [
+      { frames: [32, 33, 34], surface: 'grass' },
+      { frames: [41, 42, 43], surface: 'rock' },
+      { frames: [50, 51, 52], surface: 'rock' },
+    ]);
+  }
+
+  if (patch.shapeKey === 'three-vertical') {
+    return buildTerrainPieces(x, y, 1, [
+      { frames: [8], surface: 'grass' },
+      { frames: [17], surface: 'grass' },
+      { frames: [35], surface: 'grass' },
+      { frames: [44], surface: 'rock' },
+      { frames: [53], surface: 'rock' },
+    ]);
+  }
+
+  return buildTerrainPieces(x, y, 3, [
+    { frames: [5, 6, 7], surface: 'grass' },
+    { frames: [14, 15, 16], surface: 'grass' },
+    { frames: [32, 33, 34], surface: 'grass' },
+    { frames: [41, 42, 43], surface: 'rock' },
+    { frames: [50, 51, 52], surface: 'rock' },
+  ]);
+}
+
+function buildTerrainPieces(
+  startX: number,
+  startY: number,
+  width: number,
+  rows: Array<{ frames: number[]; surface: TerrainPieceSurface }>,
+) {
+  return rows.flatMap((row, rowIndex) =>
+    row.frames.map((frame, column) => ({
+      cell: {
+        x: startX + column,
+        y: startY + rowIndex,
+      },
+      frame,
+      surface: row.surface,
+    })),
+  ).filter((piece) => piece.cell.x < startX + width);
 }
 
 function getOpenEdgeMask(args: {

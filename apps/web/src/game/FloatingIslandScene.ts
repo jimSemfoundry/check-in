@@ -10,7 +10,7 @@ import {
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassTerrainFrame,
-  getSecondLayerTerrainFrame,
+  getSecondLayerPatchTerrainPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
   getToggledGrassSlotIndex,
@@ -19,6 +19,7 @@ import {
   type GrassShape,
   type GrassPatch,
   type GridCell,
+  type TerrainPiece,
   type TerrainTool,
 } from './grassPlacement';
 import { seaLevelScenePlan } from './seaLevelScenePlan';
@@ -423,11 +424,13 @@ export class FloatingIslandScene extends Phaser.Scene {
     }
 
     for (const cell of baseCells) {
-      this.grassRoot.add(this.createTerrainTile('base', cell, baseCells, gridLeft, gridTop, 1));
+      this.grassRoot.add(this.createGrassTile(cell, baseCells, gridLeft, gridTop, 1));
     }
 
-    for (const cell of secondLayerCells) {
-      this.secondLayerRoot.add(this.createTerrainTile('second', cell, secondLayerCells, gridLeft, gridTop, 1));
+    for (const patch of this.secondLayerPatches) {
+      for (const piece of getSecondLayerPatchTerrainPieces(patch)) {
+        this.secondLayerRoot.add(this.createTerrainPiece(piece, gridLeft, gridTop, 1));
+      }
     }
 
     for (const cell of selectedLayerCells) {
@@ -441,8 +444,24 @@ export class FloatingIslandScene extends Phaser.Scene {
     }
   }
 
-  private createTerrainTile(
-    layer: TerrainTool['layer'],
+  private createTerrainPiece(
+    piece: TerrainPiece,
+    gridLeft: number,
+    gridTop: number,
+    alpha: number,
+  ) {
+    const tile = this.add.image(
+      gridLeft + piece.cell.x * TILE_SIZE + TILE_SIZE / 2,
+      gridTop + piece.cell.y * TILE_SIZE + TILE_SIZE / 2,
+      'terrain-tiles',
+      piece.frame,
+    );
+    tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
+    tile.setAlpha(alpha);
+    return tile;
+  }
+
+  private createGrassTile(
     cell: GridCell,
     occupiedCells: GridCell[],
     gridLeft: number,
@@ -453,9 +472,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
       gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
       'terrain-tiles',
-      layer === 'second'
-        ? getSecondLayerTerrainFrame({ cell, occupiedCells })
-        : getGrassTerrainFrame({ cell, occupiedCells }),
+      getGrassTerrainFrame({ cell, occupiedCells }),
     );
     tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
     tile.setAlpha(alpha);
@@ -487,7 +504,6 @@ export class FloatingIslandScene extends Phaser.Scene {
     const occupiedCells = tool.layer === 'second'
       ? this.getOccupiedSecondLayerCells()
       : this.getOccupiedGrassCells();
-    const previewOccupiedCells = [...occupiedCells, ...previewCells];
     const previewCellStates = getGrassPlacementPreviewCells({
       shape: tool.shape,
       anchor,
@@ -498,14 +514,39 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     this.renderAvailableCells(this.getAvailableOverlayCells());
 
-    for (const { cell, state } of previewCellStates) {
-      const tile = this.createTerrainTile(tool.layer, cell, previewOccupiedCells, gridLeft, gridTop, 0.72);
-      if (state === 'blocked') {
-        tile.setTint(BLOCKED_PREVIEW_TINT);
-      } else {
-        tile.setTint(PLACEABLE_PREVIEW_TINT);
+    const previewTerrainPieces = tool.layer === 'second'
+      ? getSecondLayerPatchTerrainPieces({
+        id: 'preview',
+        shapeKey: tool.shape.key,
+        anchor,
+        cells: previewCells,
+      })
+      : [];
+
+    if (tool.layer === 'second') {
+      for (const piece of previewTerrainPieces) {
+        const tile = this.createTerrainPiece(piece, gridLeft, gridTop, 0.72);
+        const state = previewCellStates.some((previewCell) => (
+          previewCell.cell.x === piece.cell.x
+          && previewCell.cell.y === piece.cell.y
+          && previewCell.state === 'blocked'
+        )) ? 'blocked' : 'placeable';
+        tile.setTint(state === 'blocked' ? BLOCKED_PREVIEW_TINT : PLACEABLE_PREVIEW_TINT);
+        this.previewRoot.add(tile);
       }
-      this.previewRoot.add(tile);
+    }
+
+    for (const { cell, state } of previewCellStates) {
+      if (tool.layer === 'base') {
+        const previewOccupiedCells = [...occupiedCells, ...previewCells];
+        const tile = this.createGrassTile(cell, previewOccupiedCells, gridLeft, gridTop, 0.72);
+        if (state === 'blocked') {
+          tile.setTint(BLOCKED_PREVIEW_TINT);
+        } else {
+          tile.setTint(PLACEABLE_PREVIEW_TINT);
+        }
+        this.previewRoot.add(tile);
+      }
       this.previewRoot.add(this.createPreviewStateRectangle(
         cell,
         gridLeft,

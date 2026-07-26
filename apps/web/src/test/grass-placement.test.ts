@@ -10,7 +10,7 @@ import {
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
-  getSecondLayerTerrainFrame,
+  getSecondLayerPatchTerrainPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
   getGrassTerrainFrame,
@@ -364,26 +364,76 @@ describe('grass placement model', () => {
     })).toBe(12);
   });
 
-  it('selects second-layer terrain frames from neighboring second-layer cells', () => {
-    const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 1, y: 1 });
+  it('renders second-layer 1x1 as the finished single grass tile with narrow rock height', () => {
+    expect(getSecondLayerPatchTerrainPieces({
+      id: 'one',
+      shapeKey: 'one',
+      anchor: { x: 2, y: 3 },
+      cells: [{ x: 2, y: 3 }],
+    })).toEqual([
+      { cell: { x: 2, y: 3 }, frame: 35, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 5 }, frame: 53, surface: 'rock' },
+    ]);
+  });
 
-    expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 1 }, occupiedCells })).toBe(5);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 1 }, occupiedCells })).toBe(6);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 1 }, occupiedCells })).toBe(7);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 2 }, occupiedCells })).toBe(14);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 2 }, occupiedCells })).toBe(15);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 2 }, occupiedCells })).toBe(16);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 3 }, occupiedCells })).toBe(23);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 3 }, occupiedCells })).toBe(24);
-    expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 3 }, occupiedCells })).toBe(25);
-    expect(getSecondLayerTerrainFrame({
-      cell: { x: 0, y: 2 },
-      occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 0, y: 0 }),
-    })).toBe(26);
-    expect(getSecondLayerTerrainFrame({
-      cell: { x: 0, y: 0 },
-      occupiedCells: [{ x: 0, y: 0 }],
-    })).toBe(35);
+  it('renders second-layer horizontal 1x3 as the finished front strip with wide rock height', () => {
+    expect(getSecondLayerPatchTerrainPieces({
+      id: 'horizontal',
+      shapeKey: 'three-horizontal',
+      anchor: { x: 2, y: 3 },
+      cells: getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 3 }),
+    })).toEqual([
+      { cell: { x: 2, y: 3 }, frame: 32, surface: 'grass' },
+      { cell: { x: 3, y: 3 }, frame: 33, surface: 'grass' },
+      { cell: { x: 4, y: 3 }, frame: 34, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 4 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 4 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 5 }, frame: 50, surface: 'rock' },
+      { cell: { x: 3, y: 5 }, frame: 51, surface: 'rock' },
+      { cell: { x: 4, y: 5 }, frame: 52, surface: 'rock' },
+    ]);
+  });
+
+  it('renders second-layer vertical 1x3 as the tall grass strip plus single tile and narrow rock height', () => {
+    expect(getSecondLayerPatchTerrainPieces({
+      id: 'vertical',
+      shapeKey: 'three-vertical',
+      anchor: { x: 2, y: 3 },
+      cells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+    })).toEqual([
+      { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 35, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 53, surface: 'rock' },
+    ]);
+  });
+
+  it('renders second-layer 3x3 as the large grass block plus front strip and wide rock height', () => {
+    expect(getSecondLayerPatchTerrainPieces({
+      id: 'nine',
+      shapeKey: 'nine',
+      anchor: { x: 2, y: 3 },
+      cells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
+    })).toEqual([
+      { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
+      { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
+      { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 14, surface: 'grass' },
+      { cell: { x: 3, y: 4 }, frame: 15, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 32, surface: 'grass' },
+      { cell: { x: 3, y: 5 }, frame: 33, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 34, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 6 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 6 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 50, surface: 'rock' },
+      { cell: { x: 3, y: 7 }, frame: 51, surface: 'rock' },
+      { cell: { x: 4, y: 7 }, frame: 52, surface: 'rock' },
+    ]);
   });
 
   it('converts world points inside the grass grid to grid cells', () => {
