@@ -392,7 +392,17 @@ export function getGrassTerrainFrame(args: {
 export function getSecondLayerTerrainPieces(args: {
   occupiedCells: GridCell[];
 }) {
-  const occupiedCells = getUniqueCells(args.occupiedCells);
+  return getRaisedTerrainPieces(args.occupiedCells);
+}
+
+export function getIslandTerrainPieces(args: {
+  occupiedCells: GridCell[];
+}) {
+  return getRaisedTerrainPieces(args.occupiedCells);
+}
+
+function getRaisedTerrainPieces(terrainCells: GridCell[]) {
+  const occupiedCells = getUniqueCells(terrainCells);
   const occupiedCellKeys = new Set(occupiedCells.map(getCellKey));
   const grassPieces = [...occupiedCells]
     .sort(compareCells)

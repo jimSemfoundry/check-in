@@ -10,6 +10,7 @@ import {
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassTerrainFrame,
+  getIslandTerrainPieces,
   getSecondLayerTerrainPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
@@ -427,8 +428,8 @@ export class FloatingIslandScene extends Phaser.Scene {
       this.waterFoamRoot.add(this.createWaterFoamSprite(cell, gridLeft, gridTop));
     }
 
-    for (const cell of baseCells) {
-      this.grassRoot.add(this.createGrassTile(cell, baseCells, gridLeft, gridTop, 1));
+    for (const piece of getIslandTerrainPieces({ occupiedCells: baseCells })) {
+      this.grassRoot.add(this.createTerrainPiece(piece, gridLeft, gridTop, 1));
     }
 
     for (const piece of getSecondLayerTerrainPieces({ occupiedCells: secondLayerCells })) {

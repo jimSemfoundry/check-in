@@ -10,6 +10,7 @@ import {
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
+  getIslandTerrainPieces,
   getSecondLayerTerrainPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
@@ -394,6 +395,28 @@ describe('grass placement model', () => {
       cell: { x: 0, y: 1 },
       occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 0, y: 0 }),
     })).toBe(12);
+  });
+
+  it('renders first-layer 3x3 islands with a grass face and rock base', () => {
+    expect(getIslandTerrainPieces({
+      occupiedCells: getGrassShapeCells(grassShapes.nine, { x: 4, y: 2 }),
+    })).toEqual([
+      { cell: { x: 4, y: 6 }, frame: 41, surface: 'rock' },
+      { cell: { x: 5, y: 6 }, frame: 42, surface: 'rock' },
+      { cell: { x: 6, y: 6 }, frame: 43, surface: 'rock' },
+      { cell: { x: 4, y: 2 }, frame: 5, surface: 'grass' },
+      { cell: { x: 5, y: 2 }, frame: 6, surface: 'grass' },
+      { cell: { x: 6, y: 2 }, frame: 7, surface: 'grass' },
+      { cell: { x: 4, y: 3 }, frame: 14, surface: 'grass' },
+      { cell: { x: 5, y: 3 }, frame: 15, surface: 'grass' },
+      { cell: { x: 6, y: 3 }, frame: 16, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 23, surface: 'grass' },
+      { cell: { x: 5, y: 4 }, frame: 24, surface: 'grass' },
+      { cell: { x: 6, y: 4 }, frame: 25, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 32, surface: 'grass' },
+      { cell: { x: 5, y: 5 }, frame: 33, surface: 'grass' },
+      { cell: { x: 6, y: 5 }, frame: 34, surface: 'grass' },
+    ]);
   });
 
   it('renders second-layer 1x1 as the finished single grass tile with narrow rock height', () => {

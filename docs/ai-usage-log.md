@@ -227,3 +227,12 @@
 - 测试过程：先把 `sea-level-scene` 测试改为期望默认 3x3 海岛，观察到旧空数组失败，再修改场景计划配置使测试通过。
 - 验证：`pnpm --filter web test` 71/71 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均渲染默认 3x3 海岛，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-26：恢复第一层海岛岩石底座
+
+- 问题：用户指出默认海岛应是带岩石的海岛，而不是只有草地平面。
+- 根因：第一层 `baseCells` 渲染路径只调用 `createGrassTile()` 生成平面草地；岩石/前脸生成逻辑只用于第二层 `getSecondLayerTerrainPieces()`，没有复用于第一层默认岛。
+- AI 贡献：新增 `getIslandTerrainPieces()`，复用 raised terrain piece 生成规则，为第一层草地生成前脸草边和底部岩石 `41/42/43/44`；`FloatingIslandScene` 的第一层渲染改为按 terrain pieces 绘制，默认 3x3 岛现在包含草面、前脸和岩石底座。
+- 测试过程：先新增第一层 3x3 岛应输出草面、前脸和岩石底座的失败测试，再实现 `getIslandTerrainPieces()` 并接入场景。
+- 验证：`pnpm --filter web test` 72/72 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面 1280x720 与移动 390x844 均渲染带岩石底座的默认海岛，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
