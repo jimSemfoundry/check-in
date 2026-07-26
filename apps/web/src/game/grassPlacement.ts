@@ -392,7 +392,7 @@ export function getGrassTerrainFrame(args: {
 export function getSecondLayerTerrainPieces(args: {
   occupiedCells: GridCell[];
 }) {
-  return getRaisedTerrainPieces(args.occupiedCells);
+  return getRaisedTerrainPieces(args.occupiedCells, 'covered-wall');
 }
 
 export function getIslandTerrainPieces(args: {
@@ -401,7 +401,10 @@ export function getIslandTerrainPieces(args: {
   return getRaisedTerrainPieces(args.occupiedCells, 'full-island');
 }
 
-function getRaisedTerrainPieces(terrainCells: GridCell[], rockProfile: 'bottom-only' | 'full-island' = 'bottom-only') {
+type RockProfile = 'bottom-only' | 'covered-wall' | 'full-island';
+type RockRowType = 'wall' | 'bottom';
+
+function getRaisedTerrainPieces(terrainCells: GridCell[], rockProfile: RockProfile = 'bottom-only') {
   const occupiedCells = getUniqueCells(terrainCells);
   const occupiedCellKeys = new Set(occupiedCells.map(getCellKey));
   const grassPieces = [...occupiedCells]
@@ -416,7 +419,7 @@ function getRaisedTerrainPieces(terrainCells: GridCell[], rockProfile: 'bottom-o
   const bottomEdgeCells = [...occupiedCells]
     .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
     .sort(compareCells);
-  const shouldGenerateFrontCells = rockProfile !== 'full-island';
+  const shouldGenerateFrontCells = rockProfile === 'covered-wall' || rockProfile === 'bottom-only';
   const generatedFrontCells = shouldGenerateFrontCells
     ? bottomEdgeCells
       .filter((cell) => occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 })))
@@ -501,27 +504,36 @@ function getSecondLayerFrontSegmentPieces(segment: GridCell[]): TerrainPiece[] {
 
 function getSecondLayerRockPieces(
   bottomEdgeCells: GridCell[],
-  rockProfile: 'bottom-only' | 'full-island',
+  rockProfile: RockProfile,
 ): TerrainPiece[] {
   const rows = new Map<number, GridCell[]>();
+  const rowTypes = new Map<number, RockRowType>();
+  const addRockRowCell = (cell: GridCell, rowType: RockRowType) => {
+    rows.set(cell.y, [...(rows.get(cell.y) ?? []), cell]);
+    if (rowTypes.get(cell.y) !== 'wall') {
+      rowTypes.set(cell.y, rowType);
+    }
+  };
 
   for (const cell of bottomEdgeCells) {
     const rockY = cell.y + 1;
-    rows.set(rockY, [...(rows.get(rockY) ?? []), { x: cell.x, y: rockY }]);
-    if (rockProfile === 'full-island') {
-      rows.set(rockY + 1, [...(rows.get(rockY + 1) ?? []), { x: cell.x, y: rockY + 1 }]);
+    if (rockProfile === 'bottom-only') {
+      addRockRowCell({ x: cell.x, y: rockY }, 'bottom');
+    } else {
+      addRockRowCell({ x: cell.x, y: rockY }, 'wall');
+      addRockRowCell({ x: cell.x, y: rockY + 1 }, 'bottom');
     }
   }
 
   return [...rows.entries()]
     .sort(([leftY], [rightY]) => leftY - rightY)
-    .flatMap((entry, index) => getSecondLayerRockRowPieces(
+    .flatMap((entry) => getSecondLayerRockRowPieces(
       entry[1].sort(compareCells),
-      rockProfile === 'full-island' && index === 0 ? 'wall' : 'bottom',
+      rowTypes.get(entry[0]) ?? 'bottom',
     ));
 }
 
-function getSecondLayerRockRowPieces(rowCells: GridCell[], rowType: 'wall' | 'bottom') {
+function getSecondLayerRockRowPieces(rowCells: GridCell[], rowType: RockRowType) {
   const pieces: TerrainPiece[] = [];
   let segment: GridCell[] = [];
 
@@ -537,7 +549,7 @@ function getSecondLayerRockRowPieces(rowCells: GridCell[], rowType: 'wall' | 'bo
   return [...pieces, ...getSecondLayerRockSegmentPieces(segment, rowType)];
 }
 
-function getSecondLayerRockSegmentPieces(segment: GridCell[], rowType: 'wall' | 'bottom'): TerrainPiece[] {
+function getSecondLayerRockSegmentPieces(segment: GridCell[], rowType: RockRowType): TerrainPiece[] {
   if (segment.length === 0) return [];
 
   return segment.map((cell, index) => {
@@ -551,7 +563,7 @@ function getSecondLayerRockSegmentPieces(segment: GridCell[], rowType: 'wall' | 
   });
 }
 
-function getRockSegmentFrame(segmentLength: number, index: number, rowType: 'wall' | 'bottom') {
+function getRockSegmentFrame(segmentLength: number, index: number, rowType: RockRowType) {
   if (rowType === 'wall') {
     if (segmentLength === 1) return 44;
     if (index === 0) return 41;

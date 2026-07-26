@@ -423,7 +423,8 @@ describe('grass placement model', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: [{ x: 2, y: 3 }],
     })).toEqual([
-      { cell: { x: 2, y: 4 }, frame: 53, surface: 'rock' },
+      { cell: { x: 2, y: 4 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 5 }, frame: 53, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 35, surface: 'grass' },
     ]);
   });
@@ -432,9 +433,12 @@ describe('grass placement model', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 3 }),
     })).toEqual([
-      { cell: { x: 2, y: 4 }, frame: 50, surface: 'rock' },
-      { cell: { x: 3, y: 4 }, frame: 51, surface: 'rock' },
-      { cell: { x: 4, y: 4 }, frame: 52, surface: 'rock' },
+      { cell: { x: 2, y: 4 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 4 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 4 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 5 }, frame: 50, surface: 'rock' },
+      { cell: { x: 3, y: 5 }, frame: 51, surface: 'rock' },
+      { cell: { x: 4, y: 5 }, frame: 52, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 32, surface: 'grass' },
       { cell: { x: 3, y: 3 }, frame: 33, surface: 'grass' },
       { cell: { x: 4, y: 3 }, frame: 34, surface: 'grass' },
@@ -445,7 +449,8 @@ describe('grass placement model', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
     })).toEqual([
-      { cell: { x: 2, y: 7 }, frame: 53, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 8 }, frame: 53, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
       { cell: { x: 2, y: 5 }, frame: 26, surface: 'grass' },
@@ -457,9 +462,12 @@ describe('grass placement model', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
     })).toEqual([
-      { cell: { x: 2, y: 7 }, frame: 50, surface: 'rock' },
-      { cell: { x: 3, y: 7 }, frame: 51, surface: 'rock' },
-      { cell: { x: 4, y: 7 }, frame: 52, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 7 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 7 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 8 }, frame: 50, surface: 'rock' },
+      { cell: { x: 3, y: 8 }, frame: 51, surface: 'rock' },
+      { cell: { x: 4, y: 8 }, frame: 52, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
       { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
       { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
@@ -496,9 +504,12 @@ describe('grass placement model', () => {
         ...getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 6 }),
       ],
     })).toEqual([
-      { cell: { x: 2, y: 8 }, frame: 50, surface: 'rock' },
-      { cell: { x: 3, y: 8 }, frame: 51, surface: 'rock' },
-      { cell: { x: 4, y: 8 }, frame: 52, surface: 'rock' },
+      { cell: { x: 2, y: 8 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 8 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 8 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 9 }, frame: 50, surface: 'rock' },
+      { cell: { x: 3, y: 9 }, frame: 51, surface: 'rock' },
+      { cell: { x: 4, y: 9 }, frame: 52, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
       { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
       { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
@@ -524,7 +535,8 @@ describe('grass placement model', () => {
         { x: 2, y: 6 },
       ],
     })).toEqual([
-      { cell: { x: 2, y: 8 }, frame: 53, surface: 'rock' },
+      { cell: { x: 2, y: 8 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 9 }, frame: 53, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
       { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
@@ -540,7 +552,8 @@ describe('grass placement model', () => {
         ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 4 }),
       ],
     })).toEqual([
-      { cell: { x: 2, y: 8 }, frame: 53, surface: 'rock' },
+      { cell: { x: 2, y: 8 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 9 }, frame: 53, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
       { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
@@ -556,8 +569,10 @@ describe('grass placement model', () => {
         { x: 3, y: 3 },
       ],
     })).toEqual([
-      { cell: { x: 2, y: 4 }, frame: 50, surface: 'rock' },
-      { cell: { x: 3, y: 4 }, frame: 52, surface: 'rock' },
+      { cell: { x: 2, y: 4 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 4 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 5 }, frame: 50, surface: 'rock' },
+      { cell: { x: 3, y: 5 }, frame: 52, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 32, surface: 'grass' },
       { cell: { x: 3, y: 3 }, frame: 34, surface: 'grass' },
     ]);
@@ -572,15 +587,21 @@ describe('grass placement model', () => {
     });
 
     expect(pieces).toEqual(expect.arrayContaining([
-      { cell: { x: 2, y: 2 }, frame: 50, surface: 'rock' },
-      { cell: { x: 3, y: 2 }, frame: 51, surface: 'rock' },
-      { cell: { x: 4, y: 2 }, frame: 52, surface: 'rock' },
+      { cell: { x: 2, y: 2 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 2 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 2 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 3 }, frame: 50, surface: 'rock' },
+      { cell: { x: 3, y: 3 }, frame: 51, surface: 'rock' },
+      { cell: { x: 4, y: 3 }, frame: 52, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 5, surface: 'grass' },
       { cell: { x: 3, y: 3 }, frame: 6, surface: 'grass' },
       { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
-      { cell: { x: 2, y: 7 }, frame: 50, surface: 'rock' },
-      { cell: { x: 3, y: 7 }, frame: 51, surface: 'rock' },
-      { cell: { x: 4, y: 7 }, frame: 52, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 41, surface: 'rock' },
+      { cell: { x: 3, y: 7 }, frame: 42, surface: 'rock' },
+      { cell: { x: 4, y: 7 }, frame: 43, surface: 'rock' },
+      { cell: { x: 2, y: 8 }, frame: 50, surface: 'rock' },
+      { cell: { x: 3, y: 8 }, frame: 51, surface: 'rock' },
+      { cell: { x: 4, y: 8 }, frame: 52, surface: 'rock' },
     ]));
   });
 
@@ -594,7 +615,8 @@ describe('grass placement model', () => {
     } as Parameters<typeof getSecondLayerTerrainPieces>[0] & { baseCells: Array<{ x: number; y: number }> };
 
     expect(getSecondLayerTerrainPieces(placement)).toEqual([
-      { cell: { x: 2, y: 7 }, frame: 53, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 8 }, frame: 53, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
       { cell: { x: 2, y: 5 }, frame: 26, surface: 'grass' },
@@ -627,7 +649,8 @@ describe('grass placement model', () => {
         { x: 2, y: 4 },
       ],
     })).toEqual([
-      { cell: { x: 2, y: 6 }, frame: 53, surface: 'rock' },
+      { cell: { x: 2, y: 6 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 7 }, frame: 53, surface: 'rock' },
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 26, surface: 'grass' },
       { cell: { x: 2, y: 5 }, frame: 35, surface: 'grass' },
