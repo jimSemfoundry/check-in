@@ -63,17 +63,17 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
   1: 6,
   2: 16,
   3: 7,
-  4: 24,
+  4: 33,
   5: 33,
-  6: 25,
+  6: 34,
   7: 34,
   8: 14,
   9: 5,
   10: 17,
   11: 8,
-  12: 23,
+  12: 32,
   13: 32,
-  14: 26,
+  14: 35,
   15: 35,
 };
 
@@ -388,10 +388,7 @@ export function getSecondLayerTerrainPieces(args: {
     .sort(compareCells)
     .map((cell) => ({
       cell,
-      frame: secondLayerGrassFramesByOpenEdgeMask[getOpenEdgeMask({
-        cell,
-        occupiedCells: args.occupiedCells,
-      })],
+      frame: getSecondLayerGrassFrame(cell, occupiedCellKeys),
       surface: 'grass' as const,
     }));
   const bottomEdgeCells = [...args.occupiedCells]
@@ -409,9 +406,21 @@ export function getSecondLayerTerrainPieces(args: {
 
   return [
     ...getSecondLayerRockPieces(rockSourceCells),
-    ...getSecondLayerFrontPieces(generatedFrontCells),
     ...frontPieces,
     ...topPieces,
+    ...getSecondLayerFrontPieces(generatedFrontCells),
+  ];
+}
+
+function getSecondLayerGrassFrame(cell: GridCell, occupiedCellKeys: Set<string>) {
+  const hasTop = occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 }));
+  const hasBottom = occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 }));
+  const openEdgeMask = getOpenEdgeMaskFromOccupiedCellKeys(cell, occupiedCellKeys);
+
+  return secondLayerGrassFramesByOpenEdgeMask[
+    hasTop && !hasBottom
+      ? openEdgeMask & ~4
+      : openEdgeMask
   ];
 }
 
@@ -525,10 +534,14 @@ function getOpenEdgeMask(args: {
   occupiedCells: GridCell[];
 }) {
   const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
-  const top = !occupied.has(`${args.cell.x},${args.cell.y - 1}`);
-  const right = !occupied.has(`${args.cell.x + 1},${args.cell.y}`);
-  const bottom = !occupied.has(`${args.cell.x},${args.cell.y + 1}`);
-  const left = !occupied.has(`${args.cell.x - 1},${args.cell.y}`);
+  return getOpenEdgeMaskFromOccupiedCellKeys(args.cell, occupied);
+}
+
+function getOpenEdgeMaskFromOccupiedCellKeys(cell: GridCell, occupiedCellKeys: Set<string>) {
+  const top = !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 }));
+  const right = !occupiedCellKeys.has(getCellKey({ x: cell.x + 1, y: cell.y }));
+  const bottom = !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 }));
+  const left = !occupiedCellKeys.has(getCellKey({ x: cell.x - 1, y: cell.y }));
   const openEdgeMask = (top ? 1 : 0)
     | (right ? 2 : 0)
     | (bottom ? 4 : 0)
