@@ -330,9 +330,13 @@ export function placeGrassPatch(args: {
   anchor: GridCell;
   grid: GridSize;
   patches: GrassPatch[];
+  blockedCells?: GridCell[];
   availableCells?: GridCell[];
 }) {
-  const occupiedCells = args.patches.flatMap((patch) => patch.cells);
+  const occupiedCells = [
+    ...args.patches.flatMap((patch) => patch.cells),
+    ...(args.blockedCells ?? []),
+  ];
 
   if (!canPlaceGrassShape({
     shape: args.shape,

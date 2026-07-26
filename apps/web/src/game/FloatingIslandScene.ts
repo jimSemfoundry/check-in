@@ -59,6 +59,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   private hudSlotItems: Phaser.GameObjects.Image[] = [];
   private hudSlotCursor?: Phaser.GameObjects.Image;
   private selectedHudSlotIndex?: number;
+  private islandPatches: GrassPatch[] = [];
   private grassPatches: GrassPatch[] = [];
   private secondLayerPatches: GrassPatch[] = [];
   private availableOverlayCells: GridCell[] = [];
@@ -103,10 +104,8 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.secondLayerRoot = undefined;
     this.occupiedCellRoot = undefined;
     this.previewRoot = undefined;
-    this.grassPatches = seaLevelScenePlan.initialGrassPatches.map((patch) => ({
-      ...patch,
-      cells: patch.cells.map((cell) => ({ ...cell })),
-    }));
+    this.islandPatches = cloneGrassPatches(seaLevelScenePlan.initialIslandPatches);
+    this.grassPatches = cloneGrassPatches(seaLevelScenePlan.initialGrassPatches);
     this.secondLayerPatches = [];
     this.availableOverlayCells = [];
     this.nextGrassPatchId = 1;
@@ -382,6 +381,7 @@ export class FloatingIslandScene extends Phaser.Scene {
         anchor,
         grid: seaLevelScenePlan.grid,
         patches: this.grassPatches,
+        blockedCells: this.getOccupiedIslandCells(),
         availableCells: this.availableOverlayCells,
       });
 
@@ -398,7 +398,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       anchor,
       grid: seaLevelScenePlan.grid,
       patches: this.secondLayerPatches,
-      baseCells: this.getOccupiedGrassCells(),
+      baseCells: this.getOccupiedBaseCells(),
     });
 
     if (nextPatches === this.secondLayerPatches) return false;
@@ -418,18 +418,24 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
+    const islandCells = this.getOccupiedIslandCells();
     const baseCells = this.getOccupiedGrassCells();
+    const occupiedBaseCells = this.getOccupiedBaseCells();
     const secondLayerCells = this.getOccupiedSecondLayerCells();
     const selectedLayerCells = this.getSelectedTerrainTool()?.layer === 'second'
       ? secondLayerCells
-      : baseCells;
+      : occupiedBaseCells;
 
-    for (const cell of getGrassFoamCells(baseCells)) {
+    for (const cell of getGrassFoamCells(occupiedBaseCells)) {
       this.waterFoamRoot.add(this.createWaterFoamSprite(cell, gridLeft, gridTop));
     }
 
-    for (const piece of getIslandTerrainPieces({ occupiedCells: baseCells })) {
+    for (const piece of getIslandTerrainPieces({ occupiedCells: islandCells })) {
       this.grassRoot.add(this.createTerrainPiece(piece, gridLeft, gridTop, 1));
+    }
+
+    for (const cell of baseCells) {
+      this.grassRoot.add(this.createGrassTile(cell, baseCells, gridLeft, gridTop, 1));
     }
 
     for (const piece of getSecondLayerTerrainPieces({ occupiedCells: secondLayerCells })) {
@@ -506,7 +512,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     const previewCells = getGrassShapeCells(tool.shape, anchor);
     const occupiedCells = tool.layer === 'second'
       ? this.getOccupiedSecondLayerCells()
-      : this.getOccupiedGrassCells();
+      : this.getOccupiedBaseCells();
     const previewCellStates = getGrassPlacementPreviewCells({
       shape: tool.shape,
       anchor,
@@ -572,14 +578,14 @@ export class FloatingIslandScene extends Phaser.Scene {
   private getBaseAvailableCells() {
     return getGrassMapCells({
       grid: seaLevelScenePlan.grid,
-      occupiedCells: this.getOccupiedGrassCells(),
+      occupiedCells: this.getOccupiedBaseCells(),
       marginCells: GRASS_MAP_MARGIN_CELLS,
     });
   }
 
   private getAvailableOverlayCells() {
     if (this.getSelectedTerrainTool()?.layer === 'second') {
-      return this.getOccupiedGrassCells();
+      return this.getOccupiedBaseCells();
     }
 
     return this.getBaseAvailableCells();
@@ -587,6 +593,14 @@ export class FloatingIslandScene extends Phaser.Scene {
 
   private getOccupiedGrassCells() {
     return this.grassPatches.flatMap((patch) => patch.cells);
+  }
+
+  private getOccupiedIslandCells() {
+    return this.islandPatches.flatMap((patch) => patch.cells);
+  }
+
+  private getOccupiedBaseCells() {
+    return [...this.getOccupiedIslandCells(), ...this.getOccupiedGrassCells()];
   }
 
   private getOccupiedSecondLayerCells() {
@@ -709,4 +723,11 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.hudRoot.setScale(hudTransform.scale);
     this.hudRoot.setPosition(hudTransform.x, hudTransform.y);
   }
+}
+
+function cloneGrassPatches(patches: readonly GrassPatch[]) {
+  return patches.map((patch) => ({
+    ...patch,
+    cells: patch.cells.map((cell) => ({ ...cell })),
+  }));
 }

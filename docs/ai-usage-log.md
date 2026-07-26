@@ -263,3 +263,12 @@
 - 测试过程：先把第一层 3x3 岛测试改为期望岩石上移且不包含 generated front grass，观察到旧实现多出 `32/33/34` 并且岩石 y 坐标下移的失败，再修改生产逻辑使测试通过。
 - 验证：目标测试和相关场景测试已通过；本地 Playwright 桌面 1280x720 与移动 390x844 均渲染无中间草前脸的海岛，加载 `Tilemap_color1.png` 和 `Water Foam.png`，未请求 `Tilemap_color4.png` 或 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-26：将新海岛绘制从前四个草地工具拆出
+
+- 问题：用户指出需求是“画个新”的带岩石海岛，不是修改前四个普通草地工具。
+- 根因：默认海岛被放进 `initialGrassPatches`，场景渲染又把全部第一层 `baseCells` 都交给 `getIslandTerrainPieces()`，导致前四个 HUD 草地也被同一套岩石海岛 profile 影响。
+- AI 贡献：新增独立的 `initialIslandPatches` 保存默认带岩石海岛；`initialGrassPatches` 恢复为普通草地列表。渲染时海岛 patch 单独走 `getIslandTerrainPieces()`，前四个草地 patch 继续走 `createGrassTile()` 和 `getGrassTerrainFrame()`；普通草地放置会把独立海岛格子作为占用格，避免覆盖新海岛。
+- 测试过程：先把场景计划测试改为要求海岛与普通草地分离，并新增普通草地不能覆盖独立海岛格的失败测试；观察到旧实现仍把海岛放在 `initialGrassPatches` 且允许覆盖，再修改生产逻辑使测试通过。
+- 验证：目标测试与 typecheck 已通过；Playwright 本地桌面和移动截图均渲染独立带岩石海岛，加载 `Tilemap_color1.png` 与 `Water Foam.png`，未请求 `Tilemap_color4.png` 或 `Shadow.png`，无 console/request error，帧差确认水浪动画继续播放；截图已更新。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

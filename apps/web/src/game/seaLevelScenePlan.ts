@@ -7,7 +7,8 @@ export const seaLevelScenePlan = {
     columns: 12,
     rows: 8,
   },
-  initialGrassPatches: [
+  initialGrassPatches: [] satisfies GrassPatch[],
+  initialIslandPatches: [
     {
       id: 'initial-island',
       shapeKey: 'nine',

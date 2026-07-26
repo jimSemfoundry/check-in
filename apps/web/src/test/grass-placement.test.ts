@@ -277,6 +277,19 @@ describe('grass placement model', () => {
     })).toBe(patches);
   });
 
+  it('blocks grass placement on separate prebuilt island cells', () => {
+    const patches: Array<ReturnType<typeof placeGrassPatch>[number]> = [];
+
+    expect(placeGrassPatch({
+      id: 'grass-over-island',
+      shape: grassShapes.one,
+      anchor: { x: 2, y: 1 },
+      grid: { columns: 6, rows: 6 },
+      patches,
+      blockedCells: [{ x: 2, y: 1 }],
+    })).toBe(patches);
+  });
+
   it('allows grass placement without adjacency to existing grass', () => {
     const patches = placeGrassPatch({
       id: 'first',
