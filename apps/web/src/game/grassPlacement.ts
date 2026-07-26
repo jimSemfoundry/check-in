@@ -467,16 +467,21 @@ type RockRowType = 'wall' | 'bottom';
 function getRaisedTerrainPieces(terrainCells: GridCell[], rockProfile: RockProfile = 'bottom-only') {
   const occupiedCells = getUniqueCells(terrainCells);
   const occupiedCellKeys = new Set(occupiedCells.map(getCellKey));
+  const bottomEdgeCells = getRaisedTerrainBottomEdgeCells(occupiedCells);
+  const frontSourceCellKeys = new Set(
+    bottomEdgeCells
+      .filter((cell) => occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 })))
+      .map(getCellKey),
+  );
   const grassPieces = [...occupiedCells]
     .sort(compareCells)
     .map((cell) => ({
       cell,
       frame: secondLayerGrassFramesByOpenEdgeMask[
-        getOpenEdgeMaskFromOccupiedCellKeys(cell, occupiedCellKeys)
+        getRaisedTerrainGrassOpenEdgeMask(cell, occupiedCellKeys, frontSourceCellKeys, rockProfile)
       ],
       surface: 'grass' as const,
     }));
-  const bottomEdgeCells = getRaisedTerrainBottomEdgeCells(occupiedCells);
   const shouldGenerateFrontCells = rockProfile === 'wall-only'
     || rockProfile === 'covered-wall'
     || rockProfile === 'bottom-only';
@@ -489,10 +494,25 @@ function getRaisedTerrainPieces(terrainCells: GridCell[], rockProfile: RockProfi
 
   return [
     ...getSecondLayerRockPieces(rockSourceCells, rockProfile),
+    ...(shouldGenerateFrontCells ? getSecondLayerFrontPieces(generatedFrontCells) : []),
     ...frontPieces,
     ...topPieces,
-    ...(shouldGenerateFrontCells ? getSecondLayerFrontPieces(generatedFrontCells) : []),
   ];
+}
+
+function getRaisedTerrainGrassOpenEdgeMask(
+  cell: GridCell,
+  occupiedCellKeys: Set<string>,
+  frontSourceCellKeys: Set<string>,
+  rockProfile: RockProfile,
+) {
+  const openEdgeMask = getOpenEdgeMaskFromOccupiedCellKeys(cell, occupiedCellKeys);
+
+  if (rockProfile !== 'wall-only' || !frontSourceCellKeys.has(getCellKey(cell))) {
+    return openEdgeMask;
+  }
+
+  return openEdgeMask & ~4;
 }
 
 function getRaisedTerrainRockSourceCells(terrainCells: GridCell[], rockProfile: RockProfile) {
