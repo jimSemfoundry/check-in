@@ -77,6 +77,8 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
   15: 35,
 };
 
+const secondLayerFrontGrassFrames = new Set([32, 33, 34, 35]);
+
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
   'three-horizontal': { key: 'three-horizontal', width: 3, height: 1 },
@@ -395,10 +397,13 @@ export function getSecondLayerTerrainPieces(args: {
   const bottomEdgeCells = [...args.occupiedCells]
     .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
     .sort(compareCells);
+  const frontPieces = grassPieces.filter((piece) => secondLayerFrontGrassFrames.has(piece.frame));
+  const topPieces = grassPieces.filter((piece) => !secondLayerFrontGrassFrames.has(piece.frame));
 
   return [
     ...getSecondLayerRockPieces(bottomEdgeCells),
-    ...grassPieces,
+    ...frontPieces,
+    ...topPieces,
   ];
 }
 
