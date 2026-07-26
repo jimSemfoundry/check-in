@@ -281,3 +281,11 @@
 - 测试过程：新增 `prebuilt-island` 测试覆盖箭头图对应的四段合并输出；保留现有普通草地和二层地形测试边界。
 - 验证：`pnpm --filter web test` 75/75 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面与移动截图均渲染新的第一层合并海岛，`Tilemap_color1.png`、`Water Foam.png` 正常加载，底部 banner 视觉保持原状，水浪动画继续播放。
 - 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。
+
+## 2026-07-26：移除默认第一层海岛
+
+- 任务摘要：用户要求“把岛去掉”。
+- AI 贡献：将 `seaLevelScenePlan.initialIslandPatches` 改为空数组，默认 `/game` 不再渲染第一层预制海岛；保留预制海岛模块以供后续需要时复用。HUD banner/slots 未修改。
+- 测试过程：先把场景计划测试改为期望没有默认海岛，观察到旧配置仍包含 `initial-island` 的失败，再清空默认岛配置使测试通过。
+- 验证：`pnpm --filter web test` 75/75 通过；`pnpm --filter web lint`、`pnpm --filter web typecheck` 和 `pnpm --filter web build` 通过。Playwright 本地桌面与移动截图确认岛已消失，底部 banner 保持显示；无 console/request error。
+- 隐私检查：未记录访问密钥、Token、数据库连接串或其他秘密信息。

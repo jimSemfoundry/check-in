@@ -8,24 +8,7 @@ export const seaLevelScenePlan = {
     rows: 8,
   },
   initialGrassPatches: [] satisfies GrassPatch[],
-  initialIslandPatches: [
-    {
-      id: 'initial-island',
-      shapeKey: 'nine',
-      anchor: { x: 4, y: 1 },
-      cells: [
-        { x: 4, y: 1 },
-        { x: 5, y: 1 },
-        { x: 6, y: 1 },
-        { x: 4, y: 2 },
-        { x: 5, y: 2 },
-        { x: 6, y: 2 },
-        { x: 4, y: 3 },
-        { x: 5, y: 3 },
-        { x: 6, y: 3 },
-      ],
-    },
-  ] satisfies GrassPatch[],
+  initialIslandPatches: [] satisfies GrassPatch[],
   grassTerrainFrames: {
     none: 10,
     top: 1,
