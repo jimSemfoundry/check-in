@@ -63,17 +63,17 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
   1: 6,
   2: 16,
   3: 7,
-  4: 33,
+  4: 24,
   5: 33,
-  6: 34,
+  6: 25,
   7: 34,
   8: 14,
   9: 5,
   10: 17,
   11: 8,
-  12: 32,
+  12: 23,
   13: 32,
-  14: 35,
+  14: 26,
   15: 35,
 };
 
@@ -388,7 +388,9 @@ export function getSecondLayerTerrainPieces(args: {
     .sort(compareCells)
     .map((cell) => ({
       cell,
-      frame: getSecondLayerGrassFrame(cell, occupiedCellKeys),
+      frame: secondLayerGrassFramesByOpenEdgeMask[
+        getOpenEdgeMaskFromOccupiedCellKeys(cell, occupiedCellKeys)
+      ],
       surface: 'grass' as const,
     }));
   const bottomEdgeCells = [...args.occupiedCells]
@@ -409,18 +411,6 @@ export function getSecondLayerTerrainPieces(args: {
     ...frontPieces,
     ...topPieces,
     ...getSecondLayerFrontPieces(generatedFrontCells),
-  ];
-}
-
-function getSecondLayerGrassFrame(cell: GridCell, occupiedCellKeys: Set<string>) {
-  const hasTop = occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y - 1 }));
-  const hasBottom = occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 }));
-  const openEdgeMask = getOpenEdgeMaskFromOccupiedCellKeys(cell, occupiedCellKeys);
-
-  return secondLayerGrassFramesByOpenEdgeMask[
-    hasTop && !hasBottom
-      ? openEdgeMask & ~4
-      : openEdgeMask
   ];
 }
 
