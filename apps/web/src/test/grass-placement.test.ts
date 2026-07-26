@@ -645,6 +645,32 @@ describe('grass placement model', () => {
     ]);
   });
 
+  it('merges second-layer vertical 1x3 and 1x1 when the lower tile sits below the old rock row', () => {
+    expect(getSecondLayerTerrainPieces({
+      occupiedCells: [
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+        { x: 2, y: 8 },
+      ],
+    })).toEqual([
+      { cell: { x: 2, y: 10 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 7 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 8 }, frame: 26, surface: 'grass' },
+      { cell: { x: 2, y: 9 }, frame: 35, surface: 'grass' },
+    ]);
+    expect(getSecondLayerShadowPieces({
+      occupiedCells: [
+        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+        { x: 2, y: 8 },
+      ],
+    })).toEqual([
+      { cell: { x: 2, y: 11 }, widthCells: 1 },
+    ]);
+  });
+
   it('deduplicates overlapping second-layer brush cells before choosing merged frames', () => {
     expect(getSecondLayerTerrainPieces({
       occupiedCells: [

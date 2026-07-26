@@ -415,13 +415,28 @@ export function getSecondLayerTerrainPieces(args: {
 
 export function getSecondLayerMergedCells(occupiedCells: GridCell[]) {
   const uniqueCells = getUniqueCells(occupiedCells);
-  const occupiedCellKeys = new Set(uniqueCells.map(getCellKey));
-  const bridgeCells = uniqueCells
-    .filter((cell) => (
-      !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 }))
-      && occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 2 }))
-    ))
-    .map((cell) => ({ x: cell.x, y: cell.y + 1 }));
+  const columns = new Map<number, GridCell[]>();
+  const bridgeCells: GridCell[] = [];
+
+  for (const cell of uniqueCells) {
+    columns.set(cell.x, [...(columns.get(cell.x) ?? []), cell]);
+  }
+
+  for (const columnCells of columns.values()) {
+    const sortedColumnCells = [...columnCells].sort(compareCells);
+
+    for (let index = 0; index < sortedColumnCells.length - 1; index += 1) {
+      const topCell = sortedColumnCells[index];
+      const lowerCell = sortedColumnCells[index + 1];
+      const gap = lowerCell.y - topCell.y;
+
+      if (gap <= 1 || gap > 3) continue;
+
+      for (let y = topCell.y + 1; y < lowerCell.y; y += 1) {
+        bridgeCells.push({ x: topCell.x, y });
+      }
+    }
+  }
 
   return getUniqueCells([...uniqueCells, ...bridgeCells]).sort(compareCells);
 }
