@@ -13,6 +13,7 @@ import {
   getVisibleGrassFoamCells,
   getIslandTerrainPieces,
   getSecondLayerTerrainPieces,
+  getSecondLayerTerrainPieceRenderOffsetY,
   getSecondLayerShadowPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
@@ -478,6 +479,11 @@ describe('grass placement model', () => {
     })).toEqual([
       { cell: { x: 3, y: 5 }, widthCells: 3 },
     ]);
+  });
+
+  it('renders second-layer rock with upward overlap under the grass front', () => {
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ surface: 'rock' })).toBe(-14);
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ surface: 'grass' })).toBe(0);
   });
 
   it('renders second-layer vertical 1x3 as the tall strip, front tile, and narrow rock height', () => {

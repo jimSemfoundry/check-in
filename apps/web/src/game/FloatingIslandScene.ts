@@ -11,6 +11,7 @@ import {
   getGrassTerrainFrame,
   getSecondLayerMergedCells,
   getSecondLayerTerrainPieces,
+  getSecondLayerTerrainPieceRenderOffsetY,
   getSecondLayerShadowPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
@@ -465,7 +466,13 @@ export class FloatingIslandScene extends Phaser.Scene {
     }
 
     for (const piece of getSecondLayerTerrainPieces({ occupiedCells: secondLayerCells })) {
-      this.secondLayerRoot.add(this.createTerrainPiece(piece, gridLeft, gridTop, 1));
+      this.secondLayerRoot.add(this.createTerrainPiece(
+        piece,
+        gridLeft,
+        gridTop,
+        1,
+        getSecondLayerTerrainPieceRenderOffsetY(piece),
+      ));
     }
 
     for (const cell of selectedLayerCells) {
@@ -484,10 +491,11 @@ export class FloatingIslandScene extends Phaser.Scene {
     gridLeft: number,
     gridTop: number,
     alpha: number,
+    offsetY = 0,
   ) {
     const tile = this.add.image(
       gridLeft + piece.cell.x * TILE_SIZE + TILE_SIZE / 2,
-      gridTop + piece.cell.y * TILE_SIZE + TILE_SIZE / 2,
+      gridTop + piece.cell.y * TILE_SIZE + TILE_SIZE / 2 + offsetY,
       'terrain-tiles',
       piece.frame,
     );
