@@ -9,14 +9,17 @@ import {
   getGrassMapCells,
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
-  getGrassShapeForHudSlot,
   getGrassTerrainFrame,
+  getSecondLayerTerrainFrame,
+  getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
   getToggledGrassSlotIndex,
   placeGrassPatch,
+  placeSecondLayerPatch,
   type GrassShape,
   type GrassPatch,
   type GridCell,
+  type TerrainTool,
 } from './grassPlacement';
 import { seaLevelScenePlan } from './seaLevelScenePlan';
 import { createWaterFoamAnimation, WATER_FOAM_ANIMATION_KEY } from './waterFoam';
@@ -45,6 +48,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   private availableCellRoot?: Phaser.GameObjects.Container;
   private waterFoamRoot?: Phaser.GameObjects.Container;
   private grassRoot?: Phaser.GameObjects.Container;
+  private secondLayerRoot?: Phaser.GameObjects.Container;
   private occupiedCellRoot?: Phaser.GameObjects.Container;
   private previewRoot?: Phaser.GameObjects.Container;
   private hudRoot?: Phaser.GameObjects.Container;
@@ -54,8 +58,10 @@ export class FloatingIslandScene extends Phaser.Scene {
   private hudSlotCursor?: Phaser.GameObjects.Image;
   private selectedHudSlotIndex?: number;
   private grassPatches: GrassPatch[] = [];
+  private secondLayerPatches: GrassPatch[] = [];
   private availableOverlayCells: GridCell[] = [];
   private nextGrassPatchId = 1;
+  private nextSecondLayerPatchId = 1;
 
   constructor() {
     super('floating-island');
@@ -92,11 +98,14 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.availableCellRoot = undefined;
     this.waterFoamRoot = undefined;
     this.grassRoot = undefined;
+    this.secondLayerRoot = undefined;
     this.occupiedCellRoot = undefined;
     this.previewRoot = undefined;
     this.grassPatches = [];
+    this.secondLayerPatches = [];
     this.availableOverlayCells = [];
     this.nextGrassPatchId = 1;
+    this.nextSecondLayerPatchId = 1;
 
     this.createSea();
     createWaterFoamAnimation(this, WATER_FOAM_KEY, {
@@ -201,11 +210,13 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.availableCellRoot = this.add.container(0, 0);
     this.waterFoamRoot = this.add.container(0, 0);
     this.grassRoot = this.add.container(0, 0);
+    this.secondLayerRoot = this.add.container(0, 0);
     this.occupiedCellRoot = this.add.container(0, 0);
     this.previewRoot = this.add.container(0, 0);
     this.addToWorld(this.availableCellRoot);
     this.addToWorld(this.waterFoamRoot);
     this.addToWorld(this.grassRoot);
+    this.addToWorld(this.secondLayerRoot);
     this.addToWorld(this.previewRoot);
     this.addToWorld(this.occupiedCellRoot);
     this.renderAvailableCells();
@@ -219,42 +230,31 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private handleWorldPointerDown(pointer: Phaser.Input.Pointer) {
-    if (!this.worldRoot || !this.grassRoot || !this.occupiedCellRoot) return;
+    if (!this.worldRoot || !this.grassRoot || !this.secondLayerRoot || !this.occupiedCellRoot) return;
 
     const canvasPoint = this.getCanvasPoint(pointer);
     if (!canvasPoint) return;
 
     if (this.handleHudPoint(canvasPoint)) return;
 
-    const shape = getGrassShapeForHudSlot(this.selectedHudSlotIndex);
-    if (!shape) return;
+    const tool = this.getSelectedTerrainTool();
+    if (!tool) return;
 
-    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, shape);
+    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, tool.shape);
 
     if (!anchor) return;
 
-    const nextPatches = placeGrassPatch({
-      id: `grass-${this.nextGrassPatchId}`,
-      shape,
-      anchor,
-      grid: seaLevelScenePlan.grid,
-      patches: this.grassPatches,
-      availableCells: this.availableOverlayCells,
-    });
+    if (!this.placeTerrainPatch(tool, anchor)) return;
 
-    if (nextPatches === this.grassPatches) return;
-
-    this.nextGrassPatchId += 1;
-    this.grassPatches = nextPatches;
-    this.renderGrassPatches();
-    this.renderPreviewAtAnchor(anchor, shape);
+    this.renderTerrainPatches();
+    this.renderPreviewAtAnchor(anchor, tool);
   }
 
   private handleWorldPointerMove(pointer: Phaser.Input.Pointer) {
     if (!this.worldRoot || !this.previewRoot) return;
 
-    const shape = getGrassShapeForHudSlot(this.selectedHudSlotIndex);
-    if (!shape) {
+    const tool = this.getSelectedTerrainTool();
+    if (!tool) {
       this.clearPreview();
       this.renderAvailableCells();
       return;
@@ -267,14 +267,14 @@ export class FloatingIslandScene extends Phaser.Scene {
       return;
     }
 
-    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, shape);
+    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, tool.shape);
     if (!anchor) {
       this.clearPreview();
       this.renderAvailableCells();
       return;
     }
 
-    this.renderPreviewAtAnchor(anchor, shape);
+    this.renderPreviewAtAnchor(anchor, tool);
   }
 
   private handleHudPoint(canvasPoint: { x: number; y: number }) {
@@ -298,6 +298,10 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.clearPreview();
     this.renderAvailableCells();
     this.layoutHud(this.scale.width || DESIGN_WIDTH, this.scale.height || DESIGN_HEIGHT);
+  }
+
+  private getSelectedTerrainTool() {
+    return getTerrainToolForHudSlot(this.selectedHudSlotIndex);
   }
 
   private getCenteredAnchorFromCanvasPoint(canvasPoint: { x: number; y: number }, shape: GrassShape) {
@@ -364,34 +368,81 @@ export class FloatingIslandScene extends Phaser.Scene {
     return { x: touch.clientX, y: touch.clientY };
   }
 
-  private renderGrassPatches() {
-    if (!this.waterFoamRoot || !this.grassRoot || !this.occupiedCellRoot) return;
+  private placeTerrainPatch(tool: TerrainTool, anchor: GridCell) {
+    if (tool.layer === 'base') {
+      const nextPatches = placeGrassPatch({
+        id: `grass-${this.nextGrassPatchId}`,
+        shape: tool.shape,
+        anchor,
+        grid: seaLevelScenePlan.grid,
+        patches: this.grassPatches,
+        availableCells: this.availableOverlayCells,
+      });
+
+      if (nextPatches === this.grassPatches) return false;
+
+      this.nextGrassPatchId += 1;
+      this.grassPatches = nextPatches;
+      return true;
+    }
+
+    const nextPatches = placeSecondLayerPatch({
+      id: `second-layer-${this.nextSecondLayerPatchId}`,
+      shape: tool.shape,
+      anchor,
+      grid: seaLevelScenePlan.grid,
+      patches: this.secondLayerPatches,
+      baseCells: this.getOccupiedGrassCells(),
+    });
+
+    if (nextPatches === this.secondLayerPatches) return false;
+
+    this.nextSecondLayerPatchId += 1;
+    this.secondLayerPatches = nextPatches;
+    return true;
+  }
+
+  private renderTerrainPatches() {
+    if (!this.waterFoamRoot || !this.grassRoot || !this.secondLayerRoot || !this.occupiedCellRoot) return;
 
     this.waterFoamRoot.removeAll(true);
     this.grassRoot.removeAll(true);
+    this.secondLayerRoot.removeAll(true);
     this.occupiedCellRoot.removeAll(true);
 
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
-    const occupiedCells = this.getOccupiedGrassCells();
+    const baseCells = this.getOccupiedGrassCells();
+    const secondLayerCells = this.getOccupiedSecondLayerCells();
+    const selectedLayerCells = this.getSelectedTerrainTool()?.layer === 'second'
+      ? secondLayerCells
+      : baseCells;
 
-    for (const cell of getGrassFoamCells(occupiedCells)) {
+    for (const cell of getGrassFoamCells(baseCells)) {
       this.waterFoamRoot.add(this.createWaterFoamSprite(cell, gridLeft, gridTop));
     }
 
-    for (const cell of occupiedCells) {
-      this.grassRoot.add(this.createGrassTile(cell, occupiedCells, gridLeft, gridTop, 1));
+    for (const cell of baseCells) {
+      this.grassRoot.add(this.createTerrainTile('base', cell, baseCells, gridLeft, gridTop, 1));
+    }
+
+    for (const cell of secondLayerCells) {
+      this.secondLayerRoot.add(this.createTerrainTile('second', cell, secondLayerCells, gridLeft, gridTop, 1));
+    }
+
+    for (const cell of selectedLayerCells) {
       this.occupiedCellRoot.add(this.createCellStateRectangle(
         cell,
         gridLeft,
         gridTop,
         'occupied',
-        occupiedCells,
+        selectedLayerCells,
       ));
     }
   }
 
-  private createGrassTile(
+  private createTerrainTile(
+    layer: TerrainTool['layer'],
     cell: GridCell,
     occupiedCells: GridCell[],
     gridLeft: number,
@@ -402,7 +453,9 @@ export class FloatingIslandScene extends Phaser.Scene {
       gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2,
       gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2,
       'terrain-tiles',
-      getGrassTerrainFrame({ cell, occupiedCells }),
+      layer === 'second'
+        ? getSecondLayerTerrainFrame({ cell, occupiedCells })
+        : getGrassTerrainFrame({ cell, occupiedCells }),
     );
     tile.setDisplaySize(TILE_SIZE + 1, TILE_SIZE + 1);
     tile.setAlpha(alpha);
@@ -423,18 +476,20 @@ export class FloatingIslandScene extends Phaser.Scene {
     return sprite;
   }
 
-  private renderPreviewAtAnchor(anchor: { x: number; y: number }, shape: GrassShape) {
+  private renderPreviewAtAnchor(anchor: { x: number; y: number }, tool: TerrainTool) {
     if (!this.previewRoot) return;
 
     this.clearPreview();
 
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
-    const previewCells = getGrassShapeCells(shape, anchor);
-    const occupiedCells = this.getOccupiedGrassCells();
+    const previewCells = getGrassShapeCells(tool.shape, anchor);
+    const occupiedCells = tool.layer === 'second'
+      ? this.getOccupiedSecondLayerCells()
+      : this.getOccupiedGrassCells();
     const previewOccupiedCells = [...occupiedCells, ...previewCells];
     const previewCellStates = getGrassPlacementPreviewCells({
-      shape,
+      shape: tool.shape,
       anchor,
       grid: seaLevelScenePlan.grid,
       occupiedCells,
@@ -444,7 +499,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.renderAvailableCells(this.getAvailableOverlayCells());
 
     for (const { cell, state } of previewCellStates) {
-      const tile = this.createGrassTile(cell, previewOccupiedCells, gridLeft, gridTop, 0.72);
+      const tile = this.createTerrainTile(tool.layer, cell, previewOccupiedCells, gridLeft, gridTop, 0.72);
       if (state === 'blocked') {
         tile.setTint(BLOCKED_PREVIEW_TINT);
       } else {
@@ -465,7 +520,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.previewRoot?.removeAll(true);
   }
 
-  private renderAvailableCells(cells = this.getBaseAvailableCells()) {
+  private renderAvailableCells(cells = this.getAvailableOverlayCells()) {
     if (!this.availableCellRoot) return;
 
     this.availableOverlayCells = cells;
@@ -487,11 +542,19 @@ export class FloatingIslandScene extends Phaser.Scene {
   }
 
   private getAvailableOverlayCells() {
+    if (this.getSelectedTerrainTool()?.layer === 'second') {
+      return this.getOccupiedGrassCells();
+    }
+
     return this.getBaseAvailableCells();
   }
 
   private getOccupiedGrassCells() {
     return this.grassPatches.flatMap((patch) => patch.cells);
+  }
+
+  private getOccupiedSecondLayerCells() {
+    return this.secondLayerPatches.flatMap((patch) => patch.cells);
   }
 
   private createPreviewStateRectangle(

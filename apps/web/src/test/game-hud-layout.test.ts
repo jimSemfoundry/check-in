@@ -46,7 +46,7 @@ describe('game HUD layout', () => {
   });
 
   it('computes an adaptive banner width from the viewport', () => {
-    expect(gameHudLayout.getBannerWidth(1280)).toBe(408);
+    expect(gameHudLayout.getBannerWidth(1280)).toBe(560);
     expect(gameHudLayout.getBannerWidth(390)).toBe(342);
     expect(gameHudLayout.getBannerWidth(320)).toBe(272);
   });
@@ -55,14 +55,14 @@ describe('game HUD layout', () => {
     const desktop = gameHudLayout.getBannerPieceTargets(1280);
     expect(desktop.map((piece) => piece.id)).toEqual([0, 2, 8, 1, 3, 4, 5, 6, 7, 9, 10]);
     expect(desktop.map((piece) => piece.target.x)).toEqual([
-      4, -12, -12, -189, 166, 193, -189, 193, -157, 102, 161,
+      4, -12, -12, -265, 242, 269, -265, 269, -233, 178, 237,
     ]);
     expect(desktop.map((piece) => piece.target.y)).toEqual([
       -24, -56, 8, -56, -56, -56, -24, -24, 15, 8, 16.5,
     ]);
-    expect(desktop.find((piece) => piece.id === 2)?.target.width).toBe(324);
-    expect(desktop.find((piece) => piece.id === 0)?.target.width).toBe(356);
-    expect(desktop.find((piece) => piece.id === 8)?.target.width).toBe(196);
+    expect(desktop.find((piece) => piece.id === 2)?.target.width).toBe(476);
+    expect(desktop.find((piece) => piece.id === 0)?.target.width).toBe(508);
+    expect(desktop.find((piece) => piece.id === 8)?.target.width).toBe(348);
     expect(desktop.find((piece) => piece.id === 0)?.target.height).toBe(32);
 
     const narrow = gameHudLayout.getBannerPieceTargets(320);
@@ -75,81 +75,103 @@ describe('game HUD layout', () => {
     expect(narrow.find((piece) => piece.id === 8)?.target.width).toBe(60);
   });
 
-  it('lays out five composed slots centered inside the banner body', () => {
+  it('lays out eight composed slots centered inside the banner body', () => {
     const desktop = gameHudLayout.getSlotTargets(1280);
-    expect(desktop).toHaveLength(45);
-    expect([...new Set(desktop.map((piece) => piece.slotIndex))]).toEqual([0, 1, 2, 3, 4]);
+    expect(desktop).toHaveLength(72);
+    expect([...new Set(desktop.map((piece) => piece.slotIndex))]).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     expect(desktop.filter((piece) => piece.slotIndex === 0).map((piece) => piece.id)).toEqual([
       1, 2, 3, 4, 5, 6, 7, 8, 9,
     ]);
     expect(desktop.filter((piece) => piece.id === 5).map((piece) => piece.target.x)).toEqual([
-      -132, -66, 0, 66, 132,
+      -203, -145, -87, -29, 29, 87, 145, 203,
     ]);
     expect(desktop.filter((piece) => piece.id === 5).map((piece) => piece.target.y)).toEqual([
-      -24, -24, -24, -24, -24,
+      -24, -24, -24, -24, -24, -24, -24, -24,
     ]);
-    expect(desktop.map((piece) => piece.target.width)).toContain(19.33);
-    expect(desktop.map((piece) => piece.target.height)).toContain(19.33);
+    expect(desktop.map((piece) => piece.target.width)).toContain(17);
+    expect(desktop.map((piece) => piece.target.height)).toContain(17);
 
     const mobile = gameHudLayout.getSlotTargets(320);
     expect(mobile.filter((piece) => piece.id === 5).map((piece) => piece.target.x)).toEqual([
-      -92, -46, 0, 46, 92,
+      -112, -80, -48, -16, 16, 48, 80, 112,
     ]);
-    expect(mobile.map((piece) => piece.target.width)).toContain(12);
-    expect(mobile.map((piece) => piece.target.height)).toContain(12);
+    expect(mobile.map((piece) => piece.target.width)).toContain(9.33);
+    expect(mobile.map((piece) => piece.target.height)).toContain(9.33);
   });
 
   it('places a cursor over the selected slot', () => {
     expect(gameHudLayout.getSlotCursorTarget(1280, 0)).toEqual({
-      x: -132,
+      x: -203,
       y: -24,
-      width: 66,
-      height: 66,
+      width: 58,
+      height: 58,
     });
-    expect(gameHudLayout.getSlotCursorTarget(1280, 2)).toEqual({
-      x: 0,
+    expect(gameHudLayout.getSlotCursorTarget(1280, 3)).toEqual({
+      x: -29,
       y: -24,
-      width: 66,
-      height: 66,
+      width: 58,
+      height: 58,
     });
     expect(gameHudLayout.getSlotCursorTarget(1280, 4)).toEqual({
-      x: 132,
+      x: 29,
       y: -24,
-      width: 66,
-      height: 66,
+      width: 58,
+      height: 58,
     });
-    expect(gameHudLayout.getSlotCursorTarget(320, 4)).toEqual({
-      x: 92,
+    expect(gameHudLayout.getSlotCursorTarget(1280, 7)).toEqual({
+      x: 203,
       y: -24,
-      width: 46,
-      height: 46,
+      width: 58,
+      height: 58,
+    });
+    expect(gameHudLayout.getSlotCursorTarget(320, 7)).toEqual({
+      x: 112,
+      y: -24,
+      width: 32,
+      height: 32,
     });
   });
 
-  it('places the numbered terrain tiles into the first four slots', () => {
+  it('places base and second-layer terrain tiles into the eight slots', () => {
     expect(gameHudLayout.slotItems.map((item) => item.key)).toEqual([
       'hud-terrain-1',
       'hud-terrain-2',
       'hud-terrain-3',
       'hud-terrain-4',
+      'hud-second-terrain-1',
+      'hud-second-terrain-2',
+      'hud-second-terrain-3',
+      'hud-second-terrain-4',
     ]);
     expect(gameHudLayout.slotItems.map((item) => item.source)).toEqual([
       { x: 192, y: 192, width: 64, height: 64 },
       { x: 0, y: 192, width: 192, height: 64 },
       { x: 192, y: 0, width: 64, height: 192 },
       { x: 0, y: 0, width: 192, height: 192 },
+      { x: 512, y: 192, width: 64, height: 64 },
+      { x: 320, y: 192, width: 192, height: 64 },
+      { x: 512, y: 0, width: 64, height: 192 },
+      { x: 320, y: 0, width: 192, height: 192 },
     ]);
     expect(gameHudLayout.getSlotItemTargets(1280)).toEqual([
-      { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: -132, y: -24, width: 35, height: 35 } },
-      { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: -66, y: -24, width: 41, height: 13 } },
-      { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: 0, y: -24, width: 13, height: 41 } },
-      { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: 66, y: -24, width: 41, height: 41 } },
+      { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: -203, y: -24, width: 31, height: 31 } },
+      { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: -145, y: -24, width: 36, height: 12 } },
+      { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: -87, y: -24, width: 12, height: 36 } },
+      { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: -29, y: -24, width: 36, height: 36 } },
+      { slotIndex: 4, key: 'hud-second-terrain-1', source: { x: 512, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: 29, y: -24, width: 31, height: 31 } },
+      { slotIndex: 5, key: 'hud-second-terrain-2', source: { x: 320, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: 87, y: -24, width: 36, height: 12 } },
+      { slotIndex: 6, key: 'hud-second-terrain-3', source: { x: 512, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: 145, y: -24, width: 12, height: 36 } },
+      { slotIndex: 7, key: 'hud-second-terrain-4', source: { x: 320, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: 203, y: -24, width: 36, height: 36 } },
     ]);
     expect(gameHudLayout.getSlotItemTargets(320)).toEqual([
-      { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: -92, y: -24, width: 22, height: 22 } },
-      { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: -46, y: -24, width: 25, height: 8 } },
-      { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: 0, y: -24, width: 8, height: 25 } },
-      { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: 46, y: -24, width: 25, height: 25 } },
+      { slotIndex: 0, key: 'hud-terrain-1', source: { x: 192, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: -112, y: -24, width: 17, height: 17 } },
+      { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: -80, y: -24, width: 20, height: 6 } },
+      { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: -48, y: -24, width: 6, height: 20 } },
+      { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: -16, y: -24, width: 20, height: 20 } },
+      { slotIndex: 4, key: 'hud-second-terrain-1', source: { x: 512, y: 192, width: 64, height: 64 }, displayScale: 0.62, target: { x: 16, y: -24, width: 17, height: 17 } },
+      { slotIndex: 5, key: 'hud-second-terrain-2', source: { x: 320, y: 192, width: 192, height: 64 }, displayScale: 0.72, target: { x: 48, y: -24, width: 20, height: 6 } },
+      { slotIndex: 6, key: 'hud-second-terrain-3', source: { x: 512, y: 0, width: 64, height: 192 }, displayScale: 0.72, target: { x: 80, y: -24, width: 6, height: 20 } },
+      { slotIndex: 7, key: 'hud-second-terrain-4', source: { x: 320, y: 0, width: 192, height: 192 }, displayScale: 0.72, target: { x: 112, y: -24, width: 20, height: 20 } },
     ]);
   });
 
@@ -167,9 +189,10 @@ describe('game HUD layout', () => {
   });
 
   it('finds the selected slot from canvas coordinates', () => {
-    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 508, y: 637 })).toBe(0);
-    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 640, y: 637 })).toBe(2);
-    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 772, y: 637 })).toBe(4);
+    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 437, y: 637 })).toBe(0);
+    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 611, y: 637 })).toBe(3);
+    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 669, y: 637 })).toBe(4);
+    expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 843, y: 637 })).toBe(7);
     expect(gameHudLayout.getSlotIndexAtPoint(1280, 720, { x: 640, y: 300 })).toBeUndefined();
   });
 });

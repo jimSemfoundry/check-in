@@ -64,7 +64,7 @@ type SlotItemTarget = SlotItem & {
 };
 
 const BANNER_PIECE_SCALE = 0.5;
-const MAX_BANNER_WIDTH = 408;
+const MAX_BANNER_WIDTH = 560;
 const HORIZONTAL_MARGIN = 48;
 const LEFT_TOP_WIDTH = 60 * BANNER_PIECE_SCALE;
 const LEFT_BOTTOM_WIDTH = 188 * BANNER_PIECE_SCALE;
@@ -73,9 +73,9 @@ const RIGHT_BOTTOM_WIDTH = (64 + 172) * BANNER_PIECE_SCALE;
 const MIN_BANNER_WIDTH = LEFT_BOTTOM_WIDTH + RIGHT_BOTTOM_WIDTH + 16;
 const HUD_BOTTOM_INSET = 18;
 const HUD_BOTTOM_EXTENT = 41;
-const SLOT_COUNT = 5;
-const MAX_SLOT_STEP = 66;
-const MAX_SLOT_SIZE = 58;
+const SLOT_COUNT = 8;
+const MAX_SLOT_STEP = 58;
+const MAX_SLOT_SIZE = 52;
 const SLOT_CENTER_Y = -24;
 
 const scaled = (value: number) => value * BANNER_PIECE_SCALE;
@@ -111,6 +111,10 @@ const slotItems: SlotItem[] = [
   { slotIndex: 1, key: 'hud-terrain-2', source: { x: 0, y: 192, width: 192, height: 64 }, displayScale: 0.72 },
   { slotIndex: 2, key: 'hud-terrain-3', source: { x: 192, y: 0, width: 64, height: 192 }, displayScale: 0.72 },
   { slotIndex: 3, key: 'hud-terrain-4', source: { x: 0, y: 0, width: 192, height: 192 }, displayScale: 0.72 },
+  { slotIndex: 4, key: 'hud-second-terrain-1', source: { x: 512, y: 192, width: 64, height: 64 }, displayScale: 0.62 },
+  { slotIndex: 5, key: 'hud-second-terrain-2', source: { x: 320, y: 192, width: 192, height: 64 }, displayScale: 0.72 },
+  { slotIndex: 6, key: 'hud-second-terrain-3', source: { x: 512, y: 0, width: 64, height: 192 }, displayScale: 0.72 },
+  { slotIndex: 7, key: 'hud-second-terrain-4', source: { x: 320, y: 0, width: 192, height: 192 }, displayScale: 0.72 },
 ];
 
 function getBannerWidth(viewportWidth: number) {
@@ -130,11 +134,11 @@ function roundLayoutValue(value: number) {
 }
 
 function getSlotStep(viewportWidth: number) {
-  return Math.min(MAX_SLOT_STEP, Math.floor(getBannerWidth(viewportWidth) * 0.1691176471));
+  return Math.min(MAX_SLOT_STEP, Math.floor(getBannerWidth(viewportWidth) / (SLOT_COUNT + 0.5)));
 }
 
 function getSlotSize(viewportWidth: number) {
-  return Math.min(MAX_SLOT_SIZE, Math.floor(getBannerWidth(viewportWidth) * 0.1617647059 - 8));
+  return Math.min(MAX_SLOT_SIZE, Math.floor(getSlotStep(viewportWidth) * 0.88));
 }
 
 function getSlotCenterX(viewportWidth: number, slotIndex: number) {

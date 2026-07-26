@@ -11,6 +11,13 @@ export type GrassShape = {
   height: number;
 };
 
+export type TerrainLayerKey = 'base' | 'second';
+
+export type TerrainTool = {
+  layer: TerrainLayerKey;
+  shape: GrassShape;
+};
+
 export type GridSize = {
   columns: number;
   rows: number;
@@ -56,8 +63,9 @@ const hudSlotGrassShapes: Array<GrassShape | undefined> = [
   grassShapes['three-horizontal'],
   grassShapes['three-vertical'],
   grassShapes.nine,
-  undefined,
 ];
+const HUD_TERRAIN_SLOT_COUNT = 8;
+const SECOND_LAYER_FRAME_OFFSET = 5;
 
 export function getGrassShapeForHudSlot(slotIndex: number | undefined) {
   if (slotIndex === undefined) return undefined;
@@ -65,11 +73,26 @@ export function getGrassShapeForHudSlot(slotIndex: number | undefined) {
   return hudSlotGrassShapes[slotIndex];
 }
 
+export function getTerrainToolForHudSlot(slotIndex: number | undefined): TerrainTool | undefined {
+  if (slotIndex === undefined || slotIndex < 0 || slotIndex >= HUD_TERRAIN_SLOT_COUNT) {
+    return undefined;
+  }
+
+  const shapeIndex = slotIndex % hudSlotGrassShapes.length;
+  const shape = hudSlotGrassShapes[shapeIndex];
+  if (!shape) return undefined;
+
+  return {
+    layer: slotIndex < hudSlotGrassShapes.length ? 'base' : 'second',
+    shape,
+  };
+}
+
 export function getToggledGrassSlotIndex(
   currentSlotIndex: number | undefined,
   nextSlotIndex: number,
 ) {
-  if (!getGrassShapeForHudSlot(nextSlotIndex)) return undefined;
+  if (nextSlotIndex < 0 || nextSlotIndex >= HUD_TERRAIN_SLOT_COUNT) return undefined;
   if (currentSlotIndex === nextSlotIndex) return undefined;
 
   return nextSlotIndex;
@@ -305,6 +328,24 @@ export function placeGrassPatch(args: {
   ];
 }
 
+export function placeSecondLayerPatch(args: {
+  id: string;
+  shape: GrassShape;
+  anchor: GridCell;
+  grid: GridSize;
+  patches: GrassPatch[];
+  baseCells: GridCell[];
+}) {
+  return placeGrassPatch({
+    id: args.id,
+    shape: args.shape,
+    anchor: args.anchor,
+    grid: args.grid,
+    patches: args.patches,
+    availableCells: args.baseCells,
+  });
+}
+
 export function getGrassTerrainFrame(args: {
   cell: GridCell;
   occupiedCells: GridCell[];
@@ -320,6 +361,13 @@ export function getGrassTerrainFrame(args: {
     | (left ? 8 : 0);
 
   return grassTerrainFramesByOpenEdgeMask[openEdgeMask];
+}
+
+export function getSecondLayerTerrainFrame(args: {
+  cell: GridCell;
+  occupiedCells: GridCell[];
+}) {
+  return getGrassTerrainFrame(args) + SECOND_LAYER_FRAME_OFFSET;
 }
 
 export function getGridCellFromWorldPoint(args: {

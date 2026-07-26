@@ -10,11 +10,14 @@ import {
   getGrassPlacementPreviewCells,
   getGrassShapeCells,
   getGrassShapeForHudSlot,
+  getSecondLayerTerrainFrame,
+  getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
   getGrassTerrainFrame,
   getGrassPlacementPreviewState,
   getToggledGrassSlotIndex,
   placeGrassPatch,
+  placeSecondLayerPatch,
 } from '../game/grassPlacement';
 
 describe('grass placement model', () => {
@@ -26,11 +29,26 @@ describe('grass placement model', () => {
     expect(getGrassShapeForHudSlot(4)).toBeUndefined();
   });
 
-  it('toggles grass slot selection off when selecting the active slot again', () => {
+  it('maps the eight HUD slots to base and second layer terrain tools', () => {
+    expect(getTerrainToolForHudSlot(0)).toEqual({ layer: 'base', shape: grassShapes.one });
+    expect(getTerrainToolForHudSlot(1)).toEqual({ layer: 'base', shape: grassShapes['three-horizontal'] });
+    expect(getTerrainToolForHudSlot(2)).toEqual({ layer: 'base', shape: grassShapes['three-vertical'] });
+    expect(getTerrainToolForHudSlot(3)).toEqual({ layer: 'base', shape: grassShapes.nine });
+    expect(getTerrainToolForHudSlot(4)).toEqual({ layer: 'second', shape: grassShapes.one });
+    expect(getTerrainToolForHudSlot(5)).toEqual({ layer: 'second', shape: grassShapes['three-horizontal'] });
+    expect(getTerrainToolForHudSlot(6)).toEqual({ layer: 'second', shape: grassShapes['three-vertical'] });
+    expect(getTerrainToolForHudSlot(7)).toEqual({ layer: 'second', shape: grassShapes.nine });
+    expect(getTerrainToolForHudSlot(8)).toBeUndefined();
+  });
+
+  it('toggles visible terrain slot selection off when selecting the active slot again', () => {
     expect(getToggledGrassSlotIndex(undefined, 0)).toBe(0);
     expect(getToggledGrassSlotIndex(1, 0)).toBe(0);
     expect(getToggledGrassSlotIndex(0, 0)).toBeUndefined();
-    expect(getToggledGrassSlotIndex(0, 4)).toBeUndefined();
+    expect(getToggledGrassSlotIndex(0, 4)).toBe(4);
+    expect(getToggledGrassSlotIndex(4, 4)).toBeUndefined();
+    expect(getToggledGrassSlotIndex(4, 7)).toBe(7);
+    expect(getToggledGrassSlotIndex(7, 8)).toBeUndefined();
   });
 
   it('derives occupied cells for each rectangular grass shape from the anchor', () => {
@@ -276,6 +294,47 @@ describe('grass placement model', () => {
     })).toHaveLength(2);
   });
 
+  it('places second-layer patches only on existing base grass and without overlap', () => {
+    const baseCells = getGrassShapeCells(grassShapes.nine, { x: 1, y: 1 });
+    const patches = placeSecondLayerPatch({
+      id: 'second-1',
+      shape: grassShapes['three-horizontal'],
+      anchor: { x: 1, y: 2 },
+      grid: { columns: 6, rows: 6 },
+      patches: [],
+      baseCells,
+    });
+
+    expect(patches).toEqual([
+      {
+        id: 'second-1',
+        shapeKey: 'three-horizontal',
+        anchor: { x: 1, y: 2 },
+        cells: [
+          { x: 1, y: 2 },
+          { x: 2, y: 2 },
+          { x: 3, y: 2 },
+        ],
+      },
+    ]);
+    expect(placeSecondLayerPatch({
+      id: 'off-base',
+      shape: grassShapes['three-horizontal'],
+      anchor: { x: 0, y: 0 },
+      grid: { columns: 6, rows: 6 },
+      patches,
+      baseCells,
+    })).toBe(patches);
+    expect(placeSecondLayerPatch({
+      id: 'overlap',
+      shape: grassShapes.one,
+      anchor: { x: 2, y: 2 },
+      grid: { columns: 6, rows: 6 },
+      patches,
+      baseCells,
+    })).toBe(patches);
+  });
+
   it('selects terrain frames from neighboring occupied grass cells', () => {
     const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 1, y: 1 });
 
@@ -303,6 +362,24 @@ describe('grass placement model', () => {
       cell: { x: 0, y: 1 },
       occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 0, y: 0 }),
     })).toBe(12);
+  });
+
+  it('selects second-layer terrain frames from neighboring second-layer cells', () => {
+    const occupiedCells = getGrassShapeCells(grassShapes.nine, { x: 1, y: 1 });
+
+    expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 1 }, occupiedCells })).toBe(5);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 1 }, occupiedCells })).toBe(6);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 1 }, occupiedCells })).toBe(7);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 2 }, occupiedCells })).toBe(14);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 2 }, occupiedCells })).toBe(15);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 2 }, occupiedCells })).toBe(16);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 1, y: 3 }, occupiedCells })).toBe(23);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 2, y: 3 }, occupiedCells })).toBe(24);
+    expect(getSecondLayerTerrainFrame({ cell: { x: 3, y: 3 }, occupiedCells })).toBe(25);
+    expect(getSecondLayerTerrainFrame({
+      cell: { x: 0, y: 0 },
+      occupiedCells: [{ x: 0, y: 0 }],
+    })).toBe(35);
   });
 
   it('converts world points inside the grass grid to grid cells', () => {
