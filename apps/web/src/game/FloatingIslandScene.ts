@@ -17,6 +17,7 @@ import {
   getSecondLayerPlacementCells,
   getSecondLayerPlacementOverlayOffsetY,
   getSecondLayerPlacementPreviewCells,
+  getSecondLayerRenderAnchorFromPlacementAnchor,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
   getSecondLayerShadowRenderOffsetY,
@@ -28,7 +29,6 @@ import {
   getToggledGrassSlotIndex,
   placeGrassPatch,
   placeSecondLayerPatch,
-  type GrassShape,
   type GrassPatch,
   type GridCell,
   type TerrainShadowPiece,
@@ -288,7 +288,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     const tool = this.getSelectedTerrainTool();
     if (!tool) return;
 
-    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, tool.shape);
+    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, tool);
 
     if (!anchor) return;
 
@@ -315,7 +315,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       return;
     }
 
-    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, tool.shape);
+    const anchor = this.getCenteredAnchorFromCanvasPoint(canvasPoint, tool);
     if (!anchor) {
       this.clearPreview();
       this.renderAvailableCells();
@@ -352,13 +352,20 @@ export class FloatingIslandScene extends Phaser.Scene {
     return getTerrainToolForHudSlot(this.selectedHudSlotIndex);
   }
 
-  private getCenteredAnchorFromCanvasPoint(canvasPoint: { x: number; y: number }, shape: GrassShape) {
+  private getCenteredAnchorFromCanvasPoint(canvasPoint: { x: number; y: number }, tool: TerrainTool) {
     if (!this.worldRoot) return undefined;
 
     const center = this.getGridCellFromCanvasPoint(canvasPoint);
     if (!center) return undefined;
 
-    return getCenteredGrassShapeAnchor(shape, center);
+    const placementAnchor = getCenteredGrassShapeAnchor(tool.shape, center);
+
+    return tool.layer === 'second'
+      ? getSecondLayerRenderAnchorFromPlacementAnchor({
+        shape: tool.shape,
+        placementAnchor,
+      })
+      : placementAnchor;
   }
 
   private getGridCellFromCanvasPoint(canvasPoint: { x: number; y: number }) {
