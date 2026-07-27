@@ -488,7 +488,7 @@ describe('grass placement model', () => {
     expect(getSecondLayerTerrainPieceRenderHeight({ frame: 32, surface: 'grass' }, 64)).toBe(64);
     expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 14, surface: 'grass' })).toBe(0);
     expect(getSecondLayerTerrainPieceRenderHeight({ frame: 14, surface: 'grass' }, 64)).toBe(64);
-    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 41, surface: 'rock' })).toBe(0);
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 41, surface: 'rock' })).toBe(-12);
     expect(getSecondLayerTerrainPieceRenderHeight({ frame: 41, surface: 'rock' }, 64)).toBe(64);
   });
 

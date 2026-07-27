@@ -592,7 +592,14 @@ export class FloatingIslandScene extends Phaser.Scene {
     if (tool.layer === 'second') {
       const hasBlockedPreviewCell = previewCellStates.some((previewCell) => previewCell.state === 'blocked');
       for (const piece of previewTerrainPieces) {
-        const tile = this.createTerrainPiece(piece, gridLeft, gridTop, 0.72);
+        const tile = this.createTerrainPiece(
+          piece,
+          gridLeft,
+          gridTop,
+          0.72,
+          getSecondLayerTerrainPieceRenderOffsetY(piece),
+          getSecondLayerTerrainPieceRenderHeight(piece, TILE_SIZE),
+        );
         const state = hasBlockedPreviewCell ? 'blocked' : 'placeable';
         tile.setTint(state === 'blocked' ? BLOCKED_PREVIEW_TINT : PLACEABLE_PREVIEW_TINT);
         this.previewRoot.add(tile);
