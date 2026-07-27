@@ -7,11 +7,14 @@ import {
   getGrassCellOverlayFrame,
   getGrassMapCells,
   getGrassPlacementPreviewCells,
+  getGrassPlacementPreviewCellsFromCells,
   getGrassShapeCells,
   getGrassTerrainFrame,
   getSecondLayerMergedCells,
   getSecondLayerMaterialReferenceTerrainPieces,
   getSecondLayerPatchTerrainPieces,
+  getSecondLayerPatchPlacementCells,
+  getSecondLayerPlacementCells,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
   getSecondLayerShadowPieces,
@@ -466,9 +469,10 @@ export class FloatingIslandScene extends Phaser.Scene {
     const baseCells = this.getOccupiedGrassCells();
     const occupiedBaseCells = this.getOccupiedBaseCells();
     const secondLayerCells = this.getOccupiedSecondLayerCells();
+    const secondLayerPlacementCells = this.getOccupiedSecondLayerPlacementCells();
     const mergedSecondLayerCells = getSecondLayerMergedCells(secondLayerCells);
     const selectedLayerCells = this.getSelectedTerrainTool()?.layer === 'second'
-      ? secondLayerCells
+      ? secondLayerPlacementCells
       : occupiedBaseCells;
 
     for (const cell of getVisibleGrassFoamCells({
@@ -585,17 +589,27 @@ export class FloatingIslandScene extends Phaser.Scene {
 
     const gridLeft = -placementWidth / 2;
     const gridTop = -placementHeight / 2;
-    const previewCells = getGrassShapeCells(tool.shape, anchor);
+    const previewRenderCells = getGrassShapeCells(tool.shape, anchor);
+    const previewCells = tool.layer === 'second'
+      ? getSecondLayerPlacementCells({ shape: tool.shape, anchor })
+      : previewRenderCells;
     const occupiedCells = tool.layer === 'second'
-      ? this.getOccupiedSecondLayerCells()
+      ? this.getOccupiedSecondLayerPlacementCells()
       : this.getOccupiedBaseCells();
-    const previewCellStates = getGrassPlacementPreviewCells({
-      shape: tool.shape,
-      anchor,
-      grid: seaLevelScenePlan.grid,
-      occupiedCells: tool.layer === 'second' ? [] : occupiedCells,
-      availableCells: this.availableOverlayCells,
-    });
+    const previewCellStates = tool.layer === 'second'
+      ? getGrassPlacementPreviewCellsFromCells({
+        cells: previewCells,
+        grid: seaLevelScenePlan.grid,
+        occupiedCells: [],
+        availableCells: this.availableOverlayCells,
+      })
+      : getGrassPlacementPreviewCells({
+        shape: tool.shape,
+        anchor,
+        grid: seaLevelScenePlan.grid,
+        occupiedCells,
+        availableCells: this.availableOverlayCells,
+      });
 
     this.renderAvailableCells(this.getAvailableOverlayCells());
 
@@ -607,7 +621,7 @@ export class FloatingIslandScene extends Phaser.Scene {
             id: 'preview',
             shapeKey: tool.shape.key,
             anchor,
-            cells: previewCells,
+            cells: previewRenderCells,
           },
         ],
       })
@@ -698,6 +712,10 @@ export class FloatingIslandScene extends Phaser.Scene {
 
   private getOccupiedSecondLayerCells() {
     return this.secondLayerPatches.flatMap((patch) => patch.cells);
+  }
+
+  private getOccupiedSecondLayerPlacementCells() {
+    return this.secondLayerPatches.flatMap(getSecondLayerPatchPlacementCells);
   }
 
   private createPreviewStateRectangle(

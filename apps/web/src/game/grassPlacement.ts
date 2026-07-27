@@ -83,6 +83,7 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
 };
 
 const secondLayerFrontGrassFrames = new Set([32, 33, 34, 35]);
+const secondLayerShiftedPlacementShapeKeys = new Set<GrassShapeKey>(['three-vertical', 'nine']);
 const SECOND_LAYER_LOWER_FACE_OVERLAP_PIXELS = 12;
 const SECOND_LAYER_TOP_FACE_DROP_PIXELS = 52;
 
@@ -189,12 +190,26 @@ export function getGrassPlacementPreviewCells(args: {
   occupiedCells: GridCell[];
   availableCells?: GridCell[];
 }) {
+  return getGrassPlacementPreviewCellsFromCells({
+    cells: getGrassShapeCells(args.shape, args.anchor),
+    grid: args.grid,
+    occupiedCells: args.occupiedCells,
+    availableCells: args.availableCells,
+  });
+}
+
+export function getGrassPlacementPreviewCellsFromCells(args: {
+  cells: GridCell[];
+  grid: GridSize;
+  occupiedCells: GridCell[];
+  availableCells?: GridCell[];
+}) {
   const occupied = new Set(args.occupiedCells.map((cell) => `${cell.x},${cell.y}`));
   const available = args.availableCells
     ? new Set(args.availableCells.map((cell) => `${cell.x},${cell.y}`))
     : undefined;
 
-  return getGrassShapeCells(args.shape, args.anchor).map((cell) => {
+  return args.cells.map((cell) => {
     const isInsideGrid = available
       ? available.has(`${cell.x},${cell.y}`)
       : cell.x >= 0
@@ -384,10 +399,11 @@ export function placeSecondLayerPatch(args: {
   baseCells: GridCell[];
 }) {
   const cells = getGrassShapeCells(args.shape, args.anchor);
+  const placementCells = getSecondLayerPlacementCells({ shape: args.shape, anchor: args.anchor });
   const baseCellKeys = new Set(args.baseCells.map(getCellKey));
-  const occupiedCellKeys = new Set(args.patches.flatMap((patch) => patch.cells).map(getCellKey));
-  const isInsideBaseGrass = cells.every((cell) => baseCellKeys.has(getCellKey(cell)));
-  const newCells = cells.filter((cell) => !occupiedCellKeys.has(getCellKey(cell)));
+  const occupiedCellKeys = new Set(args.patches.flatMap(getSecondLayerPatchPlacementCells).map(getCellKey));
+  const isInsideBaseGrass = placementCells.every((cell) => baseCellKeys.has(getCellKey(cell)));
+  const newCells = cells.filter((_cell, index) => !occupiedCellKeys.has(getCellKey(placementCells[index])));
 
   if (!isInsideBaseGrass || newCells.length === 0) return args.patches;
 
@@ -429,6 +445,30 @@ export function getSecondLayerPatchTerrainPieces(args: {
 
     return getSecondLayerTerrainPieces({ occupiedCells: patch.cells });
   }));
+}
+
+export function getSecondLayerPlacementCells(args: {
+  shape: GrassShape;
+  anchor: GridCell;
+}) {
+  const cells = getGrassShapeCells(args.shape, args.anchor);
+
+  if (!secondLayerShiftedPlacementShapeKeys.has(args.shape.key)) {
+    return cells;
+  }
+
+  return cells.map((cell) => ({ ...cell, y: cell.y - 1 }));
+}
+
+export function getSecondLayerPatchPlacementCells(patch: GrassPatch) {
+  if (!secondLayerShiftedPlacementShapeKeys.has(patch.shapeKey)) {
+    return patch.cells;
+  }
+
+  return getSecondLayerPlacementCells({
+    shape: grassShapes[patch.shapeKey],
+    anchor: patch.anchor,
+  });
 }
 
 export function getSecondLayerMaterialReferenceTerrainPieces() {
