@@ -457,23 +457,18 @@ export function getSecondLayerPlacementCells(args: {
   anchor: GridCell;
 }) {
   const cells = getGrassShapeCells(args.shape, args.anchor);
+  const placementDropCells = getSecondLayerPlacementDropCells(args.shape.key);
 
-  if (!secondLayerTallMaterialShapeKeys.has(args.shape.key)) {
-    return cells;
-  }
-
-  return cells.map((cell) => ({ x: cell.x, y: cell.y + 2 }));
+  return cells.map((cell) => ({ x: cell.x, y: cell.y + placementDropCells }));
 }
 
 export function getSecondLayerRenderAnchorFromPlacementAnchor(args: {
   shape: GrassShape;
   placementAnchor: GridCell;
 }) {
-  if (!secondLayerTallMaterialShapeKeys.has(args.shape.key)) {
-    return args.placementAnchor;
-  }
+  const placementDropCells = getSecondLayerPlacementDropCells(args.shape.key);
 
-  return { x: args.placementAnchor.x, y: args.placementAnchor.y - 2 };
+  return { x: args.placementAnchor.x, y: args.placementAnchor.y - placementDropCells };
 }
 
 export function getSecondLayerPlacementPreviewCells(args: {
@@ -505,11 +500,9 @@ export function getSecondLayerPlacementPreviewCells(args: {
 }
 
 export function getSecondLayerPatchPlacementCells(patch: GrassPatch) {
-  if (!secondLayerTallMaterialShapeKeys.has(patch.shapeKey)) {
-    return patch.cells;
-  }
+  const placementDropCells = getSecondLayerPlacementDropCells(patch.shapeKey);
 
-  return patch.cells.map((cell) => ({ x: cell.x, y: cell.y + 2 }));
+  return patch.cells.map((cell) => ({ x: cell.x, y: cell.y + placementDropCells }));
 }
 
 export function getSecondLayerPlacementOverlayOffsetY(shape: GrassShape) {
@@ -528,6 +521,10 @@ function hasSecondLayerBaseSupport(
 ) {
   void _shape;
   return placementCells.every((cell) => baseCellKeys.has(getCellKey(cell)));
+}
+
+function getSecondLayerPlacementDropCells(shapeKey: GrassShapeKey) {
+  return secondLayerTallMaterialShapeKeys.has(shapeKey) ? 2 : 1;
 }
 
 export function getSecondLayerMaterialReferenceTerrainPieces() {

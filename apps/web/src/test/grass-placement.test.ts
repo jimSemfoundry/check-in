@@ -368,7 +368,13 @@ describe('grass placement model', () => {
     })).toBe(patches);
   });
 
-  it('keeps second-layer tall brush occupancy aligned with the rock-base cells', () => {
+  it('keeps second-layer brush occupancy aligned with the rock-base cells', () => {
+    expect(getSecondLayerPlacementCells({
+      shape: grassShapes.one,
+      anchor: { x: 2, y: 2 },
+    })).toEqual([
+      { x: 2, y: 3 },
+    ]);
     expect(getSecondLayerPlacementCells({
       shape: grassShapes.nine,
       anchor: { x: 2, y: 1 },
@@ -395,9 +401,27 @@ describe('grass placement model', () => {
       shape: grassShapes['three-horizontal'],
       anchor: { x: 2, y: 2 },
     })).toEqual([
-      { x: 2, y: 2 },
-      { x: 3, y: 2 },
-      { x: 4, y: 2 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 4, y: 3 },
+    ]);
+    expect(getSecondLayerPatchPlacementCells({
+      id: 'placed-one',
+      shapeKey: 'one',
+      anchor: { x: 2, y: 2 },
+      cells: getGrassShapeCells(grassShapes.one, { x: 2, y: 2 }),
+    })).toEqual([
+      { x: 2, y: 3 },
+    ]);
+    expect(getSecondLayerPatchPlacementCells({
+      id: 'placed-horizontal',
+      shapeKey: 'three-horizontal',
+      anchor: { x: 2, y: 2 },
+      cells: getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 2 }),
+    })).toEqual([
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 4, y: 3 },
     ]);
     expect(getSecondLayerPatchPlacementCells({
       id: 'placed-nine',
@@ -417,7 +441,11 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('maps second-layer tall brush placement anchors back to their render anchors', () => {
+  it('maps second-layer placement anchors back to their render anchors', () => {
+    expect(getSecondLayerRenderAnchorFromPlacementAnchor({
+      shape: grassShapes.one,
+      placementAnchor: { x: 2, y: 3 },
+    })).toEqual({ x: 2, y: 2 });
     expect(getSecondLayerRenderAnchorFromPlacementAnchor({
       shape: grassShapes.nine,
       placementAnchor: { x: 2, y: 3 },
@@ -429,7 +457,7 @@ describe('grass placement model', () => {
     expect(getSecondLayerRenderAnchorFromPlacementAnchor({
       shape: grassShapes['three-horizontal'],
       placementAnchor: { x: 2, y: 3 },
-    })).toEqual({ x: 2, y: 3 });
+    })).toEqual({ x: 2, y: 2 });
   });
 
   it('validates second-layer tall brush placement against the material-aligned occupancy cells', () => {
@@ -469,13 +497,21 @@ describe('grass placement model', () => {
       baseCells: buildTestCells(2, 4, 3, 5),
     })).toEqual([]);
     expect(placeSecondLayerPatch({
+      id: 'single-edge',
+      shape: grassShapes.one,
+      anchor: { x: 2, y: 2 },
+      grid: { columns: 8, rows: 8 },
+      patches: [],
+      baseCells: buildTestCells(2, 4, 3, 5),
+    })).toHaveLength(1);
+    expect(placeSecondLayerPatch({
       id: 'horizontal-edge',
       shape: grassShapes['three-horizontal'],
       anchor: { x: 2, y: 2 },
       grid: { columns: 8, rows: 8 },
       patches: [],
       baseCells: buildTestCells(2, 4, 3, 5),
-    })).toEqual([]);
+    })).toHaveLength(1);
   });
 
   it('marks second-layer tall brush previews placeable one row above the base edge', () => {
