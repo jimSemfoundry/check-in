@@ -12,6 +12,7 @@ import {
   getGrassShapeForHudSlot,
   getVisibleGrassFoamCells,
   getIslandTerrainPieces,
+  getSecondLayerPatchTerrainPieces,
   getSecondLayerTerrainPieces,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
@@ -533,6 +534,60 @@ describe('grass placement model', () => {
     })).toEqual([
       { cell: { x: 3, y: 8 }, widthCells: 3 },
     ]);
+  });
+
+  it('renders second-layer 3x3 patches as fixed material blocks without merging side neighbors', () => {
+    const pieces = sortTerrainPiecesForComparison(getSecondLayerPatchTerrainPieces({
+      patches: [
+        {
+          id: 'nine',
+          shapeKey: 'nine',
+          anchor: { x: 2, y: 3 },
+          cells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
+        },
+        {
+          id: 'vertical',
+          shapeKey: 'three-vertical',
+          anchor: { x: 5, y: 3 },
+          cells: getGrassShapeCells(grassShapes['three-vertical'], { x: 5, y: 3 }),
+        },
+      ],
+    }));
+
+    expect(pieces).toEqual(expect.arrayContaining([
+      { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 16, surface: 'grass' },
+      { cell: { x: 4, y: 6 }, frame: 34, surface: 'grass' },
+      { cell: { x: 4, y: 7 }, frame: 43, surface: 'rock' },
+    ]));
+  });
+
+  it('renders second-layer vertical 1x3 patches as fixed material blocks without merging lower neighbors', () => {
+    const pieces = sortTerrainPiecesForComparison(getSecondLayerPatchTerrainPieces({
+      patches: [
+        {
+          id: 'vertical',
+          shapeKey: 'three-vertical',
+          anchor: { x: 2, y: 3 },
+          cells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+        },
+        {
+          id: 'one',
+          shapeKey: 'one',
+          anchor: { x: 2, y: 6 },
+          cells: getGrassShapeCells(grassShapes.one, { x: 2, y: 6 }),
+        },
+      ],
+    }));
+
+    expect(pieces).toEqual(expect.arrayContaining([
+      { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 35, surface: 'grass' },
+      { cell: { x: 2, y: 7 }, frame: 44, surface: 'rock' },
+    ]));
   });
 
   it('draws connected top surfaces after generated front faces so upper grass covers the seam', () => {

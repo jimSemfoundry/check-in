@@ -10,7 +10,7 @@ import {
   getGrassShapeCells,
   getGrassTerrainFrame,
   getSecondLayerMergedCells,
-  getSecondLayerTerrainPieces,
+  getSecondLayerPatchTerrainPieces,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
   getSecondLayerShadowPieces,
@@ -466,7 +466,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       this.secondLayerShadowRoot.add(this.createSecondLayerShadow(piece, gridLeft, gridTop));
     }
 
-    for (const piece of getSecondLayerTerrainPieces({ occupiedCells: secondLayerCells })) {
+    for (const piece of getSecondLayerPatchTerrainPieces({ patches: this.secondLayerPatches })) {
       this.secondLayerRoot.add(this.createTerrainPiece(
         piece,
         gridLeft,
@@ -576,7 +576,17 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.renderAvailableCells(this.getAvailableOverlayCells());
 
     const previewTerrainPieces = tool.layer === 'second'
-      ? getSecondLayerTerrainPieces({ occupiedCells: [...occupiedCells, ...previewCells] })
+      ? getSecondLayerPatchTerrainPieces({
+        patches: [
+          ...this.secondLayerPatches,
+          {
+            id: 'preview',
+            shapeKey: tool.shape.key,
+            anchor,
+            cells: previewCells,
+          },
+        ],
+      })
       : [];
 
     if (tool.layer === 'second') {
