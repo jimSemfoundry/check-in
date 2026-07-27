@@ -84,7 +84,7 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
 
 const secondLayerFrontGrassFrames = new Set([32, 33, 34, 35]);
 const SECOND_LAYER_LOWER_FACE_OVERLAP_PIXELS = 12;
-const SECOND_LAYER_TOP_FACE_DROP_PIXELS = 24;
+const SECOND_LAYER_TOP_FACE_DROP_PIXELS = 40;
 
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
