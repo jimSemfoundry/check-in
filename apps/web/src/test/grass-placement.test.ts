@@ -13,6 +13,7 @@ import {
   getVisibleGrassFoamCells,
   getIslandTerrainPieces,
   getSecondLayerTerrainPieces,
+  getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
   getSecondLayerShadowPieces,
   getTerrainToolForHudSlot,
@@ -482,9 +483,12 @@ describe('grass placement model', () => {
   });
 
   it('renders second-layer front grass downward over the rock below it', () => {
-    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 32, surface: 'grass' })).toBe(14);
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 32, surface: 'grass' })).toBe(7);
+    expect(getSecondLayerTerrainPieceRenderHeight({ frame: 32, surface: 'grass' }, 64)).toBe(78);
     expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 14, surface: 'grass' })).toBe(0);
+    expect(getSecondLayerTerrainPieceRenderHeight({ frame: 14, surface: 'grass' }, 64)).toBe(64);
     expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 41, surface: 'rock' })).toBe(0);
+    expect(getSecondLayerTerrainPieceRenderHeight({ frame: 41, surface: 'rock' }, 64)).toBe(64);
   });
 
   it('renders second-layer vertical 1x3 as the tall strip, front tile, and narrow rock height', () => {

@@ -415,9 +415,22 @@ export function getSecondLayerTerrainPieces(args: {
 }
 
 export function getSecondLayerTerrainPieceRenderOffsetY(piece: Pick<TerrainPiece, 'frame' | 'surface'>) {
-  return piece.surface === 'grass' && secondLayerFrontGrassFrames.has(piece.frame)
-    ? SECOND_LAYER_FRONT_OVERLAP_PIXELS
+  return isSecondLayerFrontGrassPiece(piece)
+    ? SECOND_LAYER_FRONT_OVERLAP_PIXELS / 2
     : 0;
+}
+
+export function getSecondLayerTerrainPieceRenderHeight(
+  piece: Pick<TerrainPiece, 'frame' | 'surface'>,
+  tileSize: number,
+) {
+  return isSecondLayerFrontGrassPiece(piece)
+    ? tileSize + SECOND_LAYER_FRONT_OVERLAP_PIXELS
+    : tileSize;
+}
+
+function isSecondLayerFrontGrassPiece(piece: Pick<TerrainPiece, 'frame' | 'surface'>) {
+  return piece.surface === 'grass' && secondLayerFrontGrassFrames.has(piece.frame);
 }
 
 export function getSecondLayerMergedCells(occupiedCells: GridCell[]) {
