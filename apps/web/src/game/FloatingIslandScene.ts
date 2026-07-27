@@ -246,8 +246,8 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.addToWorld(this.waterFoamRoot);
     this.addToWorld(this.materialReferenceRoot);
     this.addToWorld(this.grassRoot);
-    this.addToWorld(this.secondLayerShadowRoot);
     this.addToWorld(this.secondLayerRoot);
+    this.addToWorld(this.secondLayerShadowRoot);
     this.addToWorld(this.previewRoot);
     this.addToWorld(this.occupiedCellRoot);
     this.renderAvailableCells();
