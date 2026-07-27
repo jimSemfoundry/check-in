@@ -505,20 +505,20 @@ describe('grass placement model', () => {
     expect(getSecondLayerPlacementOverlayOffsetY(grassShapes['three-horizontal'])).toBe(0);
   });
 
-  it('scales second-layer shadows so the visible material width matches the rock width', () => {
+  it('scales second-layer shadows slightly wider than the rock width', () => {
     expect(getSecondLayerShadowRenderSize({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toEqual({
-      width: 467,
-      height: 192,
+      width: 544,
+      height: 224,
     });
     expect(getSecondLayerShadowRenderSize({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toEqual({
-      width: 156,
-      height: 64,
+      width: 233,
+      height: 96,
     });
   });
 
-  it('moves second-layer shadows one cell upward so they sit under the rock bottom', () => {
-    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(-68);
-    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(-95);
+  it('positions second-layer shadows directly under the rock bottom', () => {
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(3);
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(-24);
   });
 
   it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {

@@ -89,7 +89,7 @@ const SECOND_LAYER_TOP_FACE_DROP_PIXELS = 52;
 const SECOND_LAYER_SHADOW_SOURCE_SIZE_PIXELS = 192;
 const SECOND_LAYER_SHADOW_VISIBLE_WIDTH_PIXELS = 79;
 const SECOND_LAYER_SHADOW_VISIBLE_TOP_PIXELS = 56;
-const SECOND_LAYER_SHADOW_EXTRA_LIFT_CELLS = 1;
+const SECOND_LAYER_SHADOW_VISIBLE_PADDING_CELLS = 0.5;
 
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
@@ -636,7 +636,7 @@ export function getSecondLayerShadowPieces(args: {
 }
 
 export function getSecondLayerShadowRenderSize(piece: TerrainShadowPiece, tileSize: number) {
-  const visibleWidth = piece.widthCells * tileSize;
+  const visibleWidth = (piece.widthCells + SECOND_LAYER_SHADOW_VISIBLE_PADDING_CELLS) * tileSize;
   const width = Math.round(
     visibleWidth * (SECOND_LAYER_SHADOW_SOURCE_SIZE_PIXELS / SECOND_LAYER_SHADOW_VISIBLE_WIDTH_PIXELS),
   );
@@ -656,8 +656,7 @@ export function getSecondLayerShadowRenderOffsetY(piece: TerrainShadowPiece, til
 
   return Math.round(
     rockBottomFromShadowCenter
-    - visibleTopFromCenter
-    - tileSize * SECOND_LAYER_SHADOW_EXTRA_LIFT_CELLS,
+    - visibleTopFromCenter,
   );
 }
 
