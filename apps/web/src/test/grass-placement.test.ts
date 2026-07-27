@@ -508,17 +508,17 @@ describe('grass placement model', () => {
   it('scales second-layer shadows to the marked rock-base range', () => {
     expect(getSecondLayerShadowRenderSize({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toEqual({
       width: 622,
-      height: 256,
+      height: 224,
     });
     expect(getSecondLayerShadowRenderSize({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toEqual({
       width: 311,
-      height: 128,
+      height: 96,
     });
   });
 
   it('positions second-layer shadows directly under the rock bottom', () => {
-    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(9);
-    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(-17);
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(3);
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(-24);
   });
 
   it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {
