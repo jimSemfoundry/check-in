@@ -476,7 +476,7 @@ function getFixedSecondLayerVerticalPieces(anchor: GridCell): TerrainPiece[] {
     { cell: { x: anchor.x, y: anchor.y + 3 }, frame: 35, surface: 'grass' },
     { cell: { x: anchor.x, y: anchor.y }, frame: 8, surface: 'grass' },
     { cell: { x: anchor.x, y: anchor.y + 1 }, frame: 17, surface: 'grass' },
-    { cell: { x: anchor.x, y: anchor.y + 2 }, frame: 17, surface: 'grass' },
+    { cell: { x: anchor.x, y: anchor.y + 2 }, frame: 26, surface: 'grass' },
   ];
 }
 
@@ -494,9 +494,9 @@ function getFixedSecondLayerNinePieces(anchor: GridCell): TerrainPiece[] {
     { cell: { x: anchor.x, y: anchor.y + 1 }, frame: 14, surface: 'grass' },
     { cell: { x: anchor.x + 1, y: anchor.y + 1 }, frame: 15, surface: 'grass' },
     { cell: { x: anchor.x + 2, y: anchor.y + 1 }, frame: 16, surface: 'grass' },
-    { cell: { x: anchor.x, y: anchor.y + 2 }, frame: 14, surface: 'grass' },
-    { cell: { x: anchor.x + 1, y: anchor.y + 2 }, frame: 15, surface: 'grass' },
-    { cell: { x: anchor.x + 2, y: anchor.y + 2 }, frame: 16, surface: 'grass' },
+    { cell: { x: anchor.x, y: anchor.y + 2 }, frame: 23, surface: 'grass' },
+    { cell: { x: anchor.x + 1, y: anchor.y + 2 }, frame: 24, surface: 'grass' },
+    { cell: { x: anchor.x + 2, y: anchor.y + 2 }, frame: 25, surface: 'grass' },
   ];
 }
 

@@ -557,7 +557,7 @@ describe('grass placement model', () => {
     expect(pieces).toEqual(expect.arrayContaining([
       { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
       { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
-      { cell: { x: 4, y: 5 }, frame: 16, surface: 'grass' },
+      { cell: { x: 4, y: 5 }, frame: 25, surface: 'grass' },
       { cell: { x: 4, y: 6 }, frame: 34, surface: 'grass' },
       { cell: { x: 4, y: 7 }, frame: 43, surface: 'rock' },
     ]));
@@ -584,7 +584,7 @@ describe('grass placement model', () => {
     expect(pieces).toEqual(expect.arrayContaining([
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
-      { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 5 }, frame: 26, surface: 'grass' },
       { cell: { x: 2, y: 6 }, frame: 35, surface: 'grass' },
       { cell: { x: 2, y: 7 }, frame: 44, surface: 'rock' },
     ]));
