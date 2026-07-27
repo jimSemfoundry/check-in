@@ -362,28 +362,28 @@ describe('grass placement model', () => {
     })).toBe(patches);
   });
 
-  it('moves second-layer tall brush occupancy one cell above the rendered material block', () => {
+  it('keeps second-layer brush occupancy aligned with the rendered material block', () => {
     expect(getSecondLayerPlacementCells({
       shape: grassShapes.nine,
       anchor: { x: 2, y: 3 },
     })).toEqual([
-      { x: 2, y: 2 },
-      { x: 3, y: 2 },
-      { x: 4, y: 2 },
       { x: 2, y: 3 },
       { x: 3, y: 3 },
       { x: 4, y: 3 },
       { x: 2, y: 4 },
       { x: 3, y: 4 },
       { x: 4, y: 4 },
+      { x: 2, y: 5 },
+      { x: 3, y: 5 },
+      { x: 4, y: 5 },
     ]);
     expect(getSecondLayerPlacementCells({
       shape: grassShapes['three-vertical'],
       anchor: { x: 2, y: 3 },
     })).toEqual([
-      { x: 2, y: 2 },
       { x: 2, y: 3 },
       { x: 2, y: 4 },
+      { x: 2, y: 5 },
     ]);
     expect(getSecondLayerPlacementCells({
       shape: grassShapes['three-horizontal'],
@@ -395,27 +395,27 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('validates second-layer tall brush placement against the shifted occupancy cells', () => {
+  it('validates second-layer tall brush placement against the material-aligned occupancy cells', () => {
     expect(placeSecondLayerPatch({
-      id: 'shifted-second',
-      shape: grassShapes.nine,
-      anchor: { x: 2, y: 3 },
-      grid: { columns: 8, rows: 8 },
-      patches: [],
-      baseCells: buildTestCells(2, 4, 2, 4),
-    })).toHaveLength(1);
-    expect(placeSecondLayerPatch({
-      id: 'unshifted-second',
+      id: 'aligned-second',
       shape: grassShapes.nine,
       anchor: { x: 2, y: 3 },
       grid: { columns: 8, rows: 8 },
       patches: [],
       baseCells: buildTestCells(2, 4, 3, 5),
+    })).toHaveLength(1);
+    expect(placeSecondLayerPatch({
+      id: 'too-high-second',
+      shape: grassShapes.nine,
+      anchor: { x: 2, y: 3 },
+      grid: { columns: 8, rows: 8 },
+      patches: [],
+      baseCells: buildTestCells(2, 4, 2, 4),
     })).toEqual([]);
   });
 
   it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {
-    const baseCells = buildTestCells(1, 3, 0, 4);
+    const baseCells = buildTestCells(1, 3, 1, 4);
     const patches = placeSecondLayerPatch({
       id: 'second-1',
       shape: grassShapes['three-vertical'],
