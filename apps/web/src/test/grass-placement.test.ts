@@ -15,6 +15,7 @@ import {
   getSecondLayerMaterialReferenceTerrainPieces,
   getSecondLayerPatchTerrainPieces,
   getSecondLayerPlacementOverlayOffsetY,
+  getSecondLayerPlacementPreviewCells,
   getSecondLayerPlacementCells,
   getSecondLayerShadowRenderOffsetY,
   getSecondLayerShadowRenderSize,
@@ -415,6 +416,53 @@ describe('grass placement model', () => {
       patches: [],
       baseCells: buildTestCells(2, 4, 2, 4),
     })).toEqual([]);
+  });
+
+  it('allows second-layer tall brushes one row above the base edge when the material is still supported', () => {
+    expect(placeSecondLayerPatch({
+      id: 'edge-second',
+      shape: grassShapes.nine,
+      anchor: { x: 2, y: 2 },
+      grid: { columns: 8, rows: 8 },
+      patches: [],
+      baseCells: buildTestCells(2, 4, 3, 5),
+    })).toHaveLength(1);
+    expect(placeSecondLayerPatch({
+      id: 'too-far-above',
+      shape: grassShapes.nine,
+      anchor: { x: 2, y: 1 },
+      grid: { columns: 8, rows: 8 },
+      patches: [],
+      baseCells: buildTestCells(2, 4, 3, 5),
+    })).toEqual([]);
+    expect(placeSecondLayerPatch({
+      id: 'horizontal-edge',
+      shape: grassShapes['three-horizontal'],
+      anchor: { x: 2, y: 2 },
+      grid: { columns: 8, rows: 8 },
+      patches: [],
+      baseCells: buildTestCells(2, 4, 3, 5),
+    })).toEqual([]);
+  });
+
+  it('marks second-layer tall brush previews placeable one row above the base edge', () => {
+    expect(getSecondLayerPlacementPreviewCells({
+      shape: grassShapes.nine,
+      anchor: { x: 2, y: 2 },
+      grid: { columns: 8, rows: 8 },
+      occupiedCells: [],
+      availableCells: buildTestCells(2, 4, 3, 5),
+    })).toEqual([
+      { cell: { x: 2, y: 2 }, state: 'placeable' },
+      { cell: { x: 3, y: 2 }, state: 'placeable' },
+      { cell: { x: 4, y: 2 }, state: 'placeable' },
+      { cell: { x: 2, y: 3 }, state: 'placeable' },
+      { cell: { x: 3, y: 3 }, state: 'placeable' },
+      { cell: { x: 4, y: 3 }, state: 'placeable' },
+      { cell: { x: 2, y: 4 }, state: 'placeable' },
+      { cell: { x: 3, y: 4 }, state: 'placeable' },
+      { cell: { x: 4, y: 4 }, state: 'placeable' },
+    ]);
   });
 
   it('draws second-layer tall brush occupancy overlays at the same visual offset as the material top', () => {

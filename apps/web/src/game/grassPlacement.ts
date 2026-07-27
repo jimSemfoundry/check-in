@@ -406,7 +406,7 @@ export function placeSecondLayerPatch(args: {
   const placementCells = getSecondLayerPlacementCells({ shape: args.shape, anchor: args.anchor });
   const baseCellKeys = new Set(args.baseCells.map(getCellKey));
   const occupiedCellKeys = new Set(args.patches.flatMap(getSecondLayerPatchPlacementCells).map(getCellKey));
-  const isInsideBaseGrass = placementCells.every((cell) => baseCellKeys.has(getCellKey(cell)));
+  const isInsideBaseGrass = hasSecondLayerBaseSupport(args.shape, placementCells, baseCellKeys);
   const newCells = cells.filter((_cell, index) => !occupiedCellKeys.has(getCellKey(placementCells[index])));
 
   if (!isInsideBaseGrass || newCells.length === 0) return args.patches;
@@ -458,6 +458,36 @@ export function getSecondLayerPlacementCells(args: {
   return getGrassShapeCells(args.shape, args.anchor);
 }
 
+export function getSecondLayerPlacementPreviewCells(args: {
+  shape: GrassShape;
+  anchor: GridCell;
+  grid: GridSize;
+  occupiedCells: GridCell[];
+  availableCells?: GridCell[];
+}) {
+  const cells = getSecondLayerPlacementCells({ shape: args.shape, anchor: args.anchor });
+  const occupied = new Set(args.occupiedCells.map(getCellKey));
+  const available = args.availableCells
+    ? new Set(args.availableCells.map(getCellKey))
+    : undefined;
+
+  return cells.map((cell) => {
+    const isInsideGrid = available
+      ? getSecondLayerBaseSupportCandidates(args.shape, cell).some((candidate) => (
+        available.has(getCellKey(candidate))
+      ))
+      : cell.x >= 0
+        && cell.y >= 0
+        && cell.x < args.grid.columns
+        && cell.y < args.grid.rows;
+    const state: GrassPlacementPreviewCellState = (
+      isInsideGrid && !occupied.has(getCellKey(cell))
+    ) ? 'placeable' : 'blocked';
+
+    return { cell, state };
+  });
+}
+
 export function getSecondLayerPatchPlacementCells(patch: GrassPatch) {
   return patch.cells;
 }
@@ -468,6 +498,28 @@ export function getSecondLayerPlacementOverlayOffsetY(shape: GrassShape) {
 
 export function getSecondLayerPatchPlacementOverlayOffsetY(patch: GrassPatch) {
   return getSecondLayerPlacementOverlayOffsetY(grassShapes[patch.shapeKey]);
+}
+
+function hasSecondLayerBaseSupport(
+  shape: GrassShape,
+  placementCells: GridCell[],
+  baseCellKeys: Set<string>,
+) {
+  if (placementCells.every((cell) => baseCellKeys.has(getCellKey(cell)))) {
+    return true;
+  }
+
+  if (!secondLayerTallMaterialShapeKeys.has(shape.key)) {
+    return false;
+  }
+
+  return placementCells.every((cell) => baseCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })));
+}
+
+function getSecondLayerBaseSupportCandidates(shape: GrassShape, cell: GridCell) {
+  return secondLayerTallMaterialShapeKeys.has(shape.key)
+    ? [cell, { x: cell.x, y: cell.y + 1 }]
+    : [cell];
 }
 
 export function getSecondLayerMaterialReferenceTerrainPieces() {

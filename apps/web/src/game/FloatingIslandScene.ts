@@ -7,7 +7,6 @@ import {
   getGrassCellOverlayFrame,
   getGrassMapCells,
   getGrassPlacementPreviewCells,
-  getGrassPlacementPreviewCellsFromCells,
   getGrassShapeCells,
   getGrassTerrainFrame,
   getSecondLayerMergedCells,
@@ -17,6 +16,7 @@ import {
   getSecondLayerPatchPlacementOverlayOffsetY,
   getSecondLayerPlacementCells,
   getSecondLayerPlacementOverlayOffsetY,
+  getSecondLayerPlacementPreviewCells,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
   getSecondLayerShadowRenderOffsetY,
@@ -615,8 +615,9 @@ export class FloatingIslandScene extends Phaser.Scene {
       ? this.getOccupiedSecondLayerPlacementCells()
       : this.getOccupiedBaseCells();
     const previewCellStates = tool.layer === 'second'
-      ? getGrassPlacementPreviewCellsFromCells({
-        cells: previewCells,
+      ? getSecondLayerPlacementPreviewCells({
+        shape: tool.shape,
+        anchor,
         grid: seaLevelScenePlan.grid,
         occupiedCells: [],
         availableCells: this.availableOverlayCells,
