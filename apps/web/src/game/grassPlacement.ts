@@ -83,7 +83,7 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
 };
 
 const secondLayerFrontGrassFrames = new Set([32, 33, 34, 35]);
-const SECOND_LAYER_ROCK_OVERLAP_PIXELS = 14;
+const SECOND_LAYER_FRONT_OVERLAP_PIXELS = 14;
 
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
@@ -414,8 +414,10 @@ export function getSecondLayerTerrainPieces(args: {
   return getRaisedTerrainPieces(getSecondLayerMergedCells(args.occupiedCells), 'wall-only');
 }
 
-export function getSecondLayerTerrainPieceRenderOffsetY(piece: Pick<TerrainPiece, 'surface'>) {
-  return piece.surface === 'rock' ? -SECOND_LAYER_ROCK_OVERLAP_PIXELS : 0;
+export function getSecondLayerTerrainPieceRenderOffsetY(piece: Pick<TerrainPiece, 'frame' | 'surface'>) {
+  return piece.surface === 'grass' && secondLayerFrontGrassFrames.has(piece.frame)
+    ? SECOND_LAYER_FRONT_OVERLAP_PIXELS
+    : 0;
 }
 
 export function getSecondLayerMergedCells(occupiedCells: GridCell[]) {

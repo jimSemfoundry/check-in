@@ -481,9 +481,10 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('renders second-layer rock with upward overlap under the grass front', () => {
-    expect(getSecondLayerTerrainPieceRenderOffsetY({ surface: 'rock' })).toBe(-14);
-    expect(getSecondLayerTerrainPieceRenderOffsetY({ surface: 'grass' })).toBe(0);
+  it('renders second-layer front grass downward over the rock below it', () => {
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 32, surface: 'grass' })).toBe(14);
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 14, surface: 'grass' })).toBe(0);
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 41, surface: 'rock' })).toBe(0);
   });
 
   it('renders second-layer vertical 1x3 as the tall strip, front tile, and narrow rock height', () => {
