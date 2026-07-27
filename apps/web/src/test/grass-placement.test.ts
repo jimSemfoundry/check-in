@@ -484,8 +484,8 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('renders second-layer front grass at normal tile size so draw order covers the rock below it', () => {
-    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 32, surface: 'grass' })).toBe(0);
+  it('renders second-layer front grass and rock upward as one merged lower face', () => {
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 32, surface: 'grass' })).toBe(-12);
     expect(getSecondLayerTerrainPieceRenderHeight({ frame: 32, surface: 'grass' }, 64)).toBe(64);
     expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 14, surface: 'grass' })).toBe(0);
     expect(getSecondLayerTerrainPieceRenderHeight({ frame: 14, surface: 'grass' }, 64)).toBe(64);
