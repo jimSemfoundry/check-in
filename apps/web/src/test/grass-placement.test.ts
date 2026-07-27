@@ -487,7 +487,7 @@ describe('grass placement model', () => {
   it('renders second-layer top downward and lower face upward to match the material overlap', () => {
     expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 32, surface: 'grass' })).toBe(-12);
     expect(getSecondLayerTerrainPieceRenderHeight({ frame: 32, surface: 'grass' }, 64)).toBe(64);
-    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 14, surface: 'grass' })).toBe(40);
+    expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 14, surface: 'grass' })).toBe(52);
     expect(getSecondLayerTerrainPieceRenderHeight({ frame: 14, surface: 'grass' }, 64)).toBe(64);
     expect(getSecondLayerTerrainPieceRenderOffsetY({ frame: 41, surface: 'rock' })).toBe(-12);
     expect(getSecondLayerTerrainPieceRenderHeight({ frame: 41, surface: 'rock' }, 64)).toBe(64);
