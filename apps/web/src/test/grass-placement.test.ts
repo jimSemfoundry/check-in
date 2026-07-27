@@ -371,7 +371,7 @@ describe('grass placement model', () => {
   it('keeps second-layer tall brush occupancy aligned with the rock-base cells', () => {
     expect(getSecondLayerPlacementCells({
       shape: grassShapes.nine,
-      anchor: { x: 2, y: 2 },
+      anchor: { x: 2, y: 1 },
     })).toEqual([
       { x: 2, y: 3 },
       { x: 3, y: 3 },
@@ -385,7 +385,7 @@ describe('grass placement model', () => {
     ]);
     expect(getSecondLayerPlacementCells({
       shape: grassShapes['three-vertical'],
-      anchor: { x: 2, y: 2 },
+      anchor: { x: 2, y: 1 },
     })).toEqual([
       { x: 2, y: 3 },
       { x: 2, y: 4 },
@@ -402,8 +402,8 @@ describe('grass placement model', () => {
     expect(getSecondLayerPatchPlacementCells({
       id: 'placed-nine',
       shapeKey: 'nine',
-      anchor: { x: 2, y: 2 },
-      cells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 2 }),
+      anchor: { x: 2, y: 1 },
+      cells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 1 }),
     })).toEqual([
       { x: 2, y: 3 },
       { x: 3, y: 3 },
@@ -421,11 +421,11 @@ describe('grass placement model', () => {
     expect(getSecondLayerRenderAnchorFromPlacementAnchor({
       shape: grassShapes.nine,
       placementAnchor: { x: 2, y: 3 },
-    })).toEqual({ x: 2, y: 2 });
+    })).toEqual({ x: 2, y: 1 });
     expect(getSecondLayerRenderAnchorFromPlacementAnchor({
       shape: grassShapes['three-vertical'],
       placementAnchor: { x: 2, y: 3 },
-    })).toEqual({ x: 2, y: 2 });
+    })).toEqual({ x: 2, y: 1 });
     expect(getSecondLayerRenderAnchorFromPlacementAnchor({
       shape: grassShapes['three-horizontal'],
       placementAnchor: { x: 2, y: 3 },
@@ -436,7 +436,7 @@ describe('grass placement model', () => {
     expect(placeSecondLayerPatch({
       id: 'aligned-second',
       shape: grassShapes.nine,
-      anchor: { x: 2, y: 2 },
+      anchor: { x: 2, y: 1 },
       grid: { columns: 8, rows: 8 },
       patches: [],
       baseCells: buildTestCells(2, 4, 3, 5),
@@ -444,7 +444,7 @@ describe('grass placement model', () => {
     expect(placeSecondLayerPatch({
       id: 'too-high-second',
       shape: grassShapes.nine,
-      anchor: { x: 2, y: 1 },
+      anchor: { x: 2, y: 0 },
       grid: { columns: 8, rows: 8 },
       patches: [],
       baseCells: buildTestCells(2, 4, 3, 5),
@@ -455,7 +455,7 @@ describe('grass placement model', () => {
     expect(placeSecondLayerPatch({
       id: 'edge-second',
       shape: grassShapes.nine,
-      anchor: { x: 2, y: 2 },
+      anchor: { x: 2, y: 1 },
       grid: { columns: 8, rows: 8 },
       patches: [],
       baseCells: buildTestCells(2, 4, 3, 5),
@@ -463,7 +463,7 @@ describe('grass placement model', () => {
     expect(placeSecondLayerPatch({
       id: 'too-far-above',
       shape: grassShapes.nine,
-      anchor: { x: 2, y: 1 },
+      anchor: { x: 2, y: 0 },
       grid: { columns: 8, rows: 8 },
       patches: [],
       baseCells: buildTestCells(2, 4, 3, 5),
@@ -481,7 +481,7 @@ describe('grass placement model', () => {
   it('marks second-layer tall brush previews placeable one row above the base edge', () => {
     expect(getSecondLayerPlacementPreviewCells({
       shape: grassShapes.nine,
-      anchor: { x: 2, y: 2 },
+      anchor: { x: 2, y: 1 },
       grid: { columns: 8, rows: 8 },
       occupiedCells: [],
       availableCells: buildTestCells(2, 4, 3, 5),
@@ -522,7 +522,7 @@ describe('grass placement model', () => {
   });
 
   it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {
-    const baseCells = buildTestCells(1, 3, 1, 5);
+    const baseCells = buildTestCells(1, 3, 1, 6);
     const patches = placeSecondLayerPatch({
       id: 'second-1',
       shape: grassShapes['three-vertical'],

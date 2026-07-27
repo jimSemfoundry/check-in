@@ -461,7 +461,7 @@ export function getSecondLayerPlacementCells(args: {
     return cells;
   }
 
-  return cells.map((cell) => ({ x: cell.x, y: cell.y + 1 }));
+  return cells.map((cell) => ({ x: cell.x, y: cell.y + 2 }));
 }
 
 export function getSecondLayerRenderAnchorFromPlacementAnchor(args: {
@@ -472,7 +472,7 @@ export function getSecondLayerRenderAnchorFromPlacementAnchor(args: {
     return args.placementAnchor;
   }
 
-  return { x: args.placementAnchor.x, y: args.placementAnchor.y - 1 };
+  return { x: args.placementAnchor.x, y: args.placementAnchor.y - 2 };
 }
 
 export function getSecondLayerPlacementPreviewCells(args: {
@@ -508,7 +508,7 @@ export function getSecondLayerPatchPlacementCells(patch: GrassPatch) {
     return patch.cells;
   }
 
-  return patch.cells.map((cell) => ({ x: cell.x, y: cell.y + 1 }));
+  return patch.cells.map((cell) => ({ x: cell.x, y: cell.y + 2 }));
 }
 
 export function getSecondLayerPlacementOverlayOffsetY(shape: GrassShape) {
