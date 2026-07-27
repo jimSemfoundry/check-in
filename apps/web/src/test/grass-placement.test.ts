@@ -14,6 +14,7 @@ import {
   getIslandTerrainPieces,
   getSecondLayerMaterialReferenceTerrainPieces,
   getSecondLayerPatchTerrainPieces,
+  getSecondLayerPlacementOverlayOffsetY,
   getSecondLayerPlacementCells,
   getSecondLayerTerrainPieces,
   getSecondLayerTerrainPieceRenderHeight,
@@ -412,6 +413,13 @@ describe('grass placement model', () => {
       patches: [],
       baseCells: buildTestCells(2, 4, 2, 4),
     })).toEqual([]);
+  });
+
+  it('draws second-layer tall brush occupancy overlays at the same visual offset as the material top', () => {
+    expect(getSecondLayerPlacementOverlayOffsetY(grassShapes.nine)).toBe(52);
+    expect(getSecondLayerPlacementOverlayOffsetY(grassShapes['three-vertical'])).toBe(52);
+    expect(getSecondLayerPlacementOverlayOffsetY(grassShapes.one)).toBe(0);
+    expect(getSecondLayerPlacementOverlayOffsetY(grassShapes['three-horizontal'])).toBe(0);
   });
 
   it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {

@@ -14,7 +14,9 @@ import {
   getSecondLayerMaterialReferenceTerrainPieces,
   getSecondLayerPatchTerrainPieces,
   getSecondLayerPatchPlacementCells,
+  getSecondLayerPatchPlacementOverlayOffsetY,
   getSecondLayerPlacementCells,
+  getSecondLayerPlacementOverlayOffsetY,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
   getSecondLayerShadowPieces,
@@ -471,9 +473,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     const secondLayerCells = this.getOccupiedSecondLayerCells();
     const secondLayerPlacementCells = this.getOccupiedSecondLayerPlacementCells();
     const mergedSecondLayerCells = getSecondLayerMergedCells(secondLayerCells);
-    const selectedLayerCells = this.getSelectedTerrainTool()?.layer === 'second'
-      ? secondLayerPlacementCells
-      : occupiedBaseCells;
+    const selectedTool = this.getSelectedTerrainTool();
 
     for (const cell of getVisibleGrassFoamCells({
       baseCells: occupiedBaseCells,
@@ -505,14 +505,30 @@ export class FloatingIslandScene extends Phaser.Scene {
       ));
     }
 
-    for (const cell of selectedLayerCells) {
-      this.occupiedCellRoot.add(this.createCellStateRectangle(
-        cell,
-        gridLeft,
-        gridTop,
-        'occupied',
-        selectedLayerCells,
-      ));
+    if (selectedTool?.layer === 'second') {
+      for (const patch of this.secondLayerPatches) {
+        const overlayOffsetY = getSecondLayerPatchPlacementOverlayOffsetY(patch);
+        for (const cell of getSecondLayerPatchPlacementCells(patch)) {
+          this.occupiedCellRoot.add(this.createCellStateRectangle(
+            cell,
+            gridLeft,
+            gridTop,
+            'occupied',
+            secondLayerPlacementCells,
+            overlayOffsetY,
+          ));
+        }
+      }
+    } else {
+      for (const cell of occupiedBaseCells) {
+        this.occupiedCellRoot.add(this.createCellStateRectangle(
+          cell,
+          gridLeft,
+          gridTop,
+          'occupied',
+          occupiedBaseCells,
+        ));
+      }
     }
   }
 
@@ -610,6 +626,9 @@ export class FloatingIslandScene extends Phaser.Scene {
         occupiedCells,
         availableCells: this.availableOverlayCells,
       });
+    const previewOverlayOffsetY = tool.layer === 'second'
+      ? getSecondLayerPlacementOverlayOffsetY(tool.shape)
+      : 0;
 
     this.renderAvailableCells(this.getAvailableOverlayCells());
 
@@ -661,6 +680,7 @@ export class FloatingIslandScene extends Phaser.Scene {
         gridTop,
         state,
         previewCells,
+        previewOverlayOffsetY,
       ));
     }
   }
@@ -724,6 +744,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     gridTop: number,
     state: 'placeable' | 'blocked',
     overlayCells: GridCell[],
+    overlayOffsetY: number = 0,
   ) {
     const fillColor = state === 'blocked' ? BLOCKED_PREVIEW_TINT : PLACEABLE_PREVIEW_TINT;
     const fillAlpha = state === 'blocked' ? BLOCKED_PREVIEW_ALPHA : PLACEABLE_PREVIEW_ALPHA;
@@ -735,7 +756,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     });
     const rect = this.add.rectangle(
       gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2 + frame.offsetX,
-      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2 + frame.offsetY,
+      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2 + frame.offsetY + overlayOffsetY,
       frame.width + 1,
       frame.height + 1,
       fillColor,
@@ -750,6 +771,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     gridTop: number,
     state: keyof typeof seaLevelScenePlan.cellStates,
     overlayCells?: GridCell[],
+    overlayOffsetY: number = 0,
   ) {
     const style = seaLevelScenePlan.cellStates[state];
     const frame = overlayCells
@@ -767,7 +789,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       };
     const rect = this.add.rectangle(
       gridLeft + cell.x * TILE_SIZE + TILE_SIZE / 2 + frame.offsetX,
-      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2 + frame.offsetY,
+      gridTop + cell.y * TILE_SIZE + TILE_SIZE / 2 + frame.offsetY + overlayOffsetY,
       frame.width,
       frame.height,
       style.fillColor,

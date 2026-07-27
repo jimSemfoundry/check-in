@@ -83,6 +83,7 @@ const secondLayerGrassFramesByOpenEdgeMask: Record<number, number> = {
 };
 
 const secondLayerFrontGrassFrames = new Set([32, 33, 34, 35]);
+const secondLayerTallMaterialShapeKeys = new Set<GrassShapeKey>(['three-vertical', 'nine']);
 const SECOND_LAYER_LOWER_FACE_OVERLAP_PIXELS = 12;
 const SECOND_LAYER_TOP_FACE_DROP_PIXELS = 52;
 
@@ -455,6 +456,14 @@ export function getSecondLayerPlacementCells(args: {
 
 export function getSecondLayerPatchPlacementCells(patch: GrassPatch) {
   return patch.cells;
+}
+
+export function getSecondLayerPlacementOverlayOffsetY(shape: GrassShape) {
+  return secondLayerTallMaterialShapeKeys.has(shape.key) ? SECOND_LAYER_TOP_FACE_DROP_PIXELS : 0;
+}
+
+export function getSecondLayerPatchPlacementOverlayOffsetY(patch: GrassPatch) {
+  return getSecondLayerPlacementOverlayOffsetY(grassShapes[patch.shapeKey]);
 }
 
 export function getSecondLayerMaterialReferenceTerrainPieces() {
