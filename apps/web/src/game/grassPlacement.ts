@@ -430,6 +430,13 @@ export function getSecondLayerPatchTerrainPieces(args: {
   }));
 }
 
+export function getSecondLayerMaterialReferenceTerrainPieces() {
+  return [
+    ...getFixedSecondLayerNinePieces({ x: 0, y: 0 }),
+    ...getFixedSecondLayerVerticalPieces({ x: 4, y: 0 }),
+  ];
+}
+
 export function getSecondLayerTerrainPieceRenderOffsetY(piece: Pick<TerrainPiece, 'frame' | 'surface'>) {
   return piece.surface === 'rock'
     ? -SECOND_LAYER_ROCK_FRONT_OVERLAP_PIXELS

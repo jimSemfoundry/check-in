@@ -12,6 +12,7 @@ import {
   getGrassShapeForHudSlot,
   getVisibleGrassFoamCells,
   getIslandTerrainPieces,
+  getSecondLayerMaterialReferenceTerrainPieces,
   getSecondLayerPatchTerrainPieces,
   getSecondLayerTerrainPieces,
   getSecondLayerTerrainPieceRenderHeight,
@@ -587,6 +588,21 @@ describe('grass placement model', () => {
       { cell: { x: 2, y: 5 }, frame: 26, surface: 'grass' },
       { cell: { x: 2, y: 6 }, frame: 35, surface: 'grass' },
       { cell: { x: 2, y: 7 }, frame: 44, surface: 'rock' },
+    ]));
+  });
+
+  it('builds a separate second-layer material reference without placement patches', () => {
+    const pieces = getSecondLayerMaterialReferenceTerrainPieces();
+
+    expect(pieces).toEqual(expect.arrayContaining([
+      { cell: { x: 0, y: 0 }, frame: 5, surface: 'grass' },
+      { cell: { x: 2, y: 2 }, frame: 25, surface: 'grass' },
+      { cell: { x: 0, y: 3 }, frame: 32, surface: 'grass' },
+      { cell: { x: 2, y: 4 }, frame: 43, surface: 'rock' },
+      { cell: { x: 4, y: 0 }, frame: 8, surface: 'grass' },
+      { cell: { x: 4, y: 2 }, frame: 26, surface: 'grass' },
+      { cell: { x: 4, y: 3 }, frame: 35, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 44, surface: 'rock' },
     ]));
   });
 

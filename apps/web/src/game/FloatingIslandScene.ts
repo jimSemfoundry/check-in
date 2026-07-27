@@ -10,6 +10,7 @@ import {
   getGrassShapeCells,
   getGrassTerrainFrame,
   getSecondLayerMergedCells,
+  getSecondLayerMaterialReferenceTerrainPieces,
   getSecondLayerPatchTerrainPieces,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
@@ -52,11 +53,14 @@ const GRASS_MAP_MARGIN_CELLS = 4;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
 const placementHeight = seaLevelScenePlan.grid.rows * TILE_SIZE;
+const MATERIAL_REFERENCE_GRID_LEFT = -placementWidth / 2 - TILE_SIZE * 1.5;
+const MATERIAL_REFERENCE_GRID_TOP = -placementHeight / 2 + TILE_SIZE * 0.2;
 
 export class FloatingIslandScene extends Phaser.Scene {
   private worldRoot?: Phaser.GameObjects.Container;
   private availableCellRoot?: Phaser.GameObjects.Container;
   private waterFoamRoot?: Phaser.GameObjects.Container;
+  private materialReferenceRoot?: Phaser.GameObjects.Container;
   private grassRoot?: Phaser.GameObjects.Container;
   private secondLayerShadowRoot?: Phaser.GameObjects.Container;
   private secondLayerRoot?: Phaser.GameObjects.Container;
@@ -110,6 +114,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.worldRoot = this.add.container(0, 0);
     this.availableCellRoot = undefined;
     this.waterFoamRoot = undefined;
+    this.materialReferenceRoot = undefined;
     this.grassRoot = undefined;
     this.secondLayerShadowRoot = undefined;
     this.secondLayerRoot = undefined;
@@ -225,6 +230,7 @@ export class FloatingIslandScene extends Phaser.Scene {
   private createPlacementLayers() {
     this.availableCellRoot = this.add.container(0, 0);
     this.waterFoamRoot = this.add.container(0, 0);
+    this.materialReferenceRoot = this.add.container(0, 0);
     this.grassRoot = this.add.container(0, 0);
     this.secondLayerShadowRoot = this.add.container(0, 0);
     this.secondLayerRoot = this.add.container(0, 0);
@@ -232,12 +238,14 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.previewRoot = this.add.container(0, 0);
     this.addToWorld(this.availableCellRoot);
     this.addToWorld(this.waterFoamRoot);
+    this.addToWorld(this.materialReferenceRoot);
     this.addToWorld(this.grassRoot);
     this.addToWorld(this.secondLayerShadowRoot);
     this.addToWorld(this.secondLayerRoot);
     this.addToWorld(this.previewRoot);
     this.addToWorld(this.occupiedCellRoot);
     this.renderAvailableCells();
+    this.renderMaterialReference();
     this.availableCellRoot.setVisible(false);
     this.occupiedCellRoot.setVisible(false);
   }
@@ -245,6 +253,22 @@ export class FloatingIslandScene extends Phaser.Scene {
   private addToWorld<T extends Phaser.GameObjects.GameObject>(gameObject: T) {
     this.worldRoot?.add(gameObject);
     return gameObject;
+  }
+
+  private renderMaterialReference() {
+    if (!this.materialReferenceRoot) return;
+
+    this.materialReferenceRoot.removeAll(true);
+    for (const piece of getSecondLayerMaterialReferenceTerrainPieces()) {
+      this.materialReferenceRoot.add(this.createTerrainPiece(
+        piece,
+        MATERIAL_REFERENCE_GRID_LEFT,
+        MATERIAL_REFERENCE_GRID_TOP,
+        1,
+        getSecondLayerTerrainPieceRenderOffsetY(piece),
+        getSecondLayerTerrainPieceRenderHeight(piece, TILE_SIZE),
+      ));
+    }
   }
 
   private handleWorldPointerDown(pointer: Phaser.Input.Pointer) {
