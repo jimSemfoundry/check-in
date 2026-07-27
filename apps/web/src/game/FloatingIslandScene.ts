@@ -498,7 +498,7 @@ export class FloatingIslandScene extends Phaser.Scene {
       this.grassRoot.add(this.createGrassTile(cell, baseCells, gridLeft, gridTop, 1));
     }
 
-    for (const piece of getSecondLayerShadowPieces({ occupiedCells: secondLayerCells })) {
+    for (const piece of getSecondLayerShadowPieces({ occupiedCells: secondLayerPlacementCells })) {
       this.secondLayerShadowRoot.add(this.createSecondLayerShadow(piece, gridLeft, gridTop));
     }
 

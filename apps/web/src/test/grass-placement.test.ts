@@ -541,20 +541,20 @@ describe('grass placement model', () => {
     expect(getSecondLayerPlacementOverlayOffsetY(grassShapes['three-horizontal'])).toBe(0);
   });
 
-  it('scales second-layer shadows to the marked rock-base range', () => {
+  it('scales each second-layer shadow to one placement cell', () => {
     expect(getSecondLayerShadowRenderSize({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toEqual({
-      width: 622,
-      height: 224,
+      width: 64,
+      height: 64,
     });
     expect(getSecondLayerShadowRenderSize({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toEqual({
-      width: 311,
-      height: 96,
+      width: 64,
+      height: 64,
     });
   });
 
-  it('positions second-layer shadows directly under the rock bottom', () => {
-    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(3);
-    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(-24);
+  it('centers each second-layer shadow on its placement cell', () => {
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(0);
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(0);
   });
 
   it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {
@@ -656,9 +656,12 @@ describe('grass placement model', () => {
       { cell: { x: 2, y: 3 }, frame: 35, surface: 'grass' },
     ]);
     expect(getSecondLayerShadowPieces({
-      occupiedCells: [{ x: 2, y: 3 }],
+      occupiedCells: getSecondLayerPlacementCells({
+        shape: grassShapes.one,
+        anchor: { x: 2, y: 3 },
+      }),
     })).toEqual([
-      { cell: { x: 2, y: 5 }, widthCells: 1 },
+      { cell: { x: 2, y: 4 }, widthCells: 1 },
     ]);
   });
 
@@ -674,9 +677,14 @@ describe('grass placement model', () => {
       { cell: { x: 4, y: 3 }, frame: 34, surface: 'grass' },
     ]);
     expect(getSecondLayerShadowPieces({
-      occupiedCells: getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 3 }),
+      occupiedCells: getSecondLayerPlacementCells({
+        shape: grassShapes['three-horizontal'],
+        anchor: { x: 2, y: 3 },
+      }),
     })).toEqual([
-      { cell: { x: 3, y: 5 }, widthCells: 3 },
+      { cell: { x: 2, y: 4 }, widthCells: 1 },
+      { cell: { x: 3, y: 4 }, widthCells: 1 },
+      { cell: { x: 4, y: 4 }, widthCells: 1 },
     ]);
   });
 
@@ -700,9 +708,14 @@ describe('grass placement model', () => {
       { cell: { x: 2, y: 6 }, frame: 35, surface: 'grass' },
     ]);
     expect(getSecondLayerShadowPieces({
-      occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
+      occupiedCells: getSecondLayerPlacementCells({
+        shape: grassShapes['three-vertical'],
+        anchor: { x: 2, y: 3 },
+      }),
     })).toEqual([
-      { cell: { x: 2, y: 8 }, widthCells: 1 },
+      { cell: { x: 2, y: 5 }, widthCells: 1 },
+      { cell: { x: 2, y: 6 }, widthCells: 1 },
+      { cell: { x: 2, y: 7 }, widthCells: 1 },
     ]);
   });
 
@@ -727,9 +740,20 @@ describe('grass placement model', () => {
       { cell: { x: 4, y: 6 }, frame: 34, surface: 'grass' },
     ]);
     expect(getSecondLayerShadowPieces({
-      occupiedCells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
+      occupiedCells: getSecondLayerPlacementCells({
+        shape: grassShapes.nine,
+        anchor: { x: 2, y: 3 },
+      }),
     })).toEqual([
-      { cell: { x: 3, y: 8 }, widthCells: 3 },
+      { cell: { x: 2, y: 5 }, widthCells: 1 },
+      { cell: { x: 3, y: 5 }, widthCells: 1 },
+      { cell: { x: 4, y: 5 }, widthCells: 1 },
+      { cell: { x: 2, y: 6 }, widthCells: 1 },
+      { cell: { x: 3, y: 6 }, widthCells: 1 },
+      { cell: { x: 4, y: 6 }, widthCells: 1 },
+      { cell: { x: 2, y: 7 }, widthCells: 1 },
+      { cell: { x: 3, y: 7 }, widthCells: 1 },
+      { cell: { x: 4, y: 7 }, widthCells: 1 },
     ]);
   });
 
@@ -888,11 +912,28 @@ describe('grass placement model', () => {
     ]);
     expect(getSecondLayerShadowPieces({
       occupiedCells: [
-        ...getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
-        ...getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 7 }),
+        ...getSecondLayerPlacementCells({
+          shape: grassShapes.nine,
+          anchor: { x: 2, y: 3 },
+        }),
+        ...getSecondLayerPlacementCells({
+          shape: grassShapes['three-horizontal'],
+          anchor: { x: 2, y: 7 },
+        }),
       ],
     })).toEqual([
-      { cell: { x: 3, y: 10 }, widthCells: 3 },
+      { cell: { x: 2, y: 5 }, widthCells: 1 },
+      { cell: { x: 3, y: 5 }, widthCells: 1 },
+      { cell: { x: 4, y: 5 }, widthCells: 1 },
+      { cell: { x: 2, y: 6 }, widthCells: 1 },
+      { cell: { x: 3, y: 6 }, widthCells: 1 },
+      { cell: { x: 4, y: 6 }, widthCells: 1 },
+      { cell: { x: 2, y: 7 }, widthCells: 1 },
+      { cell: { x: 3, y: 7 }, widthCells: 1 },
+      { cell: { x: 4, y: 7 }, widthCells: 1 },
+      { cell: { x: 2, y: 8 }, widthCells: 1 },
+      { cell: { x: 3, y: 8 }, widthCells: 1 },
+      { cell: { x: 4, y: 8 }, widthCells: 1 },
     ]);
   });
 
@@ -929,11 +970,20 @@ describe('grass placement model', () => {
     ]);
     expect(getSecondLayerShadowPieces({
       occupiedCells: [
-        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
-        { x: 2, y: 7 },
+        ...getSecondLayerPlacementCells({
+          shape: grassShapes['three-vertical'],
+          anchor: { x: 2, y: 3 },
+        }),
+        ...getSecondLayerPlacementCells({
+          shape: grassShapes.one,
+          anchor: { x: 2, y: 7 },
+        }),
       ],
     })).toEqual([
-      { cell: { x: 2, y: 10 }, widthCells: 1 },
+      { cell: { x: 2, y: 5 }, widthCells: 1 },
+      { cell: { x: 2, y: 6 }, widthCells: 1 },
+      { cell: { x: 2, y: 7 }, widthCells: 1 },
+      { cell: { x: 2, y: 8 }, widthCells: 1 },
     ]);
   });
 
@@ -955,11 +1005,20 @@ describe('grass placement model', () => {
     ]);
     expect(getSecondLayerShadowPieces({
       occupiedCells: [
-        ...getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
-        { x: 2, y: 8 },
+        ...getSecondLayerPlacementCells({
+          shape: grassShapes['three-vertical'],
+          anchor: { x: 2, y: 3 },
+        }),
+        ...getSecondLayerPlacementCells({
+          shape: grassShapes.one,
+          anchor: { x: 2, y: 8 },
+        }),
       ],
     })).toEqual([
-      { cell: { x: 2, y: 11 }, widthCells: 1 },
+      { cell: { x: 2, y: 5 }, widthCells: 1 },
+      { cell: { x: 2, y: 6 }, widthCells: 1 },
+      { cell: { x: 2, y: 7 }, widthCells: 1 },
+      { cell: { x: 2, y: 9 }, widthCells: 1 },
     ]);
   });
 
