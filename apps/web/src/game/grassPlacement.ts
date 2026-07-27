@@ -86,6 +86,9 @@ const secondLayerFrontGrassFrames = new Set([32, 33, 34, 35]);
 const secondLayerTallMaterialShapeKeys = new Set<GrassShapeKey>(['three-vertical', 'nine']);
 const SECOND_LAYER_LOWER_FACE_OVERLAP_PIXELS = 12;
 const SECOND_LAYER_TOP_FACE_DROP_PIXELS = 52;
+const SECOND_LAYER_SHADOW_SOURCE_SIZE_PIXELS = 192;
+const SECOND_LAYER_SHADOW_VISIBLE_WIDTH_PIXELS = 79;
+const SECOND_LAYER_SHADOW_VISIBLE_TOP_PIXELS = 56;
 
 export const grassShapes: Record<GrassShapeKey, GrassShape> = {
   one: { key: 'one', width: 1, height: 1 },
@@ -573,18 +576,25 @@ export function getSecondLayerShadowPieces(args: {
 }
 
 export function getSecondLayerShadowRenderSize(piece: TerrainShadowPiece, tileSize: number) {
-  const size = piece.widthCells * tileSize;
+  const visibleWidth = piece.widthCells * tileSize;
+  const width = Math.round(
+    visibleWidth * (SECOND_LAYER_SHADOW_SOURCE_SIZE_PIXELS / SECOND_LAYER_SHADOW_VISIBLE_WIDTH_PIXELS),
+  );
 
   return {
-    width: size,
-    height: size,
+    width,
+    height: visibleWidth,
   };
 }
 
 export function getSecondLayerShadowRenderOffsetY(piece: TerrainShadowPiece, tileSize: number) {
   const { height } = getSecondLayerShadowRenderSize(piece, tileSize);
+  const visibleTopFromCenter = (
+    SECOND_LAYER_SHADOW_VISIBLE_TOP_PIXELS / SECOND_LAYER_SHADOW_SOURCE_SIZE_PIXELS - 0.5
+  ) * height;
+  const rockBottomFromShadowCenter = -tileSize / 2 - SECOND_LAYER_LOWER_FACE_OVERLAP_PIXELS;
 
-  return Math.round((height - tileSize * 3) * (40 / (tileSize * 3)));
+  return Math.round(rockBottomFromShadowCenter - visibleTopFromCenter);
 }
 
 export function getIslandTerrainPieces(args: {
