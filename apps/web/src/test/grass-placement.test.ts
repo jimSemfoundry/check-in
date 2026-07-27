@@ -435,9 +435,9 @@ describe('grass placement model', () => {
     });
   });
 
-  it('moves second-layer shadows so their visible pixels start at the rock bottom', () => {
-    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(-4);
-    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(-31);
+  it('moves second-layer shadows one cell upward so they sit under the rock bottom', () => {
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(-68);
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(-95);
   });
 
   it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {
