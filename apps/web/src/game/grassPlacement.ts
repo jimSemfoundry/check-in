@@ -572,6 +572,21 @@ export function getSecondLayerShadowPieces(args: {
   return getSecondLayerShadowRowPieces(shadowCells);
 }
 
+export function getSecondLayerShadowRenderSize(piece: TerrainShadowPiece, tileSize: number) {
+  const size = piece.widthCells * tileSize;
+
+  return {
+    width: size,
+    height: size,
+  };
+}
+
+export function getSecondLayerShadowRenderOffsetY(piece: TerrainShadowPiece, tileSize: number) {
+  const { height } = getSecondLayerShadowRenderSize(piece, tileSize);
+
+  return Math.round((height - tileSize * 3) * (40 / (tileSize * 3)));
+}
+
 export function getIslandTerrainPieces(args: {
   occupiedCells: GridCell[];
 }) {

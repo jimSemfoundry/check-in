@@ -16,6 +16,8 @@ import {
   getSecondLayerPatchTerrainPieces,
   getSecondLayerPlacementOverlayOffsetY,
   getSecondLayerPlacementCells,
+  getSecondLayerShadowRenderOffsetY,
+  getSecondLayerShadowRenderSize,
   getSecondLayerTerrainPieces,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
@@ -420,6 +422,22 @@ describe('grass placement model', () => {
     expect(getSecondLayerPlacementOverlayOffsetY(grassShapes['three-vertical'])).toBe(52);
     expect(getSecondLayerPlacementOverlayOffsetY(grassShapes.one)).toBe(0);
     expect(getSecondLayerPlacementOverlayOffsetY(grassShapes['three-horizontal'])).toBe(0);
+  });
+
+  it('renders second-layer shadows as square material shadows sized by rock width', () => {
+    expect(getSecondLayerShadowRenderSize({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toEqual({
+      width: 192,
+      height: 192,
+    });
+    expect(getSecondLayerShadowRenderSize({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toEqual({
+      width: 64,
+      height: 64,
+    });
+  });
+
+  it('moves narrow second-layer shadows upward so their visible pixels sit under the rock', () => {
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 3, y: 8 }, widthCells: 3 }, 64)).toBe(0);
+    expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(-27);
   });
 
   it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {

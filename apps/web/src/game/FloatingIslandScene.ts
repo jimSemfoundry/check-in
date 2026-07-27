@@ -19,6 +19,8 @@ import {
   getSecondLayerPlacementOverlayOffsetY,
   getSecondLayerTerrainPieceRenderHeight,
   getSecondLayerTerrainPieceRenderOffsetY,
+  getSecondLayerShadowRenderOffsetY,
+  getSecondLayerShadowRenderSize,
   getSecondLayerShadowPieces,
   getTerrainToolForHudSlot,
   getGridCellFromWorldPoint,
@@ -53,7 +55,6 @@ const WATER_FOAM_FRAME_RATE = 8;
 const WATER_FOAM_DISPLAY_SIZE = 220;
 const SECOND_LAYER_SHADOW_KEY = 'terrain-shadow';
 const SECOND_LAYER_SHADOW_ALPHA = 0.44;
-const SECOND_LAYER_SHADOW_HEIGHT = TILE_SIZE;
 const GRASS_MAP_MARGIN_CELLS = 4;
 
 const placementWidth = seaLevelScenePlan.grid.columns * TILE_SIZE;
@@ -558,10 +559,11 @@ export class FloatingIslandScene extends Phaser.Scene {
   ) {
     const shadow = this.add.image(
       gridLeft + piece.cell.x * TILE_SIZE + TILE_SIZE / 2,
-      gridTop + piece.cell.y * TILE_SIZE + TILE_SIZE / 2,
+      gridTop + piece.cell.y * TILE_SIZE + TILE_SIZE / 2 + getSecondLayerShadowRenderOffsetY(piece, TILE_SIZE),
       SECOND_LAYER_SHADOW_KEY,
     );
-    shadow.setDisplaySize(piece.widthCells * TILE_SIZE, SECOND_LAYER_SHADOW_HEIGHT);
+    const size = getSecondLayerShadowRenderSize(piece, TILE_SIZE);
+    shadow.setDisplaySize(size.width, size.height);
     shadow.setAlpha(SECOND_LAYER_SHADOW_ALPHA);
     return shadow;
   }
