@@ -246,8 +246,8 @@ export class FloatingIslandScene extends Phaser.Scene {
     this.addToWorld(this.waterFoamRoot);
     this.addToWorld(this.materialReferenceRoot);
     this.addToWorld(this.grassRoot);
-    this.addToWorld(this.secondLayerRoot);
     this.addToWorld(this.secondLayerShadowRoot);
+    this.addToWorld(this.secondLayerRoot);
     this.addToWorld(this.previewRoot);
     this.addToWorld(this.occupiedCellRoot);
     this.renderAvailableCells();
@@ -481,6 +481,7 @@ export class FloatingIslandScene extends Phaser.Scene {
     const secondLayerCells = this.getOccupiedSecondLayerCells();
     const secondLayerPlacementCells = this.getOccupiedSecondLayerPlacementCells();
     const mergedSecondLayerCells = getSecondLayerMergedCells(secondLayerCells);
+    const secondLayerTerrainPieces = getSecondLayerPatchTerrainPieces({ patches: this.secondLayerPatches });
     const selectedTool = this.getSelectedTerrainTool();
 
     for (const cell of getVisibleGrassFoamCells({
@@ -498,11 +499,11 @@ export class FloatingIslandScene extends Phaser.Scene {
       this.grassRoot.add(this.createGrassTile(cell, baseCells, gridLeft, gridTop, 1));
     }
 
-    for (const piece of getSecondLayerShadowPieces({ occupiedCells: secondLayerPlacementCells })) {
+    for (const piece of getSecondLayerShadowPieces({ terrainPieces: secondLayerTerrainPieces })) {
       this.secondLayerShadowRoot.add(this.createSecondLayerShadow(piece, gridLeft, gridTop));
     }
 
-    for (const piece of getSecondLayerPatchTerrainPieces({ patches: this.secondLayerPatches })) {
+    for (const piece of secondLayerTerrainPieces) {
       this.secondLayerRoot.add(this.createTerrainPiece(
         piece,
         gridLeft,

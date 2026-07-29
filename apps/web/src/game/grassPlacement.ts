@@ -614,13 +614,17 @@ function dedupeTerrainPieces(pieces: TerrainPiece[]) {
 }
 
 export function getSecondLayerShadowPieces(args: {
-  occupiedCells: GridCell[];
+  terrainPieces: TerrainPiece[];
 }): TerrainShadowPiece[] {
-  const occupiedCells = getUniqueCells(args.occupiedCells);
-  const occupiedCellKeys = new Set(occupiedCells.map(getCellKey));
+  const rockCells = getUniqueCells(
+    args.terrainPieces
+      .filter((piece) => piece.surface === 'rock')
+      .map((piece) => piece.cell),
+  );
+  const rockCellKeys = new Set(rockCells.map(getCellKey));
 
-  return occupiedCells
-    .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
+  return rockCells
+    .filter((cell) => !rockCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
     .map((cell) => ({ x: cell.x, y: cell.y + 1 }))
     .sort(compareCells)
     .map((cell) => ({ cell, widthCells: 1 }));
