@@ -625,7 +625,6 @@ export function getSecondLayerShadowPieces(args: {
 
   return rockCells
     .filter((cell) => !rockCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
-    .map((cell) => ({ x: cell.x, y: cell.y + 1 }))
     .sort(compareCells)
     .map((cell) => ({ cell, widthCells: 1 }));
 }

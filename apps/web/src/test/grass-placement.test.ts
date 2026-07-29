@@ -660,7 +660,7 @@ describe('grass placement model', () => {
         occupiedCells: getGrassShapeCells(grassShapes.one, { x: 2, y: 3 }),
       }),
     })).toEqual([
-      { cell: { x: 2, y: 5 }, widthCells: 1 },
+      { cell: { x: 2, y: 4 }, widthCells: 1 },
     ]);
   });
 
@@ -680,9 +680,9 @@ describe('grass placement model', () => {
         occupiedCells: getGrassShapeCells(grassShapes['three-horizontal'], { x: 2, y: 3 }),
       }),
     })).toEqual([
-      { cell: { x: 2, y: 5 }, widthCells: 1 },
-      { cell: { x: 3, y: 5 }, widthCells: 1 },
-      { cell: { x: 4, y: 5 }, widthCells: 1 },
+      { cell: { x: 2, y: 4 }, widthCells: 1 },
+      { cell: { x: 3, y: 4 }, widthCells: 1 },
+      { cell: { x: 4, y: 4 }, widthCells: 1 },
     ]);
   });
 
@@ -710,7 +710,7 @@ describe('grass placement model', () => {
         occupiedCells: getGrassShapeCells(grassShapes['three-vertical'], { x: 2, y: 3 }),
       }),
     })).toEqual([
-      { cell: { x: 2, y: 8 }, widthCells: 1 },
+      { cell: { x: 2, y: 7 }, widthCells: 1 },
     ]);
   });
 
@@ -739,9 +739,9 @@ describe('grass placement model', () => {
         occupiedCells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 3 }),
       }),
     })).toEqual([
-      { cell: { x: 2, y: 8 }, widthCells: 1 },
-      { cell: { x: 3, y: 8 }, widthCells: 1 },
-      { cell: { x: 4, y: 8 }, widthCells: 1 },
+      { cell: { x: 2, y: 7 }, widthCells: 1 },
+      { cell: { x: 3, y: 7 }, widthCells: 1 },
+      { cell: { x: 4, y: 7 }, widthCells: 1 },
     ]);
   });
 
@@ -906,9 +906,9 @@ describe('grass placement model', () => {
         ],
       }),
     })).toEqual([
-      { cell: { x: 2, y: 10 }, widthCells: 1 },
-      { cell: { x: 3, y: 10 }, widthCells: 1 },
-      { cell: { x: 4, y: 10 }, widthCells: 1 },
+      { cell: { x: 2, y: 9 }, widthCells: 1 },
+      { cell: { x: 3, y: 9 }, widthCells: 1 },
+      { cell: { x: 4, y: 9 }, widthCells: 1 },
     ]);
   });
 
@@ -951,7 +951,7 @@ describe('grass placement model', () => {
         ],
       }),
     })).toEqual([
-      { cell: { x: 2, y: 10 }, widthCells: 1 },
+      { cell: { x: 2, y: 9 }, widthCells: 1 },
     ]);
   });
 
@@ -979,7 +979,7 @@ describe('grass placement model', () => {
         ],
       }),
     })).toEqual([
-      { cell: { x: 2, y: 11 }, widthCells: 1 },
+      { cell: { x: 2, y: 10 }, widthCells: 1 },
     ]);
   });
 
