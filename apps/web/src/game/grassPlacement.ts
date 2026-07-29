@@ -616,7 +616,12 @@ function dedupeTerrainPieces(pieces: TerrainPiece[]) {
 export function getSecondLayerShadowPieces(args: {
   occupiedCells: GridCell[];
 }): TerrainShadowPiece[] {
-  return getUniqueCells(args.occupiedCells)
+  const occupiedCells = getUniqueCells(args.occupiedCells);
+  const occupiedCellKeys = new Set(occupiedCells.map(getCellKey));
+
+  return occupiedCells
+    .filter((cell) => !occupiedCellKeys.has(getCellKey({ x: cell.x, y: cell.y + 1 })))
+    .map((cell) => ({ x: cell.x, y: cell.y + 1 }))
     .sort(compareCells)
     .map((cell) => ({ cell, widthCells: 1 }));
 }

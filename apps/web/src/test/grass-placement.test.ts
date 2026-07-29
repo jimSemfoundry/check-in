@@ -661,7 +661,7 @@ describe('grass placement model', () => {
         anchor: { x: 2, y: 3 },
       }),
     })).toEqual([
-      { cell: { x: 2, y: 4 }, widthCells: 1 },
+      { cell: { x: 2, y: 5 }, widthCells: 1 },
     ]);
   });
 
@@ -682,9 +682,9 @@ describe('grass placement model', () => {
         anchor: { x: 2, y: 3 },
       }),
     })).toEqual([
-      { cell: { x: 2, y: 4 }, widthCells: 1 },
-      { cell: { x: 3, y: 4 }, widthCells: 1 },
-      { cell: { x: 4, y: 4 }, widthCells: 1 },
+      { cell: { x: 2, y: 5 }, widthCells: 1 },
+      { cell: { x: 3, y: 5 }, widthCells: 1 },
+      { cell: { x: 4, y: 5 }, widthCells: 1 },
     ]);
   });
 
@@ -713,9 +713,7 @@ describe('grass placement model', () => {
         anchor: { x: 2, y: 3 },
       }),
     })).toEqual([
-      { cell: { x: 2, y: 5 }, widthCells: 1 },
-      { cell: { x: 2, y: 6 }, widthCells: 1 },
-      { cell: { x: 2, y: 7 }, widthCells: 1 },
+      { cell: { x: 2, y: 8 }, widthCells: 1 },
     ]);
   });
 
@@ -745,15 +743,9 @@ describe('grass placement model', () => {
         anchor: { x: 2, y: 3 },
       }),
     })).toEqual([
-      { cell: { x: 2, y: 5 }, widthCells: 1 },
-      { cell: { x: 3, y: 5 }, widthCells: 1 },
-      { cell: { x: 4, y: 5 }, widthCells: 1 },
-      { cell: { x: 2, y: 6 }, widthCells: 1 },
-      { cell: { x: 3, y: 6 }, widthCells: 1 },
-      { cell: { x: 4, y: 6 }, widthCells: 1 },
-      { cell: { x: 2, y: 7 }, widthCells: 1 },
-      { cell: { x: 3, y: 7 }, widthCells: 1 },
-      { cell: { x: 4, y: 7 }, widthCells: 1 },
+      { cell: { x: 2, y: 8 }, widthCells: 1 },
+      { cell: { x: 3, y: 8 }, widthCells: 1 },
+      { cell: { x: 4, y: 8 }, widthCells: 1 },
     ]);
   });
 
@@ -922,18 +914,9 @@ describe('grass placement model', () => {
         }),
       ],
     })).toEqual([
-      { cell: { x: 2, y: 5 }, widthCells: 1 },
-      { cell: { x: 3, y: 5 }, widthCells: 1 },
-      { cell: { x: 4, y: 5 }, widthCells: 1 },
-      { cell: { x: 2, y: 6 }, widthCells: 1 },
-      { cell: { x: 3, y: 6 }, widthCells: 1 },
-      { cell: { x: 4, y: 6 }, widthCells: 1 },
-      { cell: { x: 2, y: 7 }, widthCells: 1 },
-      { cell: { x: 3, y: 7 }, widthCells: 1 },
-      { cell: { x: 4, y: 7 }, widthCells: 1 },
-      { cell: { x: 2, y: 8 }, widthCells: 1 },
-      { cell: { x: 3, y: 8 }, widthCells: 1 },
-      { cell: { x: 4, y: 8 }, widthCells: 1 },
+      { cell: { x: 2, y: 9 }, widthCells: 1 },
+      { cell: { x: 3, y: 9 }, widthCells: 1 },
+      { cell: { x: 4, y: 9 }, widthCells: 1 },
     ]);
   });
 
@@ -980,10 +963,7 @@ describe('grass placement model', () => {
         }),
       ],
     })).toEqual([
-      { cell: { x: 2, y: 5 }, widthCells: 1 },
-      { cell: { x: 2, y: 6 }, widthCells: 1 },
-      { cell: { x: 2, y: 7 }, widthCells: 1 },
-      { cell: { x: 2, y: 8 }, widthCells: 1 },
+      { cell: { x: 2, y: 9 }, widthCells: 1 },
     ]);
   });
 
@@ -1015,10 +995,8 @@ describe('grass placement model', () => {
         }),
       ],
     })).toEqual([
-      { cell: { x: 2, y: 5 }, widthCells: 1 },
-      { cell: { x: 2, y: 6 }, widthCells: 1 },
-      { cell: { x: 2, y: 7 }, widthCells: 1 },
-      { cell: { x: 2, y: 9 }, widthCells: 1 },
+      { cell: { x: 2, y: 8 }, widthCells: 1 },
+      { cell: { x: 2, y: 10 }, widthCells: 1 },
     ]);
   });
 
