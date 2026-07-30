@@ -403,6 +403,7 @@ export function placeSecondLayerPatch(args: {
   const occupiedCellKeys = new Set(args.patches.flatMap(getSecondLayerPatchPlacementCells).map(getCellKey));
   const isInsideBaseGrass = hasSecondLayerBaseSupport(args.shape, placementCells, baseCellKeys);
   const newCells = cells.filter((_cell, index) => !occupiedCellKeys.has(getCellKey(placementCells[index])));
+  const cellsToAdd = secondLayerTallMaterialShapeKeys.has(args.shape.key) ? cells : newCells;
 
   if (!isInsideBaseGrass || newCells.length === 0) return args.patches;
 
@@ -412,7 +413,7 @@ export function placeSecondLayerPatch(args: {
       id: args.id,
       shapeKey: args.shape.key,
       anchor: args.anchor,
-      cells: newCells,
+      cells: cellsToAdd,
     },
   ];
 }

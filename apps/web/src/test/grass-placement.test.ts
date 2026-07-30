@@ -557,7 +557,7 @@ describe('grass placement model', () => {
     expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(0);
   });
 
-  it('lets a second-layer brush overlap existing second-layer cells and adds only new cells', () => {
+  it('keeps a partially overlapping vertical second-layer brush complete so merged terrain is not cut away', () => {
     const baseCells = buildTestCells(1, 3, 1, 6);
     const patches = placeSecondLayerPatch({
       id: 'second-1',
@@ -591,8 +591,44 @@ describe('grass placement model', () => {
         shapeKey: 'three-vertical',
         anchor: { x: 2, y: 2 },
         cells: [
+          { x: 2, y: 2 },
+          { x: 2, y: 3 },
           { x: 2, y: 4 },
         ],
+      },
+    ]);
+  });
+
+  it('keeps a partially overlapping 3x3 second-layer brush complete so merged terrain is not cut away', () => {
+    const baseCells = buildTestCells(1, 6, 1, 7);
+    const patches = placeSecondLayerPatch({
+      id: 'second-1',
+      shape: grassShapes.nine,
+      anchor: { x: 2, y: 1 },
+      grid: { columns: 8, rows: 8 },
+      patches: [],
+      baseCells,
+    });
+
+    expect(placeSecondLayerPatch({
+      id: 'second-2',
+      shape: grassShapes.nine,
+      anchor: { x: 3, y: 1 },
+      grid: { columns: 8, rows: 8 },
+      patches,
+      baseCells,
+    })).toEqual([
+      {
+        id: 'second-1',
+        shapeKey: 'nine',
+        anchor: { x: 2, y: 1 },
+        cells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 1 }),
+      },
+      {
+        id: 'second-2',
+        shapeKey: 'nine',
+        anchor: { x: 3, y: 1 },
+        cells: getGrassShapeCells(grassShapes.nine, { x: 3, y: 1 }),
       },
     ]);
   });
