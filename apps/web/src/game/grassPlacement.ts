@@ -433,17 +433,9 @@ export function getSecondLayerTerrainPieces(args: {
 export function getSecondLayerPatchTerrainPieces(args: {
   patches: GrassPatch[];
 }) {
-  return dedupeTerrainPieces(args.patches.flatMap((patch) => {
-    if (patch.shapeKey === 'three-vertical') {
-      return getFixedSecondLayerVerticalPieces(patch.anchor);
-    }
-
-    if (patch.shapeKey === 'nine') {
-      return getFixedSecondLayerNinePieces(patch.anchor);
-    }
-
-    return getSecondLayerTerrainPieces({ occupiedCells: patch.cells });
-  }));
+  return getSecondLayerTerrainPieces({
+    occupiedCells: args.patches.flatMap((patch) => patch.cells),
+  });
 }
 
 export function getSecondLayerPlacementCells(args: {
@@ -600,17 +592,6 @@ function getFixedSecondLayerNinePieces(anchor: GridCell): TerrainPiece[] {
     { cell: { x: anchor.x + 1, y: anchor.y + 2 }, frame: 24, surface: 'grass' },
     { cell: { x: anchor.x + 2, y: anchor.y + 2 }, frame: 25, surface: 'grass' },
   ];
-}
-
-function dedupeTerrainPieces(pieces: TerrainPiece[]) {
-  const seenPieceKeys = new Set<string>();
-
-  return pieces.filter((piece) => {
-    const key = `${piece.surface}:${piece.frame}:${piece.cell.x}:${piece.cell.y}`;
-    if (seenPieceKeys.has(key)) return false;
-    seenPieceKeys.add(key);
-    return true;
-  });
 }
 
 export function getSecondLayerShadowPieces(args: {

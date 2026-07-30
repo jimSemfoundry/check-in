@@ -745,7 +745,7 @@ describe('grass placement model', () => {
     ]);
   });
 
-  it('renders second-layer 3x3 patches as fixed material blocks without merging side neighbors', () => {
+  it('merges adjacent second-layer 3x3 and vertical patches before choosing side edges', () => {
     const pieces = sortTerrainPiecesForComparison(getSecondLayerPatchTerrainPieces({
       patches: [
         {
@@ -764,15 +764,18 @@ describe('grass placement model', () => {
     }));
 
     expect(pieces).toEqual(expect.arrayContaining([
-      { cell: { x: 4, y: 3 }, frame: 7, surface: 'grass' },
-      { cell: { x: 4, y: 4 }, frame: 16, surface: 'grass' },
-      { cell: { x: 4, y: 5 }, frame: 25, surface: 'grass' },
-      { cell: { x: 4, y: 6 }, frame: 34, surface: 'grass' },
-      { cell: { x: 4, y: 7 }, frame: 43, surface: 'rock' },
+      { cell: { x: 4, y: 3 }, frame: 6, surface: 'grass' },
+      { cell: { x: 5, y: 3 }, frame: 7, surface: 'grass' },
+      { cell: { x: 4, y: 4 }, frame: 15, surface: 'grass' },
+      { cell: { x: 5, y: 4 }, frame: 16, surface: 'grass' },
+      { cell: { x: 4, y: 6 }, frame: 33, surface: 'grass' },
+      { cell: { x: 5, y: 6 }, frame: 34, surface: 'grass' },
+      { cell: { x: 4, y: 7 }, frame: 42, surface: 'rock' },
+      { cell: { x: 5, y: 7 }, frame: 43, surface: 'rock' },
     ]));
   });
 
-  it('renders second-layer vertical 1x3 patches as fixed material blocks without merging lower neighbors', () => {
+  it('merges stacked second-layer vertical and single patches before choosing lower edges', () => {
     const pieces = sortTerrainPiecesForComparison(getSecondLayerPatchTerrainPieces({
       patches: [
         {
@@ -793,9 +796,10 @@ describe('grass placement model', () => {
     expect(pieces).toEqual(expect.arrayContaining([
       { cell: { x: 2, y: 3 }, frame: 8, surface: 'grass' },
       { cell: { x: 2, y: 4 }, frame: 17, surface: 'grass' },
-      { cell: { x: 2, y: 5 }, frame: 26, surface: 'grass' },
-      { cell: { x: 2, y: 6 }, frame: 35, surface: 'grass' },
-      { cell: { x: 2, y: 7 }, frame: 44, surface: 'rock' },
+      { cell: { x: 2, y: 5 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 6 }, frame: 17, surface: 'grass' },
+      { cell: { x: 2, y: 7 }, frame: 35, surface: 'grass' },
+      { cell: { x: 2, y: 8 }, frame: 44, surface: 'rock' },
     ]));
   });
 
