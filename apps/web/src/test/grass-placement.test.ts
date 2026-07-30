@@ -534,6 +534,23 @@ describe('grass placement model', () => {
     ]);
   });
 
+  it('marks overlapping second-layer placement cells blocked so yellow occupancy boxes do not overlap', () => {
+    expect(getSecondLayerPlacementPreviewCells({
+      shape: grassShapes['three-vertical'],
+      anchor: { x: 2, y: 2 },
+      grid: { columns: 8, rows: 8 },
+      occupiedCells: getSecondLayerPlacementCells({
+        shape: grassShapes['three-horizontal'],
+        anchor: { x: 1, y: 3 },
+      }),
+      availableCells: buildTestCells(1, 5, 3, 6),
+    })).toEqual([
+      { cell: { x: 2, y: 4 }, state: 'blocked' },
+      { cell: { x: 2, y: 5 }, state: 'placeable' },
+      { cell: { x: 2, y: 6 }, state: 'placeable' },
+    ]);
+  });
+
   it('draws second-layer occupancy overlays on their actual placement cells', () => {
     expect(getSecondLayerPlacementOverlayOffsetY(grassShapes.nine)).toBe(0);
     expect(getSecondLayerPlacementOverlayOffsetY(grassShapes['three-vertical'])).toBe(0);
@@ -557,7 +574,7 @@ describe('grass placement model', () => {
     expect(getSecondLayerShadowRenderOffsetY({ cell: { x: 2, y: 8 }, widthCells: 1 }, 64)).toBe(0);
   });
 
-  it('keeps a partially overlapping vertical second-layer brush complete so merged terrain is not cut away', () => {
+  it('rejects a partially overlapping vertical second-layer brush so rock-base occupancy boxes never stack', () => {
     const baseCells = buildTestCells(1, 3, 1, 6);
     const patches = placeSecondLayerPatch({
       id: 'second-1',
@@ -575,31 +592,10 @@ describe('grass placement model', () => {
       grid: { columns: 6, rows: 6 },
       patches,
       baseCells,
-    })).toEqual([
-      {
-        id: 'second-1',
-        shapeKey: 'three-vertical',
-        anchor: { x: 2, y: 1 },
-        cells: [
-          { x: 2, y: 1 },
-          { x: 2, y: 2 },
-          { x: 2, y: 3 },
-        ],
-      },
-      {
-        id: 'second-2',
-        shapeKey: 'three-vertical',
-        anchor: { x: 2, y: 2 },
-        cells: [
-          { x: 2, y: 2 },
-          { x: 2, y: 3 },
-          { x: 2, y: 4 },
-        ],
-      },
-    ]);
+    })).toBe(patches);
   });
 
-  it('keeps a partially overlapping 3x3 second-layer brush complete so merged terrain is not cut away', () => {
+  it('rejects a partially overlapping 3x3 second-layer brush so rock-base occupancy boxes never stack', () => {
     const baseCells = buildTestCells(1, 6, 1, 7);
     const patches = placeSecondLayerPatch({
       id: 'second-1',
@@ -617,20 +613,7 @@ describe('grass placement model', () => {
       grid: { columns: 8, rows: 8 },
       patches,
       baseCells,
-    })).toEqual([
-      {
-        id: 'second-1',
-        shapeKey: 'nine',
-        anchor: { x: 2, y: 1 },
-        cells: getGrassShapeCells(grassShapes.nine, { x: 2, y: 1 }),
-      },
-      {
-        id: 'second-2',
-        shapeKey: 'nine',
-        anchor: { x: 3, y: 1 },
-        cells: getGrassShapeCells(grassShapes.nine, { x: 3, y: 1 }),
-      },
-    ]);
+    })).toBe(patches);
   });
 
   it('selects terrain frames from neighboring occupied grass cells', () => {

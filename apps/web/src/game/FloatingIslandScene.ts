@@ -627,7 +627,7 @@ export class FloatingIslandScene extends Phaser.Scene {
         shape: tool.shape,
         anchor,
         grid: seaLevelScenePlan.grid,
-        occupiedCells: [],
+        occupiedCells,
         availableCells: this.availableOverlayCells,
       })
       : getGrassPlacementPreviewCells({
